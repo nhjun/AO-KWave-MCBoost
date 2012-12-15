@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$class_t_h_d_f5___file.html#a899361597ee7dde095008c5aff70cdbc" title="Read data from the dataset." alt="" coords="289,32,508,61"/>
+<area shape="rect" id="node9" href="$class_t_h_d_f5___file.html#ab5574b22c975ff2b40207b967a1967f7" title="Read matrix data type from the dataset." alt="" coords="293,85,504,115"/>
+<area shape="rect" id="node13" href="$class_t_h_d_f5___file.html#ad296155b40a14eba6e98ad8ffcf6b432" title="Read matrix domain type from the dataset." alt="" coords="285,139,512,168"/>
+<area shape="rect" id="node5" href="$class_t_h_d_f5___file.html#a388c5f1d4446e22206a48b02364d1cbd" title="Check dataset dimension sizes." alt="" coords="561,5,804,35"/>
+<area shape="rect" id="node7" href="$struct_t_dimension_sizes.html#a6b893b8f9e5b4535de4df86e9cd5a85f" title="Get element count." alt="" coords="572,59,793,88"/>
+<area shape="rect" id="node11" href="$class_t_h_d_f5___file.html#a2324ad0edd53430ce3082b6a65ed7fc1" title="Read string attribute from the dataset." alt="" coords="583,125,783,155"/>
+</map>

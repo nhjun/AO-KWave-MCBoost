@@ -1,0 +1,211 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		C5D36A23146BE38700303C48 /* absorber.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = absorber.cpp; path = ../absorber.cpp; sourceTree = "<group>"; };
+		C5D36A24146BE38700303C48 /* absorber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = absorber.h; path = ../absorber.h; sourceTree = "<group>"; };
+		C5D36A25146BE38700303C48 /* boundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = boundary.cpp; path = ../boundary.cpp; sourceTree = "<group>"; };
+		C5D36A26146BE38700303C48 /* boundary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = boundary.h; path = ../boundary.h; sourceTree = "<group>"; };
+		C5D36A27146BE38700303C48 /* circularDetector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = circularDetector.cpp; path = ../circularDetector.cpp; sourceTree = "<group>"; };
+		C5D36A28146BE38700303C48 /* circularDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = circularDetector.h; path = ../circularDetector.h; sourceTree = "<group>"; };
+		C5D36A29146BE38700303C48 /* coordinates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = coordinates.h; path = ../coordinates.h; sourceTree = "<group>"; };
+		C5D36A2A146BE38700303C48 /* cylinderAbsorber.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cylinderAbsorber.cpp; path = ../cylinderAbsorber.cpp; sourceTree = "<group>"; };
+		C5D36A2B146BE38700303C48 /* cylinderAbsorber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cylinderAbsorber.h; path = ../cylinderAbsorber.h; sourceTree = "<group>"; };
+		C5D36A2C146BE38700303C48 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debug.h; path = ../debug.h; sourceTree = "<group>"; };
+		C5D36A2D146BE38700303C48 /* detector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = detector.cpp; path = ../detector.cpp; sourceTree = "<group>"; };
+		C5D36A2E146BE38700303C48 /* detector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = detector.h; path = ../detector.h; sourceTree = "<group>"; };
+		C5D36A2F146BE38700303C48 /* displacementMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = displacementMap.cpp; path = ../displacementMap.cpp; sourceTree = "<group>"; };
+		C5D36A30146BE38700303C48 /* displacementMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = displacementMap.h; path = ../displacementMap.h; sourceTree = "<group>"; };
+		C5D36A31146BE38700303C48 /* layer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = layer.cpp; path = ../layer.cpp; sourceTree = "<group>"; };
+		C5D36A32146BE38700303C48 /* layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = layer.h; path = ../layer.h; sourceTree = "<group>"; };
+		C5D36A33146BE38700303C48 /* logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logger.cpp; path = ../logger.cpp; sourceTree = "<group>"; };
+		C5D36A34146BE38700303C48 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../logger.h; sourceTree = "<group>"; };
+		C5D36A35146BE38700303C48 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		C5D36A36146BE38700303C48 /* makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = makefile; path = ../makefile; sourceTree = "<group>"; };
+		C5D36A37146BE38700303C48 /* medium.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = medium.cpp; path = ../medium.cpp; sourceTree = "<group>"; };
+		C5D36A38146BE38700303C48 /* medium.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = medium.h; path = ../medium.h; sourceTree = "<group>"; };
+		C5D36A39146BE38700303C48 /* photon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = photon.cpp; path = ../photon.cpp; sourceTree = "<group>"; };
+		C5D36A3A146BE38700303C48 /* photon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = photon.h; path = ../photon.h; sourceTree = "<group>"; };
+		C5D36A3B146BE38700303C48 /* pressureMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pressureMap.cpp; path = ../pressureMap.cpp; sourceTree = "<group>"; };
+		C5D36A3C146BE38700303C48 /* pressureMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pressureMap.h; path = ../pressureMap.h; sourceTree = "<group>"; };
+		C5D36A3D146BE38700303C48 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = ../README; sourceTree = "<group>"; };
+		C5D36A3E146BE38700303C48 /* sphereAbsorber.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sphereAbsorber.cpp; path = ../sphereAbsorber.cpp; sourceTree = "<group>"; };
+		C5D36A3F146BE38700303C48 /* sphereAbsorber.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sphereAbsorber.h; path = ../sphereAbsorber.h; sourceTree = "<group>"; };
+		C5D36A40146BE38700303C48 /* vector3D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vector3D.cpp; path = ../vector3D.cpp; sourceTree = "<group>"; };
+		C5D36A41146BE38700303C48 /* vector3D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vector3D.h; path = ../vector3D.h; sourceTree = "<group>"; };
+		C5D36A42146BE38700303C48 /* vectorMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vectorMath.h; path = ../vectorMath.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		C5D36A16146BE36400303C48 = {
+			isa = PBXGroup;
+			children = (
+				C5D36A23146BE38700303C48 /* absorber.cpp */,
+				C5D36A24146BE38700303C48 /* absorber.h */,
+				C5D36A25146BE38700303C48 /* boundary.cpp */,
+				C5D36A26146BE38700303C48 /* boundary.h */,
+				C5D36A27146BE38700303C48 /* circularDetector.cpp */,
+				C5D36A28146BE38700303C48 /* circularDetector.h */,
+				C5D36A29146BE38700303C48 /* coordinates.h */,
+				C5D36A2A146BE38700303C48 /* cylinderAbsorber.cpp */,
+				C5D36A2B146BE38700303C48 /* cylinderAbsorber.h */,
+				C5D36A2C146BE38700303C48 /* debug.h */,
+				C5D36A2D146BE38700303C48 /* detector.cpp */,
+				C5D36A2E146BE38700303C48 /* detector.h */,
+				C5D36A2F146BE38700303C48 /* displacementMap.cpp */,
+				C5D36A30146BE38700303C48 /* displacementMap.h */,
+				C5D36A31146BE38700303C48 /* layer.cpp */,
+				C5D36A32146BE38700303C48 /* layer.h */,
+				C5D36A33146BE38700303C48 /* logger.cpp */,
+				C5D36A34146BE38700303C48 /* logger.h */,
+				C5D36A35146BE38700303C48 /* main.cpp */,
+				C5D36A36146BE38700303C48 /* makefile */,
+				C5D36A37146BE38700303C48 /* medium.cpp */,
+				C5D36A38146BE38700303C48 /* medium.h */,
+				C5D36A39146BE38700303C48 /* photon.cpp */,
+				C5D36A3A146BE38700303C48 /* photon.h */,
+				C5D36A3B146BE38700303C48 /* pressureMap.cpp */,
+				C5D36A3C146BE38700303C48 /* pressureMap.h */,
+				C5D36A3D146BE38700303C48 /* README */,
+				C5D36A3E146BE38700303C48 /* sphereAbsorber.cpp */,
+				C5D36A3F146BE38700303C48 /* sphereAbsorber.h */,
+				C5D36A40146BE38700303C48 /* vector3D.cpp */,
+				C5D36A41146BE38700303C48 /* vector3D.h */,
+				C5D36A42146BE38700303C48 /* vectorMath.h */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		C5D36A1D146BE36400303C48 /* Xcode */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = C5D36A20146BE36400303C48 /* Build configuration list for PBXLegacyTarget "Xcode" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "/Users/betty/Desktop/Software/MC-Boost";
+			dependencies = (
+			);
+			name = Xcode;
+			passBuildSettingsInEnvironment = 1;
+			productName = Xcode;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		C5D36A18146BE36400303C48 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C5D36A1B146BE36400303C48 /* Build configuration list for PBXProject "Xcode" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = C5D36A16146BE36400303C48;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C5D36A1D146BE36400303C48 /* Xcode */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		C5D36A1E146BE36400303C48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C5D36A1F146BE36400303C48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C5D36A21146BE36400303C48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C5D36A22146BE36400303C48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C5D36A1B146BE36400303C48 /* Build configuration list for PBXProject "Xcode" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C5D36A1E146BE36400303C48 /* Debug */,
+				C5D36A1F146BE36400303C48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C5D36A20146BE36400303C48 /* Build configuration list for PBXLegacyTarget "Xcode" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C5D36A21146BE36400303C48 /* Debug */,
+				C5D36A22146BE36400303C48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C5D36A18146BE36400303C48 /* Project object */;
+}

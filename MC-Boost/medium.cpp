@@ -1,0 +1,598 @@
+
+#include "photon.h" // Photon class is a friend of the Medium class.
+#include "debug.h"
+#include "vector3D.h"
+#include "layer.h"
+#include "medium.h"
+#include "detector.h"
+#include "pressureMap.h"
+#include "refractiveMap.h"
+#include "displacementMap.h"
+#include <cmath>
+#include <cassert>
+#include <cstdlib>
+
+#undef DEBUG
+
+Medium::Medium()
+{
+	z_bound = x_bound = y_bound = 0.010; // Default bounds of the medium (meters).
+	this->initCommon();
+}
+
+Medium::Medium(const double x, const double y, const double z)
+{
+	this->z_bound = z;
+	this->y_bound = y;
+	this->x_bound = x;
+	this->initCommon();
+}
+
+Medium::~Medium()
+{	
+	// Free the PressureMap() object.
+	if (kwave.pmap) {
+		delete kwave.pmap;
+		kwave.pmap = NULL;
+	}
+
+	// Free the RefractiveMap() object.
+	if (kwave.nmap) {
+		delete kwave.nmap;
+		kwave.nmap = NULL;
+	}
+
+	// Free the DisplacementMap() object.
+	if (kwave.dmap) {
+		delete kwave.dmap;
+		kwave.dmap = NULL;
+	}
+
+	// If there were any absorbers in the medium, write out their data.
+	for (vector<Layer *>::iterator it = p_layers.begin(); it != p_layers.end(); it++)
+	{
+		(*it)->writeAbsorberData();
+		delete *it;
+	}
+}
+
+
+void Medium::initCommon(void)
+{
+
+
+
+	kwave.transducerFreq = 0.0;
+	kwave.pmap = NULL;     	// Pointer to a PressureMap() object.
+	kwave.nmap = NULL;		// Pointer to a RefractiveMap() object.
+	kwave.dmap = NULL;		// Pointer to a DisplacementMap() object.
+
+	// Initialize the voxel size to zero and let the k-Wave maps change their
+	// value when they are loaded.
+	dx = dy = dz = -1;
+	Nx = Ny = Nz = -1;
+
+	// Values must be defined in 'main.cpp', otherwise an assert() in 'displacementMap.cpp' fails.
+	density = speed_of_sound = pezio_optical_coeff = background_refractive_index = -1;
+
+	coords_file.open("photon-paths.txt");
+	photon_data_file.open("photon-exit-data.txt");
+}
+
+
+void Medium::setPlanarArray(double *array)
+{
+	Cplanar = array;
+	// Initialize all the bins to zero since they will serve as accumulators.
+	int i;
+	for (i = 0; i < MAX_BINS; i++) {
+		Cplanar[i] = 0;
+	}
+}
+
+// Add the layer to the medium by pushing it onto the vector container.
+void Medium::addLayer(Layer *layer)
+{
+	p_layers.push_back(layer);
+}
+void Medium::addLayer(Layer_Properties props)
+{
+    p_layers.push_back(new Layer(props));
+}
+
+
+
+
+// Add an 3-dimensional pressure map object to the medium.
+void Medium::addPressureMap(PressureMap *p_map)
+{
+	assert(p_map != NULL);
+    
+    /// Since we are adding a new pressure map, there is a chance one is already assigned.
+    /// If one already exists, we free the memory and assign the new one.
+    if (kwave.pmap != NULL)
+    {
+        delete kwave.pmap;
+        kwave.pmap = NULL;
+    }
+    
+    /// Assign new pressure map.
+	kwave.pmap = p_map;
+
+//	// Set the medium voxel size to the k-Wave grid size.
+//	this->dx = kwave.pmap->getDx();
+//	this->dy = kwave.pmap->getDy();
+//	this->dz = kwave.pmap->getDz();
+//
+//	// Set the medium voxel number to the k-Wave grid size.
+//	this->Nx = kwave.pmap->getNumVoxelsXaxis();
+//	this->Ny = kwave.pmap->getNumVoxelsYaxis();
+//	this->Nz = kwave.pmap->getNumVoxelsZaxis();
+}
+
+// Add a 3D refractive map object to the medium.
+void Medium::addRefractiveMap(RefractiveMap *n_map)
+{
+	assert(n_map != NULL);
+    
+    /// Since we are adding a new refractive map, there is a chance one is already assigned.
+    /// If one already exists, we free the memory and assign the new one.
+    if (kwave.nmap != NULL)
+    {
+        delete kwave.nmap;
+        kwave.nmap = NULL;
+    }
+    
+    /// Assign new refractive map.
+	kwave.nmap = n_map;
+
+//	// Set the medium voxel size to the k-Wave grid size.
+//	this->dx = kwave.nmap->getDx();
+//	this->dy = kwave.nmap->getDy();
+//	this->dz = kwave.nmap->getDz();
+//
+//	// Set the medium voxel number to the k-Wave grid size.
+//	this->Nx = kwave.nmap->getNumVoxelsXaxis();
+//	this->Ny = kwave.nmap->getNumVoxelsYaxis();
+//	this->Nz = kwave.nmap->getNumVoxelsZaxis();
+}
+
+
+// Add an 3-dimensional displacement map object to the medium.
+void Medium::addDisplacementMap(DisplacementMap *d_map)
+{
+	assert(d_map != NULL);
+    
+    /// Since we are adding a new displacement map, there is a chance one is already assigned.
+    /// If one already exists, we free the memory and assign the new one.
+    if (kwave.dmap != NULL)
+    {
+        delete kwave.dmap;
+        kwave.dmap = NULL;
+    }
+    
+    /// Assign the new displacement map.
+	kwave.dmap = d_map;
+
+//	// Set the medium voxel size to the k-Wave grid size.
+//	this->dx = kwave.dmap->getDx();
+//	this->dy = kwave.dmap->getDy();
+//	this->dz = kwave.dmap->getDz();
+//
+//	// Set the medium voxel number to the k-Wave grid size.
+//	this->Nx = kwave.dmap->getNumVoxelsXaxis();
+//	this->Ny = kwave.dmap->getNumVoxelsYaxis();
+//	this->Nz = kwave.dmap->getNumVoxelsZaxis();
+}
+
+// Load the data from the pressure file if no time (dt) is given.
+void Medium::loadPressure(std::string &filename)
+{
+	assert(kwave.pmap != NULL);
+	kwave.pmap->loadPressureMap(filename);
+
+}
+
+// Load the data from the file that contains pressure data generated by K-Wave.
+void Medium::loadPressure(std::string &filename, const int dt)
+{
+	//cout << "LoadPressure\n";
+	assert(kwave.pmap != NULL);
+	kwave.pmap->loadPressureMap(filename, dt);
+
+}
+
+
+// Load the data from the pressure file if no time (dt) is given.
+void Medium::loadRefractiveMap(std::string &filename, const double density, const double sos, const double n_background, const double eta)
+{
+	assert(kwave.nmap != NULL);
+	kwave.nmap->setDensity(density);
+	kwave.nmap->setSOS(sos);
+	kwave.nmap->setBackgroundRefractiveIndex(n_background);
+	kwave.nmap->setPezioOpticalCoeff(eta);
+
+	kwave.nmap->loadRefractiveMap(filename);
+
+}
+
+// Load the data from the pressure file at time 'dt'.
+void Medium::loadRefractiveMap(std::string &filename, const double density, const double sos, const double n_background, const double eta, const int dt)
+{
+	assert(kwave.nmap != NULL);
+	kwave.nmap->setDensity(density);
+	kwave.nmap->setSOS(sos);
+	kwave.nmap->setBackgroundRefractiveIndex(n_background);
+	kwave.nmap->setPezioOpticalCoeff(eta);
+
+	kwave.nmap->loadRefractiveMap(filename, dt);
+
+}
+
+// Load the data from the file that contains pressure data generated by K-Wave.
+void Medium::loadDisplacements(std::string &filename, const int dt)
+{
+	//cout << "LoadDisplacement\n";
+	assert(kwave.dmap != NULL);
+	kwave.dmap->loadDisplacementMaps(filename, dt);
+
+}
+
+
+//
+void Medium::loadDisplacementsFromPressure(std::string &filename, const int dt)
+{
+	assert(kwave.dmap != NULL);
+	assert(this->density != -1 &&
+			this->speed_of_sound != -1 &&
+			this->pezio_optical_coeff != -1 &&
+			this->background_refractive_index);
+
+	kwave.dmap->loadPressureAndCalculateDisplacements(filename, dt,
+														this->density,
+														this->speed_of_sound,
+														this->pezio_optical_coeff,
+														this->background_refractive_index);
+
+}
+
+
+// Returns the pressure in the grid that corresponds to the current location of the
+// photon in the medium.
+double Medium::getPressureFromCartCoords(double a, double b, double c)
+{
+	//cout << "getPressureFromCartCoords\n";
+	assert(kwave.pmap != NULL);
+	return kwave.pmap->getPressure(a, b, c);
+
+}
+
+// Returns the pressure in the grid based upon the location of the photon.
+double Medium::getPressureFromPhotonLocation(const boost::shared_ptr<Vector3d> photonLocation)
+{
+	assert(photonLocation != NULL);
+	return (kwave.pmap->getPressure(*photonLocation));
+}
+
+
+// Returns the pressure from the grid based on supplied indeces into the
+// pressure matrix.
+double Medium::getPressureFromGridCoords(int a, int b, int c)
+{
+	//cout << "getPressureFromGridCoords\n";
+	assert(kwave.pmap != NULL);
+	return (kwave.pmap->getPressureFromGrid(a, b, c));
+}
+
+
+
+// Return the displacement vector coordinates from the location of the photon in the medium.
+boost::shared_ptr<Vector3d> Medium::getDisplacementFromPhotonLocation(const boost::shared_ptr<Vector3d> photonCoords)
+{
+	return (kwave.dmap->getDisplacements(*photonCoords));
+}
+
+
+
+void Medium::addDetector(Detector *detector)
+{
+	p_detectors.push_back(detector);
+}
+
+
+void Medium::absorbEnergy(const double z, const double energy)
+{
+#ifdef DEBUG
+	cout << "Updating bin...\n";
+#endif
+
+	cout << "Medium::absorbEnergy NOT IMPLEMENTED!!!\n";
+
+}
+
+
+void Medium::absorbEnergy(const double *energy_array)
+{
+	int i;
+	// Grab the lock to ensure a single thread has access
+	// to update the global array.
+	boost::mutex::scoped_lock lock(m_sensor_mutex);
+	for (i = 0; i < MAX_BINS; i++) {
+		// Grab the lock to serialize threads when updating
+		// the global planar detection array in the Medium.
+		Cplanar[i] += energy_array[i];
+	}
+}
+
+
+// See if photon has crossed the detector plane.
+int Medium::photonHitDetectorPlane(const boost::shared_ptr<Vector3d> p0)
+{
+	bool hitDetectorNumTimes = 0;
+	// Free the memory for layers that were added to the medium.
+	for (vector<Detector *>::iterator it = p_detectors.begin(); it != p_detectors.end(); it++)
+	{
+		if ((*it)->photonHitDetector(p0))
+			hitDetectorNumTimes++;
+	}
+
+	return hitDetectorNumTimes;
+}
+
+Layer * Medium::getLayerAboveCurrent(Layer *currentLayer)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(currentLayer != NULL);
+
+	// If we have only one layer, no need to iterate through the vector.
+	// And we should return NULL since there is no layer above us.
+	if (p_layers.size() == 1)
+		return NULL;
+
+
+
+	// Otherwise we walk the vector and return 'trailer' since it is the
+	// one before the current layer (i.e. 'it').
+	vector<Layer *>::iterator it;
+	vector<Layer *>::iterator trailer;
+	it = p_layers.begin(); // Get the first layer from the array.
+
+	// If we are at the top of the medium there is no layer above, so return NULL;
+	if (currentLayer == (*it))
+		return NULL;
+
+	while(it != p_layers.end()) {
+		trailer = it;  // Assign the trailer to the current layer.
+		it++;         // Advance the iterator to the next layer.
+
+		// Find the layer we are in within the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer
+		// because trailer will be pointing to the previous layer in the medium.
+		//if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z)
+		if ((*it) == currentLayer)
+			break;
+	}
+
+	// Sanity check.  If the trailer has made it to the end, which means
+	// the iterator made it past the end, then there
+	// was no previous layer found, and something went wrong.
+	if (trailer == p_layers.end())
+		return NULL;
+
+	// If we make it here, we have found the previous layer.
+	return *trailer;
+}
+
+
+Layer * Medium::getLayerBelowCurrent(double z)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(z >= 0 && z <= z_bound);
+
+	// If we have only one layer, no need to iterate through the vector.
+	// And we should return NULL since there is no layer below us.
+	if (p_layers.size() == 1)
+		return NULL;
+
+	// The case where there is no layer below is since we are at the bottom of the
+	// medium.
+	if (z == z_bound)
+		return NULL;
+
+
+	vector<Layer *>::iterator it;
+	for (it = p_layers.begin(); it != p_layers.end(); it++) {
+		// Find the layer we are in within the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer.
+		if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z) {
+			return *(++it);
+		}
+	}
+
+	// If the above loop never returned a layer it means we made it through the list
+	// so there is no layer below us, therefore we return null.
+	return NULL;
+
+
+}
+
+
+// Return the layer in the medium at the passed in depth 'z'.
+// We iterate through the vector which contains pointers to the layers.
+// When the correct layer is found from the depth we return the layer object.
+Layer * Medium::getLayerFromDepth(double z)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(z >= 0 && z <= z_bound);
+
+	vector<Layer *>::iterator it;
+	for (it = p_layers.begin(); it != p_layers.end(); it++) {
+		// Find the layer we are in within the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer.
+		if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z)
+			break;
+	}
+
+	// Return layer based on the depth passed in.
+	return *it;
+}
+
+
+double Medium::getLayerAbsorptionCoeff(double z)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(z >= 0 && z <= z_bound);
+
+	double absorp_coeff = -1;
+	vector<Layer *>::iterator it;
+	for (it = p_layers.begin(); it != p_layers.end(); it++) {
+		// Find the layer we are it in the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer.
+		if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z) {
+			absorp_coeff = (*it)->getAbsorpCoeff();
+			break;
+		}
+	}
+
+	// If not found, report error.
+	assert(absorp_coeff != 0);
+
+	// If not found, fail.
+	// If not found, report error.
+	assert(absorp_coeff != -1);
+
+	// Return the absorption coefficient value.
+	return absorp_coeff;
+}
+
+
+double Medium::getLayerScatterCoeff(double z)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(z >= 0 && z <= z_bound);
+
+	double scatter_coeff = -1;
+	vector<Layer *>::iterator it;
+	for (it = p_layers.begin(); it != p_layers.end(); it++) {
+		// Find the layer we are it in the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer.
+		if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z) {
+			scatter_coeff = (*it)->getScatterCoeff();
+			break;
+		}
+	}
+
+	// If not found, report error.
+	assert(scatter_coeff != 0);
+
+	// If not found, fail.
+	// If not found, report error.
+	assert(scatter_coeff != -1);
+
+	// Return the scattering coefficient for the layer that resides at depth 'z'.
+	return scatter_coeff;
+}
+
+
+double Medium::getAnisotropyFromDepth(double z)
+{
+	// Ensure that the photon's z-axis coordinate is sane.  That is,
+	// it has not left the medium.
+	assert(z >= 0 && z <= z_bound);
+
+	double anisotropy = -1;
+	vector<Layer *>::iterator it;
+	for (it = p_layers.begin(); it != p_layers.end(); it++) {
+		// Find the layer we are it in the medium based on the depth (i.e. z)
+		// that was passed in.  Break from the loop when we find the correct layer.
+		if ((*it)->getDepthStart() <= z && (*it)->getDepthEnd() >= z) {
+			anisotropy = (*it)->getAnisotropy();
+			break;
+		}
+	}
+
+	// If not found, report error.
+	assert(anisotropy != 0);
+
+	// If not found, fail.
+	// If not found, report error.
+	assert(anisotropy != -1);
+
+	// Return the anisotropy value for the layer that resides at depth 'z'.
+	return anisotropy;
+}
+
+
+// Write out the photon coordinates to file.
+void Medium::writePhotonCoords(vector<double> &coords)
+{
+	// Assert that there are 3 fields of data per photon (x, y, z)
+	assert((coords.size() % 3) == 0);
+
+	boost::mutex::scoped_lock lock(m_data_file_mutex);
+
+	//Iterate over all the coordinates in the STL vector and write
+	// to file.
+	for (std::vector<int>::size_type i = 0; i < coords.size(); i++) {
+		coords_file << coords[i] << " ";
+	}
+
+	// Carriage return signifies the end of a photon's path, so that the data file can be
+	// properly parsed to plot photons in 3-D using matlab.
+	coords_file << "\n";
+	coords_file.flush();
+}
+
+// Write out the exit location (i.e. photon coordinates when it left the medium) and phase
+// at the exit point, to file.
+void Medium::writeExitCoordsAndLength(vector<double> &coords_phase)
+{
+
+	// Assert that there are 3 fields of data per photon (x, y, path_length)
+	assert((coords_phase.size() % 3) == 0);
+
+	boost::mutex::scoped_lock lock(m_data_file_mutex);
+
+	//Iterate over all the coordinates and phases in the STL vector and write
+	// to file.
+	for (std::vector<int>::size_type i = 0; i < coords_phase.size(); i++)
+	{
+
+		photon_data_file << fixed << setprecision(9) << coords_phase[i] << "\t\t";
+		photon_data_file << coords_phase[++i] << "\t\t";
+		photon_data_file << coords_phase[++i] << " \n";
+	}
+
+	photon_data_file.flush();
+}
+
+
+// Write out the exit location (i.e. photon coordinates when it left the medium) and phase
+// at the exit point, to file.
+void Medium::writeExitCoordsLengthWeight(vector<double> &coords_phase_weight)
+{
+	// Assert that there are 4 fields of data per photon (x, y, path_length, weight)
+	assert((coords_phase_weight.size()% 4) == 0);
+
+	boost::mutex::scoped_lock lock(m_data_file_mutex);
+
+	//Iterate over all the coordinates and phases in the STL vector and write
+	// to file.
+	for (std::vector<int>::size_type i = 0; i < coords_phase_weight.size(); i++)
+	{
+
+		photon_data_file << fixed << setprecision(9) << coords_phase_weight[i] << "\t\t";
+		photon_data_file << coords_phase_weight[++i] << "\t\t";
+		photon_data_file << coords_phase_weight[++i] << "\t\t";
+		photon_data_file << coords_phase_weight[++i] << " \n";
+	}
+
+	photon_data_file.flush();
+}
+
+
