@@ -1,3 +1,6 @@
+# Temporary files from editors
+*~
+
 # Compiled Object files
 *.slo
 *.lo
@@ -11,3 +14,10 @@
 *.lai
 *.la
 *.a
+
+# k-Wave produced settings and result files (large data files).
+*.h5
+
+# x-code directory
+K_Wave_C
+K_Wave_C/*
