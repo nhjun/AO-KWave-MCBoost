@@ -24,3 +24,7 @@ K_Wave_C/*
 
 # ignore various extraneous files
 *.DS_store
+.txt
+
+#executable
+kspaceFirstOrder3D-OMP_MC-Boost
