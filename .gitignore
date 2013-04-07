@@ -30,4 +30,4 @@ K_Wave_C/*
 kspaceFirstOrder3D-OMP_MC-Boost
 
 # ignore the data directory
-Data/*
+Data/
