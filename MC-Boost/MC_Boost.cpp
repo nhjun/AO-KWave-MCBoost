@@ -12,10 +12,10 @@
 
 
 #include "MC_Boost.h"
-#include "Medium.h"
-#include "Photon.h"
-#include "logger.h"
-#include "vector3d.h"
+#include <MC-Boost/medium.h>
+#include <MC-Boost/photon.h>
+#include <MC-Boost/logger.h>
+#include <MC-Boost/vector3D.h>
 #include <boost/lexical_cast.hpp>
 
 

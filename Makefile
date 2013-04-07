@@ -69,7 +69,7 @@ LINKING = DYNAMIC
 #set up paths: FFT_DIR for FFTW or MKL for MKL
 FFT_DIR=/usr/local
 MKL_DIR=/opt/intel/composer_xe_2011_sp1/mkl
-HDF5_DIR=/Users/betty/Desktop/Software/hdf5-1.8.10/hdf5
+HDF5_DIR=/usr/local
 
 #################################################################################
 
@@ -79,7 +79,7 @@ HDF5_DIR=/Users/betty/Desktop/Software/hdf5-1.8.10/hdf5
 ifeq ($(COMPILER),GNU)
   CXX	   = /usr/local/bin/g++
 
-  CPU_FLAGS = -mtune=native -msse4.2 -m64
+  CPU_FLAGS = -march=native -mtune=native
 
   #Generic CPU (any intel and AMD 64b CPU)
   #CPU_FLAGS = -msse2 -m64
@@ -89,7 +89,7 @@ ifeq ($(COMPILER),GNU)
 
   # CFLAGS for running 
   #------------------------
-  CXXFLAGS = -O3 -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
+  CXXFLAGS = -O3 -march=native -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
 
@@ -165,7 +165,7 @@ $(TARGET):	main.o 					\
 		MatrixClasses/UXYZ_SGXYZMatrix.o	\
 		Parameters/CommandLineParameters.o	\
 		Parameters/Parameters.o			\
-        	AO-Sim/AO_sim.o				\
+        	AO-sim/AO_sim.o				\
 		MC-Boost/absorber.o                     \
 		MC-Boost/boundary.o			\
 		MC-Boost/circularDetector.o		\
