@@ -62,6 +62,8 @@
 COMPILER = GNU
 #COMPILER = Intel
 
+OS := $(shell uname)
+
 # static lining is deafult
 #LINKING = STATIC
 LINKING = DYNAMIC
@@ -69,7 +71,11 @@ LINKING = DYNAMIC
 #set up paths: FFT_DIR for FFTW or MKL for MKL
 FFT_DIR=/usr/local
 MKL_DIR=/opt/intel/composer_xe_2011_sp1/mkl
+ifeq ($(OS), Linux)
 HDF5_DIR=/usr/local
+else
+HDF5_DIR=/Users/betty/Desktop/Software/hdf5-1.8.10/hdf5
+endif
 
 #################################################################################
 
