@@ -109,7 +109,6 @@ public:
     double GetPostProcessingTime() const { return PostProcessingTime.GetElapsedTime();};
     
     
-    // Start JWJS
     // Begin JWJS
     /// ---------------------------------------------------------------------------------------
     /// Start the iteration time.
@@ -134,11 +133,22 @@ public:
     void    FromMain_Compute_new_p_linear ()        {Compute_new_p_linear();};
     void    FromMain_StoreSensorData ()             {StoreSensorData();};
     void    FromMain_PrintStatisitcs ()             {PrintStatisitcs();};
-    void    FromMain_AddTransducerSource ()         {Get_ux_sgx().AddTransducerSource(Get_u_source_index(), Get_delay_mask(),                            Get_transducer_source_input());};
+    void    FromMain_AddTransducerSource ()         {Get_ux_sgx().AddTransducerSource(Get_u_source_index(),
+                                                                                      Get_delay_mask(),
+                                                                                      Get_transducer_source_input());};
     void    FromMain_Calculate_p0_source ()         {Calculate_p0_source();};
-    TRealMatrix & FromMain_Get_Temp_1_RS3D ()       {return Get_Temp_1_RS3D();};
-    void    FromMain_PrintStatistics ()             {PrintStatisitcs();};
-    void    FromMain_PrintOutputHeader()            {PrintOtputHeader();};
+    void    FromMain_PrintStatistics    ()             {PrintStatisitcs();};
+    void    FromMain_PrintOutputHeader  ()            {PrintOtputHeader();};
+    
+    TRealMatrix & FromMain_Get_p    ()              {return Get_p();};
+    TRealMatrix & FromMain_Get_ux   ()              {return Get_ux_sgx();};
+    TRealMatrix & FromMain_Get_uy   ()              {return Get_uy_sgy();};
+    TRealMatrix & FromMain_Get_uz   ()              {return Get_uz_sgz();};
+    TRealMatrix & FromMain_Get_rhox ()              {return Get_rhox();};
+    TRealMatrix & FromMain_Get_rhoy ()              {return Get_rhoy();};
+    TRealMatrix & FromMain_Get_rhoz ()              {return Get_rhoz();};
+    TRealMatrix & FromMain_Get_rho0 ()              {return Get_rho0();};
+    TRealMatrix & FromMain_Get_c2   ()              {return Get_c2();};
     /// ---------------------------------------------------------------------------------------
     // End JWJS
     
