@@ -7,6 +7,8 @@
 //
 
 #include "RNG.h"
+#include <iostream>
+using std::cout;
 
 
 RNG::RNG()
@@ -29,6 +31,11 @@ RNG::initRNG(unsigned int state1, unsigned int state2,
     z2 = state2;
     z3 = state3;
     z4 = state4;
+    
+//    cout << "\nz1=" << z1 << "\n"
+//         << "z2=" << z2 << "\n"
+//         << "z3=" << z3 << "\n"
+//         << "z4=" << z4 << "\n\n";
 }
 
 
@@ -85,7 +92,6 @@ RNG::getState()
 //// Overloaded operators for working with 'RNGSeeds' structures.
 RNG& RNG::operator=(const RNG &rhs)
 {
-    RNG result;
     
     z1 = rhs.z1;
     z2 = rhs.z2;

@@ -85,15 +85,17 @@ ifeq ($(COMPILER),GNU)
   #CPU_FLAGS = -msse2 -m64
 
   #Intel Core i7 
-#  CPU_FLAGS=-msse4.2 -m64
+  #CPU_FLAGS=-msse4.2 -m64
 
-  # CFLAGS for running
-  #CXXFLAGS = -O3 -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
+  # CFLAGS for running 
+  #------------------------
+  CXXFLAGS = -O3 -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
 
   # CFLAGS for debugging
-  CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
+  #------------------------
+  #CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
 
   ifeq ($(LINKING),STATIC)
 

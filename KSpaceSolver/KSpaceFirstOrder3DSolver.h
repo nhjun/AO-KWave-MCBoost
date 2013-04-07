@@ -110,6 +110,7 @@ public:
     
     
     // Start JWJS
+    // Begin JWJS
     /// ---------------------------------------------------------------------------------------
     /// Start the iteration time.
     void StartIterationTime () {IterationTime.Start();};

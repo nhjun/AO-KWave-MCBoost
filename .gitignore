@@ -21,3 +21,6 @@
 # x-code directory
 K_Wave_C
 K_Wave_C/*
+
+# ignore text files
+*.txt

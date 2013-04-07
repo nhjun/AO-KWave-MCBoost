@@ -139,8 +139,22 @@ public:
     /// the medium through the exit aperture.
     void    Generate_exit_seeds()
             {
+                da_boost->Simulate_displacement(false);
+                da_boost->Simulate_refractive_gradient(false);
+                da_boost->Save_RNG_Seeds(true);
                 da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
             }
+    
+    /// FOR TESTING PURPOSES:
+    void    Test_Seeded_MC_sim()
+    {
+        da_boost->Simulate_displacement(false);
+        da_boost->Simulate_refractive_gradient(false);
+        da_boost->Save_RNG_Seeds(false);
+        static int i = 0;
+        i++;
+        da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
+    }
     
     
     /// Load the seeds that were saved to file.  These seeds produced paths of photons
@@ -157,6 +171,13 @@ public:
     double  Get_MC_Xaxis_depth() {return m_medium->getXbound();}
     
     
+    
+    void    Set_pezio_optical_coeff(const float val)
+            {
+                pezio_optical_coeff = val;
+            }
+    
+    
 private:
     /// The medium shared between the monte-carlo and k-wave simulations.
     Medium      * m_medium;
@@ -167,8 +188,12 @@ private:
     /// Holds the coordinates where light is injected into the medium.
     coords      m_Laser_injection_coords;
     
-    // Instance of the k-Wave simulation.
+    /// Instance of the k-Wave simulation.
     TKSpaceFirstOrder3DSolver * KSpaceSolver;
+    
+    
+    /// Pezio-optical coefficient.
+    float pezio_optical_coeff;
 
     
 };

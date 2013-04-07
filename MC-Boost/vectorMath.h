@@ -12,8 +12,12 @@
 
 #include "vector3D.h"
 #include "coordinates.h"
-#include "boost/smart_ptr.hpp"
+#include <boost/smart_ptr.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <cmath>
+
+const double PI = boost::math::constants::pi<double>();
+
 
 class Vector3d;
 

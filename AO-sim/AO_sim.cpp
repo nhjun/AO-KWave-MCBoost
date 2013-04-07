@@ -9,6 +9,7 @@
 #include <exception>
 
 #include "AO_sim.h"
+#include <MC-Boost/logger.h>
 
 
 
@@ -33,11 +34,15 @@ AO_Sim::AO_Sim()
 
 AO_Sim::~AO_Sim()
 {
+    cout << "AO_Sim:: destructor\n";
     if (da_boost)
         delete da_boost;
     
     if (KSpaceSolver)
         delete KSpaceSolver;
+    
+    if (m_medium)
+        delete m_medium;
     
 }
 
@@ -77,6 +82,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         //    for (t_index = 0; t_index < Parameters->Get_Nt(); t_index ++){
         //
         //
+        cout << ".......... Running k-Wave ...........\n";
+
         KSpaceSolver->FromMain_Compute_uxyz();
 //        //        Compute_uxyz();
 //        //
@@ -122,25 +129,80 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
             KSpaceSolver->FromMain_Calculate_p0_source();
 //        
 //        //
-//        //
-//        //
-//        //        /* FIXME:
-//        //         * ---------------------------------------------------------------------------------
-//        //         * Here is where the injection of light should occur (i.e. the calls to the monte carlo simulation)
-//        //         *
-//        //         * Looking at 'StoreSensorData()' shows how to get access to the ultrasound data.
-//        //         */
+
         
-        /// --------------------------- Monte-Carlo -----------------------------------------------
-        TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_Temp_1_RS3D());
-        m_medium->Assign_current_pressure(currentPressure);
-        da_boost->Run_seeded_MC_sim(m_medium, m_Laser_injection_coords);
+        /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
+        ///
+        TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
+        TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
+        TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
+        TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
+        TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
+        TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
+        
+        TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
+        TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
+        TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
+        
+
+        /// Create a refractive map based upon the pressure at this time step.
+        m_medium->Create_refractive_map(currentPressure,
+                                        current_rhox,
+                                        current_rhoy,
+                                        current_rhoz,
+                                        rho0,
+                                        c2,
+                                        pezio_optical_coeff);
+        
+        m_medium->Create_displacement_map(currentVelocity_Xaxis,
+                                          currentVelocity_Yaxis,
+                                          currentVelocity_Zaxis,
+                                          m_medium->kwave.US_freq,
+                                          m_medium->kwave.dt);
+        
+        /// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
+                                        da_boost->Simulate_displacement(true);
+        m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
+                                        da_boost->Simulate_refractive_gradient(true);
+        
+        /// Not saving seeds, so set to false.
+        da_boost->Save_RNG_Seeds(false);
+  
+#define DEBUG
+#ifdef DEBUG
+        /// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
+        /// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
+        /// f = 0.010; f/dx = 163 (voxel number) and assuming Nx = 512.  The rest are specified in the middle.
+        size_t x_voxel = 163;
+        size_t y_voxel = m_medium->Get_Ny()/2;
+        size_t z_voxel = m_medium->Get_Nz()/2;
+        float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+        float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+        float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+        float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
+        float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
+        float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
+                                                                    
+        Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
+                                                           dispX, dispY, dispZ);
+                                                           
+        
+#else
+        
+        cout << ".......... Running MC-Boost ...........\n";
+        da_boost->Run_seeded_MC_sim_timestep(m_medium,
+                                             m_Laser_injection_coords,
+                                             KSpaceSolver->GetTimeIndex());
+#endif
+        
+        
+        ///
+        /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
+        
+        
         //float temp = currentPressure->GetElementFrom3D(100,100,58);
-        //if (temp != 0) cout << "Temp = " << temp << endl;
-//        //float *temp = currentPressure.GetRawData();
-//        
-//        //        //float *currentPressure = Get_Temp_1_RS3D().GetRawData();
-//        //        
+
 //        //        //-- store the initial pressure at the first time step --//
 //        //
 //        KSpaceSolver.FromMain_StoreSensorData();
@@ -184,6 +246,12 @@ void
 AO_Sim::Create_MC_grid(TParameters * parameters)
 {
     
+    /// NOTE:  There is a transormation of z-axis (kWave) to x-axis (Monte-carlo)
+    ///        so that ultrasound propagates orthogonally to light.  The object
+    ///        'parameters' is defined from kWave, so we assign values from
+    ///        'parameters' to the appropriate Monte-carlo coordinates to achieve
+    ///        the rotation.
+    ///--------------------------------------------------------------------------
     // Number of voxels in each axis.
     size_t Nx = parameters->GetFullDimensionSizes().X;
     size_t Ny = parameters->GetFullDimensionSizes().Y;
@@ -214,6 +282,17 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     this->m_medium->Set_Nx(Nx);
     this->m_medium->Set_Ny(Ny);
     this->m_medium->Set_Nz(Nz);
+    
+    
+    /// Set the size of the sensor mask used in the kWave simulation.  This is the number
+    /// of elements in the TRealMatrix that recorded data.
+    // const size_t  sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+    this->m_medium->kwave.sensor_mask_index_size    = parameters->Get_sensor_mask_index_size();
+    
+    /// Set the time-step used in k-Wave.
+    this->m_medium->kwave.dt = parameters->Get_dt();
+    //this->m_medium->kwave.speed_of_sound            = parameters->Get_c0_scalar();
+    
     
     
 //    cout << Nx*dx << " "

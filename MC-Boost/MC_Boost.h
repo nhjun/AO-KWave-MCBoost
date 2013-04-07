@@ -61,7 +61,15 @@ public:
     
     
     /// Run the monte-carlo simulation using the produced seeds.
-    void    Run_seeded_MC_sim(Medium *m, coords LaserInjectionCoords);
+    void    Run_seeded_MC_sim_timestep(Medium *m, coords LaserInjectionCoords, int timestep);
+    
+    
+    /// Decide which mechanisms (if any at all) of AO to simulate.
+    void    Simulate_displacement(bool flag) {DISPLACE = flag;};
+    void    Simulate_refractive_gradient(bool flag) {REFRACTIVE_GRADIENT = flag;};
+    
+    /// Set whether or not to save seeds for this run.
+    void    Save_RNG_Seeds(bool flag) {SAVE_SEEDS = flag;};
     
 private:
     // Number of threads that are running the simulation (max = boost::thread::hardware_concurrency()).
@@ -76,6 +84,9 @@ private:
     RNG_seed_vector exit_seeds;
     // File to which the seeds are written.
     std::string     rng_seed_file;
+    
+    /// File that holds the exit data, which depends on what is set to be collected.
+    std::string     exit_data_file;
     
     // Booleans that dictate toggles on various mechanisms during the simulation.
     // DISPLACE             => Displace the scattering events from ultrasound pressure.

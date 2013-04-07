@@ -40,6 +40,7 @@ public:
     void createRNGSeedFile(const std::string &filename);
     void openAbsorberFile(const std::string &filename);
     void openTOFFile(const std::string &filename);
+    void Open_vel_disp_file(const std::string &filename);
     
     void write(double val);
     void writeExitData(const boost::shared_ptr<Vector3d> vectorCoords);
@@ -74,6 +75,14 @@ public:
     								  const double modulatedPathLength,
     								  const boost::shared_ptr<Vector3d> photonVector);
     void writeWeightAngleLengthCoords(Photon &p);
+    
+    
+    /// Writes the velocity and the corresponding displacement (at a specific location) obtained from the AO_sim calculations.
+    /// Allows the comparison between the two for identifying correct behavior.
+    void    Write_velocity_displacement(float ux, float uy, float uz,
+                                        float disp_x, float disp_y, float disp_z);  /// For 3-D axis.
+    void    Write_velocity_displacement(float u,
+                                        float disp);                             /// Along a single axis.
 
 
     // XXX:
@@ -95,7 +104,7 @@ public:
     
     // Returns the number of photons that were detected through the exit-aperture.
     //
-    int     getNumDetectedPhotons(void) {return num_photons_exited;}
+    int     getNumDetectedPhotons(void) {return photon_count;}
     
 
     // Writes the time-of-flight value for the photon bundle when it exits the medium.
@@ -113,23 +122,24 @@ public:
 
 private:
     Logger();                            // default constructor is private
-    Logger(Logger const&){};             // copy constructor is private
+    Logger(const Logger&){};             // copy constructor is private
     ~Logger();
     
-    Logger& operator=(Logger const&){};  // assignment operator is private
+    Logger& operator=(const Logger& rhs) {};  // assignment operator is private
     
     static Logger * pInstance;
     
     // The output streams associated with data for the photon and data for
     // the absorbers.
-    ofstream exit_data_stream;
-    ofstream absorber_data_stream;
-    ofstream rng_seed_stream;
-    ofstream tof_stream;  // Time-of-flight stream.
+    ofstream exit_data_stream;              // Photon exit from medium data stream.
+    ofstream absorber_data_stream;          // Absorber stream.
+    ofstream rng_seed_stream;               // Random-number-generator stream.
+    ofstream tof_stream;                    // Time-of-flight stream.
+    ofstream velocity_displacement_stream;  // Velocity and displacement stream.
 
     
     // Tracks how many photons were detected through the aperture.
-    int num_photons_exited;
+    int photon_count;
     
     boost::mutex m_mutex;
     boost::mutex m_tof_mutex;

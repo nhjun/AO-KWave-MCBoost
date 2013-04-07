@@ -567,21 +567,6 @@ Name                            Size           Data type        Domain Type     
 #include <omp.h>
 #include <exception>
 
-///**
-// * Includes for k-Wave simulation
-// */
-//#include <KSpaceSolver/KSpaceFirstOrder3DSolver.h>
-//using namespace std;
-//
-//
-///**
-// * Includes for threaded Monte-Carlo simulation
-// */
-//#include <MC-Boost/MC_Boost.h>
-//#include <MC-Boost/medium.h>
-//#include <MC-Boost/layer.h>
-//#include <MC-Boost/circularDetector.h>
-//#include <MC-Boost/coordinates.h>
 
 
 /**
@@ -589,6 +574,7 @@ Name                            Size           Data type        Domain Type     
  */
 #include <AO-sim/AO_sim.h>
 #include <MC-Boost/layer.h>
+#include <MC-Boost/logger.h>
 
 #include <cmath>
 #include <ctime>
@@ -610,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 100;
+const int MAX_PHOTONS = 10;
 
 // NOTE:
 // - These values must match with those used in k-Wave.
@@ -675,130 +661,135 @@ static const char * FMT_SmallSeparator = "--------------------------------\n";
 int main(int argc, char** argv) {
     
     
+    /// The Acouto-Optic simulation object.
+    AO_Sim AO_simulation;
+    
+    /// print headers
+    cout << FMT_SmallSeparator;
+    cout << AO_simulation.Print_kWave_header() << endl;
+    cout << AO_simulation.Print_MCBoost_header() << endl;
+    cout << FMT_SmallSeparator;
+    cout << "\n\n";
     
     
-    /* -------------------------------------------------------------------------------------
-     * Set up the parameters for the Monte-Carlo simulation.
-     */
-    //testVectorMath();
-	//testDisplacements();
-	//testPressures();
+    
+    /// ----------------------------------------------------------------------------------------------------
+    /// Parameters for both k-Wave and Monte-Carlo simulations
+    /// ----------------------------------------------------------------------------------------------------
+    
+    /// Create parameters and parse command line
+    TParameters* Parameters = TParameters::GetInstance();
+    
+    Parameters->ParseCommandLine(argc,argv);
+    if (Parameters->IsVersion()){
+        AO_simulation.Print_kWave_code_and_license();
+        return 0;
+    }
     
     
-//	// The dimensions of the medium.
-//	//
-//	double X_dim = 2.0f;      // [cm]
-//	double Y_dim = 2.0f;      // [cm]
-//	double Z_dim = 2.0f;      // [cm]
-//    
-//    
-//	// Create the medium in which the photons will be propagate.
-//	//
-//	Medium *tissue = new Medium(X_dim, Y_dim, Z_dim);
-//    
-//	// Set the acoustic properties of the medium, which are needed for AO calculations.
-//	tissue->setDensity(DENSITY);
-//	tissue->setSOS(TISSUE_SOS);
-//	tissue->setPezioOpticCoeff(PEZIO_OPTICAL_COEFF);
-//	tissue->setBackgroundRefractiveIndex(N_BACKGROUND);
-//    
-//    
-//    // Define a layer in the tissue.
-//	//
-//	double mu_a = 1.0f;
-//	double mu_s = 70.0f;
-//	double refractive_index = 1.0f;
-//	double anisotropy = 0.9;
-//    
-//	double start_depth = 0.0f; // [cm]
-//	double end_depth = Z_dim; // [cm]
-//	Layer *tissueLayer0 = new Layer(mu_a, mu_s, refractive_index, anisotropy, start_depth, end_depth);
-//    
-//    
-//    // Define a spherical absorber.
-//	//
-//	//SphereAbsorber *absorber0 = new SphereAbsorber(.45, X_dim/2, Y_dim/2, Z_dim/2);
-//	//absorber0->setAbsorberAbsorptionCoeff(mu_a);
-//	//absorber0->setAbsorberScatterCoeff(100.0f);
-//	//tissueLayer0->addAbsorber(absorber0);
-//    
-//	// Create a spherical detector.
-//	//
-//	Detector *detector;
-//	CircularDetector circularExitDetector(0.5f, Vector3d(X_dim/2, Y_dim/2, Z_dim));
-//	circularExitDetector.setDetectorPlaneXY();  // Set the plane the detector is orientated on.
-//	detector = &circularExitDetector;
-//    
-//    
-//	// Add the objects to the medium.
-//	//
-//	tissue->addLayer(tissueLayer0);
-//	tissue->addDetector(detector);
-//    
-//    
-//    // Define the initial location of injection of the photons.
-//	//
-//	coords injectionCoords;
-//	injectionCoords.x = X_dim/2; // Centered
-//	injectionCoords.y = Y_dim/2; // Centered
-//	injectionCoords.z = 1e-15f;   // Just below the surface of the 'air' layer.
-//    
-//    
-//    // NOTE: The 'tissue' that is used to generate the seeds must be the same
-//	//       as the 'tissue' used for the AO simulation to remain valid.
-//	// Generate the seeds that will be used to only propagate photons that
-//	// are detected through the exit aperture.
-//	//
-//	generateSeeds(tissue, injectionCoords);
-//    
-//    // Run the AO simulation of those detectable photons generated from above.
-//	//
-//	//runAcoustoOptics(tissue, injectionCoords);
-//    
-//    
-//    
-//    // Clean up memory allocated on the heap.
-//    //
-//	if (tissue)
-//		delete tissue;
+    
+    /// ----------------------------------------------------------------------------------------------------
+    /// MC-Boost
+    /// ----------------------------------------------------------------------------------------------------
+    
+    /// Set the number of photons to simulate and how many threads will be run.
+    //AO_simulation.Set_num_MC_threads(1);
+    AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+    AO_simulation.Set_num_photons(MAX_PHOTONS);
+    
+    /// Create the grid that the monte-carlo simulation will use.
+    AO_simulation.Create_MC_grid(Parameters);
+    
+    /// Assign the pezio-optical coefficient.
+    AO_simulation.Set_pezio_optical_coeff(0.322);
+    
+    /// Add a layer to the monte-carlo medium defining the optical properties.
+    Layer_Properties layer_props;
+    layer_props.mu_a        = 1.0f;
+    layer_props.mu_s        = 70.0f;
+    layer_props.refractive_index = 1.33f;
+    layer_props.anisotropy  = 0.9f;
+    layer_props.start_depth = 0.0f;
+    layer_props.end_depth   = AO_simulation.Get_MC_Zaxis_depth();
+    AO_simulation.Add_layer_MC_medium(layer_props);
+    
+    /// Add a detector to the medium (i.e. an exit aperture) for collecting photons that will make their way
+    /// to the CCD camera.
+    /// NOTE: Centering the detector on the x-y plane.
+    Detector_Properties detector_props;
+    detector_props.radius = 0.005;
+    detector_props.x_coord = AO_simulation.Get_MC_Xaxis_depth()/2;
+    detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
+    detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
+    AO_simulation.Add_circular_detector_MC_medium(detector_props);
     
     
-    //Medium *tissue
-    /* -------------------------------------------------------------------------------------
-     * Set up the parameters for the k-Wave simulation.
-     */
+    /// Define the injection point of light in the medium.
+    coords LaserInjectionCoords;
+	LaserInjectionCoords.x = AO_simulation.Get_MC_Xaxis_depth()/2; // Centered
+	LaserInjectionCoords.y = AO_simulation.Get_MC_Yaxis_depth()/2; // Centered
+	LaserInjectionCoords.z = 1e-16f;   // Just below the surface of the 'air' layer.
+    AO_simulation.Set_laser_injection_coords(LaserInjectionCoords);
     
-//    // Create K-Space solver
-//    TKSpaceFirstOrder3DSolver KSpaceSolver;
-//    
-//   // print header        
-//    fprintf(stdout,"%s",FMT_SmallSeparator);
-//    fprintf(stdout,"  %s\n",KSpaceSolver.GetCodeName().c_str());
-//    fprintf(stdout,"%s",FMT_SmallSeparator);
-//    
-//    // Create parameters and parse command line
-//    TParameters* Parameters = TParameters::GetInstance();
-//    
-//    Parameters->ParseCommandLine(argc,argv);        
-//        if (Parameters->IsVersion()){
-//        KSpaceSolver.PrintFullNameCodeAndLicense(stdout);
-//        return 0;
-//    }
-   
+    
+    /// Run the monte-carlo simulation once, to save seeds, that produced paths,
+    /// that made it through the exit aperture.
+    AO_simulation.Generate_exit_seeds();
+    AO_simulation.Load_generated_seeds();
+    
+    
+    
+    
+    
+    /// ----------------------------------------------------------------------------------------------------
+    /// k-Wave
+    /// ----------------------------------------------------------------------------------------------------
+    
+    /// set number of threads for the k-Wave simulation and bind them to cores.
+    omp_set_num_threads(Parameters->GetNumberOfThreads());
+    setenv("OMP_PROC_BIND","TRUE", 1);
+    
+    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
+    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
+    AO_simulation.Print_kWave_sim_params();
+    
+    
+    cout << FMT_SmallSeparator;
+    cout << ".......... k-Wave Initialization ........\n";
+    cout << "Memory allocation ..........";
+    AO_simulation.kWave_allocate_memory();
 
-//    // set number of threads and bind them to cores
-//    omp_set_num_threads(Parameters->GetNumberOfThreads());
-//    setenv("OMP_PROC_BIND","TRUE",1);  
-//        
-//                     
-//    fprintf(stdout, "Number of CPU threads:    %6d\n", Parameters->GetNumberOfThreads());    
-//    KSpaceSolver.PrintParametersOfSimulation(stdout);    
+    
+#define DEBUG
+#ifdef DEBUG
+    
+    Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
+
+    //AO_simulation.Test_Seeded_MC_sim();
+    
+#endif
+    
+    /// Run the AO simulation.
+    AO_simulation.Run_acousto_optics_sim(Parameters);
     
     
-//    /* ----------------------------------------------------------------------------------------------------
-//     * Create the Monte-Carlo medium based on what is going to be simulated in k-Wave.
-//     */
-//    Medium *tissue = CreateMonteCarloMedium(Parameters);
+    
+    
+
+
+
+    
+    return  EXIT_SUCCESS;
+}// end of main
+//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+(Parameters);
 //    
 //    
 //    

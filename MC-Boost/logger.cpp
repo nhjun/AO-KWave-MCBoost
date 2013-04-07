@@ -20,7 +20,7 @@ Logger * Logger::pInstance = 0;
 
 Logger::Logger()
 {
-    num_photons_exited = 0;
+    photon_count = 0;
 }
 
 
@@ -45,6 +45,7 @@ Logger * Logger::getInstance(void)
 
 void Logger::openExitFile(const std::string &filename)
 {
+    photon_count = 0;
     // Ensure file stream is not already open.
     if (exit_data_stream.is_open())
         exit_data_stream.close();
@@ -77,6 +78,7 @@ void Logger::openTOFFile(const std::string &filename)
 
 void Logger::createRNGSeedFile(const std::string &filename)
 {
+    photon_count = 0;
     rng_seed_stream.open(filename.c_str());
     if (!rng_seed_stream)
     {
@@ -100,6 +102,23 @@ void Logger::openAbsorberFile(const std::string &filename)
 }
 
 
+
+/// File for writing velocity and calculated displacements obtained from a location in the medium.
+/// Used for debugging.
+void Logger::Open_vel_disp_file(const std::string &filename)
+{
+    if (velocity_displacement_stream.is_open())
+        velocity_displacement_stream.close();
+    
+    velocity_displacement_stream.open(filename.c_str());
+    if (!velocity_displacement_stream)
+    {
+    	cout << "!!! ERROR: Could not open '" << filename << "' for writing.  Check directory structure.\n";
+    	exit(1);
+    }
+}
+
+
 void Logger::write(double val)
 {
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
@@ -114,8 +133,9 @@ void Logger::writeExitData(const boost::shared_ptr<Vector3d> photonVector)
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);   
-    
+    photon_count++;
     exit_data_stream << photonVector;
+    exit_data_stream << "\n";
     exit_data_stream.flush();
 }
 
@@ -127,7 +147,7 @@ void Logger::writeExitData(const boost::shared_ptr<Vector3d> photonVector,
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);
-    
+    photon_count++;    
     // Write out the location (x,y,z), exit angle (theta), weight of photon, and whether it was
     // tagged.
     exit_data_stream << tagged << "," 
@@ -146,7 +166,7 @@ void Logger::writeExitData(const boost::shared_ptr<Vector3d> photonVector,
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);
-    
+    photon_count++;
     // Write out the location (x,y,z), exit angle (theta), weight of photon, and whether it was
     // tagged.
     exit_data_stream << weight << "," 
@@ -165,7 +185,7 @@ void Logger::writeExitData(const boost::shared_ptr<Vector3d> photonVector,
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);
-    
+    photon_count++;
     // Write out the location (x,y,z), transmission angle (theta), weight of photon
     exit_data_stream << exitWeight << "," 
                      << transmissionAngle << "," 
@@ -184,7 +204,7 @@ void Logger::writeWeightAngleLengthCoords(const double exitWeight,
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);
-    
+    photon_count++;
     // Write out the location (x,y,z), transmission angle (theta), weight of photon
     exit_data_stream << exitWeight << "," 
                      << transmissionAngle << ","
@@ -198,7 +218,7 @@ void Logger::writeWeightAngleLengthCoords(const double exitWeight,
 void Logger::writeWeightAngleLengthCoords(Photon &p)
 {
 	boost::mutex::scoped_lock lock(m_mutex);
-
+    photon_count++;
 	exit_data_stream << p.weight << " "
 					 << p.currLocation->getDirX() << " "
 					 << p.currLocation->getDirY() << " "
@@ -217,7 +237,7 @@ void Logger::writePhoton(Photon *p)
     // Grab the lock to ensure that the logger doesn't get interrupted by a thread
     // in the middle of a write, causing the output to be corrupted.
     boost::mutex::scoped_lock lock(m_mutex);
-    
+    photon_count++;
     cout << "Logger::writePhoton() stub\n";
 }
 
@@ -225,9 +245,9 @@ void Logger::writePhoton(Photon *p)
 void Logger::writeAbsorberData(const double absorbedWeight)
 {
     boost::mutex::scoped_lock lock(m_mutex);
-    {
-        absorber_data_stream << absorbedWeight << "\n";
-    }
+
+    absorber_data_stream << absorbedWeight << "\n";
+
       
     absorber_data_stream.flush();
 }
@@ -237,7 +257,7 @@ void Logger::writeRNGSeeds(const unsigned int s1, const unsigned int s2,
 							const unsigned int s3, const unsigned int s4)
 {
     boost::mutex::scoped_lock lock(m_mutex);
-    num_photons_exited++;
+    photon_count++;
     rng_seed_stream << s1 << " " <<
                        s2 << " " <<
                        s3 << " " <<
@@ -250,8 +270,37 @@ void Logger::writeTOFData(const double tof)
 {
 
 	boost::mutex::scoped_lock lock(m_tof_mutex);
+    photon_count++;
 	tof_stream << tof << " \n";
 	tof_stream.flush();
+}
+
+
+
+/// For 3-D axis.
+void Logger::Write_velocity_displacement(float ux, float uy, float uz,
+                                         float disp_x, float disp_y, float disp_z)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+    velocity_displacement_stream << ux << " "
+                                 << uy << " "
+                                 << uz << " "
+                                 << disp_x << " "
+                                 << disp_y << " "
+                                 << disp_z << "\n";
+    velocity_displacement_stream.flush();
+    
+}
+
+
+/// Along a single axis.
+void Logger::Write_velocity_displacement(float u,
+                                         float disp)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+    velocity_displacement_stream << u << " " << disp << "\n";
+    velocity_displacement_stream.flush();
+    
 }
 
 

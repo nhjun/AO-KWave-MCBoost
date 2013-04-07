@@ -345,7 +345,7 @@ void TKSpaceFirstOrder3DSolver::PostCompute(){
 void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file){
         
     
-    fprintf(file,"Domain dims:   [%4ld, %4ld,%4ld]\n",              
+    fprintf(file,"Domain dims:   [%4ld, %4ld,%4ld ]\n",              
                 Parameters->GetFullDimensionSizes().X,
                 Parameters->GetFullDimensionSizes().Y,
                 Parameters->GetFullDimensionSizes().Z);
@@ -1771,8 +1771,8 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear(){
         }
          
          
-              float * Sum_rhoxyz_Data  = Sum_rhoxyz.GetRawData();              
-              float * Sum_rho0_du_Data = Sum_rho0_du.GetRawData();
+        float * Sum_rhoxyz_Data  = Sum_rhoxyz.GetRawData();
+        float * Sum_rho0_du_Data = Sum_rho0_du.GetRawData();
         
       
               
@@ -1780,7 +1780,7 @@ void TKSpaceFirstOrder3DSolver::Compute_rhoxyz_linear(){
             #pragma omp for schedule (static)
          #endif           
         for (size_t i = 0; i <  TotalElementCount; i++){                                  
-            Sum_rhoxyz_Data[i] = rhox_data[i] + rhoy_data[i] + rhoz_data[i];                              
+            Sum_rhoxyz_Data[i] = rhox_data[i] + rhoy_data[i] + rhoz_data[i];
         }      
          
         
@@ -2432,16 +2432,7 @@ void TKSpaceFirstOrder3DSolver::Compute_MainLoop(){
        //-- calculate initial pressure
        if ((t_index == 0) && (Parameters->Get_p0_source_flag() == 1)) Calculate_p0_source();
 
-    
         
-        /* FIXME:
-         * ---------------------------------------------------------------------------------
-         * Here is where the injection of light should occur (i.e. the calls to the monte carlo simulation)
-         *
-         * Looking at 'StoreSensorData()' shows how to get access to the ultrasound data.
-         */
-        //TRealMatrix &currentPressure = Get_Temp_1_RS3D();
-        //float *currentPressure = Get_Temp_1_RS3D().GetRawData();
         
     //-- store the initial pressure at the first time step --//
        

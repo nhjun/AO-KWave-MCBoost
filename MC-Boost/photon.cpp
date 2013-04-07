@@ -1,26 +1,20 @@
 
 #include "debug.h"
-#include "logger.h"
-#include "absorber.h"
-#include "vector3D.h"
-#include "layer.h"
-#include "medium.h"
-#include "photon.h"
-#include "displacementMap.h"
-#include "pressureMap.h"
-#include "refractiveMap.h"
+#include <MC-Boost/logger.h>
+#include <MC-Boost/absorber.h>
+#include <MC-Boost/vector3D.h>
+#include <MC-Boost/layer.h>
+#include <MC-Boost/medium.h>
+#include <MC-Boost/photon.h>
+#include <MC-Boost/displacementMap.h>
+#include <MC-Boost/pressureMap.h>
+#include <MC-Boost/refractiveMap.h>
 
 
 
 #undef DEBUG
 
 
-
-
-// GLOBALS that define what (and what not) should take place during the simulation.
-bool SIM_DISPLACEMENT 			= false;
-bool SIM_REFRACTIVE_GRADIENT 	= false;
-bool SAVE_RNG_SEEDS				= false;
 
 
 Photon::Photon(void)
@@ -160,7 +154,7 @@ void Photon::initRNG(unsigned int state1, unsigned int state2,
 // 2) Drop - drop weight due to absorption
 // 3) Spin - update trajectory accordingly
 // 4) Roulette - test to see if photon should live or die.
-void Photon::injectPhoton(Medium * medium, const int iterations, RNG &rng, coords &laser,
+void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coords &laser,
 		bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_SEEDS)
 {
 
@@ -173,9 +167,6 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG &rng, coord
 	
     // Assign this photon object a random number generator, which is passed in from main().
     RNG_generator = rng;
-    
-    // Initialize the photons trajectory before any scattering event has taken place.
-	initTrajectory();
 
 
 	// Before propagation we set the medium which will be used by the photon.
@@ -210,8 +201,15 @@ void Photon::propagatePhoton(const int iterations)
 
         if (SAVE_RNG_SEEDS)
         {
-            seeds = RNG_generator.getState();
+            seeds = RNG_generator->getState();
+//            cout << "s1=" << seeds.s1 << "\n"
+//                << "s2=" << seeds.s2 << "\n"
+//                << "s3=" << seeds.s3 << "\n"
+//                << "s4=" << seeds.s4 << "\n\n";
         }
+        
+        // Initialize the photon's trajectory before any scattering event has taken place.
+        initTrajectory();
         
 
 		// While the photon has not been terminated by absorption or leaving
@@ -727,6 +725,7 @@ void Photon::displacePhotonFromPressure(void)
 	static double dz = m_medium->dz;
 	static double Nz = m_medium->Nz;
 
+    /// Get the appropriate voxel number for the 3-D grid.
 	int _x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
 	int _y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
 	int _z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
@@ -956,11 +955,11 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 	static double Nz = m_medium->Nz;
 
 
-	// Used for discrete values that will index into the appropriate k-Wave grid.
+	// Used for discrete values that will index into the appropriate voxel in the refractive map grid.
 	//
-	int _x;
-	int _y;
-	int _z;
+	int _x = 0;
+	int _y = 0;
+	int _z = 0;
 
 	// Current value of the change in refractive index (i.e. n(x,y,z) coordinates).
 	double n_cumulative = 0.0f;
@@ -975,7 +974,8 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 	//   having different values of refrective index at the far ends of the segment connecting the previous location
 	//   and the current location.  Therefore, only check those to simplify things.
 	//   -----------------------------------------------------------------------------------------------------------
-	// Transform the location of the photon in the medium to discrete locations in the grid.
+	// Transform the location of the photon in the medium to discrete locations in the grid based
+    // on the photon's previous location in the medium.
 	//
 	_x = prevLocation->location.x/dx - (prevLocation->location.x/dx)/Nx;
 	_y = prevLocation->location.y/dy - (prevLocation->location.y/dy)/Ny;
@@ -985,6 +985,16 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 	// step through the medium.
 	n_cumulative += m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
 
+	// Transform the location of the photon in the medium to discrete locations in the grid based
+    // on the photon's current location in the medium after 'hopping'.
+	//
+    _x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
+	_y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
+	_z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
+    
+	// Accumulate the refractive index encountered along the segment between scattering events for this
+	// step through the medium.
+	n_cumulative += m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
 
 	// Create the average refractive index.
 	double n_avg = n_cumulative / 2.0;
@@ -993,7 +1003,7 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 	double distance_traveled = VectorMath::Distance(prevLocation, currLocation);
 
 	// Make the final calculation of the OPL.
-	refractiveIndex_optical_path_length +=   distance_traveled * n_avg;
+	refractiveIndex_optical_path_length += distance_traveled * n_avg;
 
 /*
 
@@ -1044,7 +1054,7 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 */
 
 	// Scale distance into meters.
-	distance_traveled = distance_traveled * 1e-2;
+	//distance_traveled = distance_traveled * 1e-2;
 
 	// Update the time-of-flight value for this portion of propagation.
 	time_of_flight += distance_traveled / (3e8/n_avg);
@@ -1162,29 +1172,39 @@ void Photon::transmit(const char *type)
 			//                                                                this->transmission_angle,
 			//                                                                this->displaced_optical_path_length,
 			//                                                                this->currLocation);
-			// Update the direction cosines upon leaving the medium so calculations can be mode
+			
+            // Update the direction cosines upon leaving the medium so calculations can be mode
 			// to see if this photon makes it's way to the detector (i.e. CCD camera).
 			// NOTE:
 			// - We assume outside of the medium is nothing but air with an index of refraction 1.0
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
-			double ni = currLayer->getRefractiveIndex();
-			currLocation->setDirZ(cos(this->transmission_angle));
-			currLocation->setDirY(currLocation->getDirY()*ni);
-			currLocation->setDirX(currLocation->getDirX()*ni);
+			
+            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+            {
+                double ni = currLayer->getRefractiveIndex();
+                currLocation->setDirZ(cos(this->transmission_angle));
+                currLocation->setDirY(currLocation->getDirY()*ni);
+                currLocation->setDirX(currLocation->getDirX()*ni);
 
-			// Write exit data from logger.
-			Logger::getInstance()->writeWeightAngleLengthCoords(*this);
+                // Write exit data via the logger.
+                //Logger::getInstance()->writeExitData(currLocation);
+                Logger::getInstance()->writeWeightAngleLengthCoords(*this);
 
-			// Write time-of-flight data to logger.
-			Logger::getInstance()->writeTOFData(time_of_flight);
-
+                // Write time-of-flight data to logger.
+                //Logger::getInstance()->writeTOFData(time_of_flight);
+            }
+            
 			// Write out the seeds that caused this photon to hop, drop and spin its way out the
 			// exit-aperture.
 			//
 			if (SAVE_RNG_SEEDS)
 			{
 				Logger::getInstance()->writeRNGSeeds(seeds.s1, seeds.s2, seeds.s3, seeds.s4);
+//                cout << "s1=" << seeds.s1 << "\n"
+//                << "s2=" << seeds.s2 << "\n"
+//                << "s3=" << seeds.s3 << "\n"
+//                << "s4=" << seeds.s4 << "\n\n";
 			}
 
 		}
@@ -1656,7 +1676,7 @@ void Photon::internallyReflectX(void)
 double Photon::getRandNum(void)
 {
 	// Thread safe RNG.
-	return RNG_generator.getRandNum();
+	return RNG_generator->getRandNum();
 
 }
 

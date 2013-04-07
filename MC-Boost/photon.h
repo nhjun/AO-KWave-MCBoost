@@ -2,10 +2,14 @@
 #ifndef PHOTON_H
 #define PHOTON_H
 
-#include "RNG.h"
-#include "coordinates.h"
+#include <boost/math/constants/constants.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <MC-Boost/RNG.h>
+#include <MC-Boost/coordinates.h>
+#include <MC-Boost/vectorMath.h>
+
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
@@ -20,11 +24,8 @@ using namespace std;
 #define ALIVE 1		// Value depicting Photon should continue propagation.
 #define DEAD  0	    // Photon has lost all energy and failed roulette.
 #define ONE_MINUS_COSZERO 1.0E-12
-/* If 1-cos(theta) <= ONE_MINUS_COSZERO, fabs(theta) <= 1e-6 rad. */
-/* If 1+cos(theta) <= ONE_MINUS_COSZERO, fabs(PI-theta) <= 1e-6 rad. */
 #define THRESHOLD	0.01		// Threshold for determining if we should perform roulette
 #define CHANCE      0.1  		// Used in roulette
-#define PI			3.14159265358979
 #define SIGN(x)           ((x)>=0 ? 1:-1)
 
 
@@ -136,7 +137,7 @@ public:
 	void	plotPath(void);
 	
 	// Inject the photon into the medium the given number of iterations.
-	void	injectPhoton(Medium * m, const int num_iterations, RNG &rng, coords &c,
+	void	injectPhoton(Medium * m, const int num_iterations, RNG *rng, coords &c,
 							bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
 
 
@@ -292,7 +293,7 @@ private:
 
 
     // A Pseudo-random number generator with a large period.
-    RNG RNG_generator;
+    RNG *RNG_generator;
 	
     
     // Seeds that this photon used to seed the RNG that allowed it to produce
@@ -321,6 +322,11 @@ private:
 
     // The time-of-flight of this photon bundle through the medium.
     double time_of_flight;
+    
+    // flags that define what (and what not) should take place during the simulation.
+    bool SIM_DISPLACEMENT;
+    bool SIM_REFRACTIVE_GRADIENT;
+    bool SAVE_RNG_SEEDS;
 
 }; 		
 

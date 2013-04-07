@@ -12,13 +12,15 @@ using std::endl;
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <MC-Boost/kwave_struct.h>
 #include <MC-Boost/layer.h>
+#include <MC-Boost/voxel_struct.h>
 
 
 //#include <MatrixClasses/MatrixContainer.h>
 #include <MatrixClasses/RealMatrix.h>
 //#include <MatrixClasses/ComplexMatrix.h>
-//#include <MatrixClasses/LongMatrix.h>
+#include <MatrixClasses/LongMatrix.h>
 //#include <MatrixClasses/OutputHDF5Stream.h>
 //#include <MatrixClasses/UXYZ_SGXYZMatrix.h>
 //#include <MatrixClasses/FFTWComplexMatrix.h>
@@ -41,33 +43,39 @@ class Photon;
 
 
 
-typedef struct {
-    // Create a pointer to a PressureMap object.  For use with
-	// modeling acousto-optics.
-	PressureMap * pmap;
-
-	// Create a pointer to a RefractiveMap object.  For use with
-	// modeling acousto-optics.
-	RefractiveMap * nmap;
-    
-    // Create a pointer to a Displacement object.  For use with
-    // modeling acousto-optics.
-    DisplacementMap * dmap;
-    
-    // Frequency of the transducer used.
-    double transducerFreq;
-    
-    // The wavenumber of the ultrasound.
-    double waveNumber;
-
-    // Number of time steps in the simulation.
-    int totalTimeSteps;
-    
-    /// This holds the runtime pressure at each time step.  That is the
-    /// pressure as it is obtained from 'KSpaceSolver', without any offline processing.
-    TRealMatrix * runtime_pressure;
-    
-} kWaveSim;
+//typedef struct {
+//    // Create a pointer to a PressureMap object.  For use with
+//	// modeling acousto-optics.
+//	PressureMap * pmap;
+//
+//	// Create a pointer to a RefractiveMap object.  For use with
+//	// modeling acousto-optics.
+//	RefractiveMap * nmap;
+//    
+//    // Create a pointer to a Displacement object.  For use with
+//    // modeling acousto-optics.
+//    DisplacementMap * dmap;
+//    
+//    // Frequency of the transducer used.
+//    double  transducerFreq;
+//    
+//    // The wavenumber of the ultrasound.
+//    double  waveNumber;
+//    
+//    /// The density of the medium.
+//    double  density;
+//    
+//    /// The speed-of-sound of the medium
+//    double  speed_of_sound;
+//    
+//    /// The total number of elements in the sensor mask.
+//    long    sensor_mask_index_size;
+//
+//    // Number of time steps in the simulation.
+//    int totalTimeSteps;
+//    
+//    
+//} kWaveSim;
 
 
 
@@ -98,13 +106,13 @@ public:
     void	setDensitySOSPezio(const double density, const double SOS, const double eta);
 
     // Set the density of the medium.
-    void	setDensity(const double density) {this->density = density;}
+    //void	setDensity(const double density) {kwave.density = density;}
 
     // Set the Speed-of-Sound of the medium.
-    void	setSOS(const double sos) {this->speed_of_sound = sos;}
+    //void	setSOS(const double sos) {kwave.speed_of_sound = sos;}
 
     // Set the pezio-optical coefficient of the medium.
-    void	setPezioOpticCoeff(const double eta) {this->pezio_optical_coeff = eta;}
+    //void	setPezioOpticCoeff(const double eta) {this->pezio_optical_coeff = eta;}
 
     // Set the background refractive index.
     void	setBackgroundRefractiveIndex(const double n_background) {this->background_refractive_index = n_background;}
@@ -137,9 +145,33 @@ public:
     void 	addPressureMap(PressureMap *p_map);
     
     
-    /// Assigns the current pressure from k-Wave to the medium during run-time.  There is no offline processing,
-    /// pressure matrices are passed in as they are obtained from 'AO_sim'.
-    void    Assign_current_pressure(TRealMatrix * p) {kwave.runtime_pressure = p;}
+    /// Assigns the current pressure from k-Wave to the medium during run-time.
+    /// NOTE: There is no offline processing, pressure matrices are passed in as they are obtained from 'AO_sim'.
+    void    Create_refractive_map(TRealMatrix * pressure,
+                                  TRealMatrix * rhox,
+                                  TRealMatrix * rhoy,
+                                  TRealMatrix * rhoz,
+                                  TRealMatrix * rho0,
+                                  TRealMatrix * c2,
+                                  float pezio_optical_coeff);
+    
+    /// Assigns the current velocity from k-Wave to the medium during run-time.
+    /// NOTE: There is no offline processing, velocity matrices are passed in as they are obtained from 'AO_sim'.
+    void    Create_displacement_map(TRealMatrix * ux,
+                                    TRealMatrix * uy,
+                                    TRealMatrix * uz,
+                                    float US_freq,
+                                    float dt);
+    
+    
+    /// Return the velocity from the voxel coordinates.
+    /// Voxel indices are specified from Monte-carlo simulation coordinates.
+    ///float   Get_velocity_from_voxel(voxel_x, voxel_y, voxel_z);
+    
+    /// Return the displacement from the voxel coordinates.
+    /// Voxel indices are specified from Monte-carlo simulation coordinates.
+    ///float   Get_displacement_from_voxel(voxel_x, voxel_y, voxel_z);
+    
     
     // Add a refractive map object that holds refractive index values generated from k-Wave pressures.
     void	addRefractiveMap(RefractiveMap *n_map);
@@ -301,15 +333,19 @@ private:
     // and is only set here for convenience and later use in the 'Photon' class.
     double dx, dy, dz;
     size_t Nx, Ny, Nz;
+    
+    /// Create a small container for voxel size and numbers.
+    VoxelAttributes voxel_dims;
 
     // The density of the medium.
-    double density;
+    //double density;
 
     // The acoustic speed-of-sound of the medium.
-    double speed_of_sound;
+    //double speed_of_sound;
 
     // The adiabatic piezo-optical coefficient of the medium.
-    double pezio_optical_coeff;
+    //float pezio_optical_coeff;
+    
 
 };
 
