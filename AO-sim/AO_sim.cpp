@@ -189,11 +189,18 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                                                            
         
 #else
+        /// Run the MC-sim every ~100 ns, similar to stroboscopic AO experiments.
+        static float stroboscopic_time_step = 100e-9;
+        static size_t cnt = stroboscopic_time_step/parameters->Get_dt();
         
-        cout << ".......... Running MC-Boost ...........\n";
-        da_boost->Run_seeded_MC_sim_timestep(m_medium,
-                                             m_Laser_injection_coords,
-                                             KSpaceSolver->GetTimeIndex());
+        if ((cnt % KSpaceSolver->GetTimeIndex()) == 0)
+        {
+            cout << ".......... Running MC-Boost ...........\n";
+            cout << "time: " << KSpaceSolver->GetTimeIndex()*parameters->Get_dt() << "\n";
+            da_boost->Run_seeded_MC_sim_timestep(m_medium,
+                                                 m_Laser_injection_coords,
+                                                 KSpaceSolver->GetTimeIndex());
+        }
 #endif
         
         
