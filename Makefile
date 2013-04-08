@@ -64,15 +64,18 @@ COMPILER = GNU
 
 OS := $(shell uname)
 
-# static lining is deafult
-#LINKING = STATIC
+# static linking is deafult
+ifeq ($(OS), Linux)
+LINKING = STATIC
+else
 LINKING = DYNAMIC
+endif
 
 #set up paths: FFT_DIR for FFTW or MKL for MKL
 FFT_DIR=/usr/local
 MKL_DIR=/opt/intel/composer_xe_2011_sp1/mkl
 ifeq ($(OS), Linux)
-HDF5_DIR=/usr/local
+HDF5_DIR=/usr/local/hdf5
 else
 HDF5_DIR=/Users/betty/Desktop/Software/hdf5-1.8.10/hdf5
 endif
@@ -85,7 +88,7 @@ endif
 ifeq ($(COMPILER),GNU)
   CXX	   = /usr/local/bin/g++
 
-  CPU_FLAGS = -march=native -mtune=native
+  CPU_FLAGS = -m64 -march=native -mtune=native
 
   #Generic CPU (any intel and AMD 64b CPU)
   #CPU_FLAGS = -msse2 -m64
@@ -111,6 +114,8 @@ ifeq ($(COMPILER),GNU)
 		   $(FFT_DIR)/lib/libfftw3f_omp.a 	\
 	  	   $(HDF5_DIR)/lib/libhdf5_hl.a 	\
 		   $(HDF5_DIR)/lib/libhdf5.a 		\
+		   /usr/local/lib/libboost_thread.a	\
+		   /usr/local/lib/libboost_system.a	\
 	   	   -lz
     else	
 	LDFLAGS  = -fopenmp $(CPU_FLAGS) -L$(HDF5_DIR)/lib -L$(FFT_DIR)/lib
