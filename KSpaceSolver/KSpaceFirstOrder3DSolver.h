@@ -111,8 +111,11 @@ public:
     
     // Begin JWJS
     /// ---------------------------------------------------------------------------------------
-    /// Start the iteration time.
-    void StartIterationTime () {IterationTime.Start();};
+
+    void IterationTimeStart () {IterationTime.Start();};
+    void IterationTimeStop  () {IterationTime.Stop();}; 
+    void PostProcessingTimeStart () {PostProcessingTime.Start();};
+    void PostProcessingTimeStop  () {PostProcessingTime.Stop();};
     
     /// Since execution of 'Compute_Mainloop' is being pulled out
     /// into main(), we need to let the rest of the simulation know
@@ -139,6 +142,10 @@ public:
     void    FromMain_Calculate_p0_source ()         {Calculate_p0_source();};
     void    FromMain_PrintStatistics    ()             {PrintStatisitcs();};
     void    FromMain_PrintOutputHeader  ()            {PrintOtputHeader();};
+
+
+    void    FromMain_PostProcessing	()	    {PostProcessing();};
+    void    FromMain_WriteOutputDataInfo()          {WriteOutputDataInfo();};
     
     TRealMatrix & FromMain_Get_p    ()              {return Get_p();};
     TRealMatrix & FromMain_Get_ux   ()              {return Get_ux_sgx();};
@@ -169,7 +176,7 @@ protected:
     void Compute_MainLoop();
     
     /// Post processing, and closing the output streams
-    void PostPorcessing();
+    void PostProcessing();
     
     /// Store sensor data
     void StoreSensorData();
