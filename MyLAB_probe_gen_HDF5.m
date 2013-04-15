@@ -3,7 +3,7 @@
 clear all;
 
 
-PA_TIME_REVERSAL = false;
+PA_GUIDED_FOCUS = false;
 
 % set the size of the perfectly matched layer (PML)
 PML_X_SIZE = 20;            % [grid points]
@@ -11,7 +11,7 @@ PML_Y_SIZE = 10;            % [grid points]
 PML_Z_SIZE = 10;            % [grid points]
 
 % set total number of grid points not including the PML
-Nx = 512;
+Nx = 512/16;
 Ny = 288;
 Nz = 256;
 
@@ -85,6 +85,18 @@ t_end = (Nx*dx)*2.2/c0;
 % Calculate time step.  Based on the CFL, max SOS and the minimum voxel
 % size.
 dt = cfl*dx/c0;
+% Setting dt to 10 ns to make things easy in AO_sim, but make sure that it
+% can be done.  That is if the CFL safe dt is larger than 10 ns, we can
+% reduce it without worrying about accuracy (in fact it becomes more
+% accurate).
+if (dt > 10e-9)
+    dt = 10e-9;
+else
+    display('Cannot set dt=10 ns');
+    display('Using default: ')
+    dt
+end
+%dt = dt/2;
 %dt = dt/2;
 
 % Calculate the number of steps we must take to allow the ultrasound to
@@ -97,7 +109,8 @@ Nt = t_end/dt;
 % passed the sensor location.  Here we've set the focus to be less than
 % half of the available medium, so cut simulation time in half to speed
 % this process up.
-Nt = Nt/2;
+%Nt = Nt/2;
+
 
 % Form the time array from the about defined values.
 kgrid.t_array = 0:dt:(Nt-1)*dt;
@@ -107,7 +120,7 @@ kgrid.t_array = 0:dt:(Nt-1)*dt;
 % =========================================================================
 
 % define properties of the input signal
-source_strength = 1.0e6;    	% [Pa]
+source_strength = 2.0e6;    	% [Pa]
 tone_burst_freq = 5.0e6;        % [Hz]
 source_freq = tone_burst_freq;
 tone_burst_cycles = 5;
@@ -149,22 +162,29 @@ transducer.position = round([1, Ny/2 - transducer_width/2, Nz/2 - transducer.ele
 transducer.sound_speed = c0;                % sound speed [m/s]
 % Provide delays from an experiment.  Convert back from MyLAB scaled ticks into
 % usecs.
-if (PA_TIME_REVERSAL)
-    info.filename = 'signal_10_9_58.rfe';
+if (PA_GUIDED_FOCUS)
+    info.filename = '/Volumes/DISK_IMG/9-4-2013/PA_signal.rfe';
     info.middle_channel = 31;
-    info.dt = 1;
+    info.dt = 1/50e6;       % Set MyLAB acquisition time-step (based on 50 MHz sampling).
     delays = crossCorrelateTimeOfArrivals(info, []);
     smooth_delays = smooth(delays, 'rlowess');  % Remove any outliers by smoothing the delay curve.
+    
+    % k-Wave does a lot of manipulation with the beamforming delays it
+    % calculates.  In order to minimize modifications to k-Wave, we put the
+    % beamforming delays calculated above into a form k-Wave expects.
+    smooth_delays = smooth_delays - max(smooth_delays);
+    
+    % Assign the delays to the transducer object.
     transducer.supplied_transmit_delays = smooth_delays;
 else
-    transducer.focus_distance = 10e-3;          % focus distance [m]
+    transducer.focus_distance = 16e-3;          % focus distance [m]
 end
 transducer.elevation_focus_distance = 21.5e-3;
 transducer.steering_angle = 0;              % steering angle [degrees]
 
 % apodization
 transducer.transmit_apodization = 'Rectangular';
-%transducer.receive_apodization = 'hanning';
+transducer.receive_apodization = 'hanning';
 
 % define the transducer elements that are currently active
 number_active_elements = transducer.number_elements;
@@ -246,8 +266,13 @@ medium.density = density_map(:, :, :);          % [kg/m^3]
 
 % Place sensors over the entire medium.
 sensor.mask = ones(Nx, Ny, Nz);
-% 
+sensor.record = {'p_max', 'p_rms'};
+ 
 % save input files to disk
-filename = 'MyLAB_probe_sim_debug_INPUT.h5';
+if (PA_GUIDED_FOCUS)
+    filename = 'MyLAB_PA_Signal_Focus_INPUT.h5';
+else
+    filename = 'MyLAB_Fixed_Focus_INPUT_debug.h5';
+end
 kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename);
 

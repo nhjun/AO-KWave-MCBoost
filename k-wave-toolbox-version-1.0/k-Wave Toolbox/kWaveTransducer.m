@@ -331,6 +331,7 @@ classdef kWaveTransducer < handle
                     error('transducer.focus_distance has been set; not possible to supply delays and set focus depth');
                 end
                 transducer.supplied_transmit_delays = transducer_properties.supplied_transmit_delays;
+                transducer.focus_distance = -1.23456789;  % A simple flag to notify focus has been supplied.
             end
             
             % JWJS
@@ -833,7 +834,7 @@ classdef kWaveTransducer < handle
             % JWJS
             if ~isinf(obj.supplied_transmit_delays)% && isinf(obj.focus_distance) && (nargin == 1 || mode ~= 4)
                 % get the element beamforming delays
-                delay_times = obj.supplied_beamforming_delays;
+                delay_times = -obj.supplied_beamforming_delays;
                 
                 % add delay times
                 mask(active_elements_index) = delay_times(indexed_active_elements_mask(active_elements_index));
