@@ -183,7 +183,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         static float stroboscopic_time_step = 100e-9;
         static size_t cnt = stroboscopic_time_step/Parameters->Get_dt();
         
-        if ((cnt % KSpaceSolver->GetTimeIndex()) == 0)
+        if ((cnt % (KSpaceSolver->GetTimeIndex()+1)) == 0)
         {
             cout << ".......... Running MC-Boost ...........\n";
             cout << "time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << "\n";
