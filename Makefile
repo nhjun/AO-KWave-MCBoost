@@ -88,7 +88,7 @@ endif
 ifeq ($(COMPILER),GNU)
   CXX	   = /usr/local/bin/g++
 
-  CPU_FLAGS = -m64 -march=native -mtune=native
+  CPU_FLAGS = -msse4.2 -m64 -march=native -mtune=native
 
   #Generic CPU (any intel and AMD 64b CPU)
   #CPU_FLAGS = -msse2 -m64
@@ -98,13 +98,13 @@ ifeq ($(COMPILER),GNU)
 
   # CFLAGS for running 
   #------------------------
-  #CXXFLAGS = -O3 -march=native -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
+  CXXFLAGS = -O3 -march=native -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
 
   # CFLAGS for debugging
   #------------------------
-  CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
+  #CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
 
   ifeq ($(LINKING),STATIC)
 

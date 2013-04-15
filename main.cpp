@@ -596,15 +596,15 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 10;
+const int MAX_PHOTONS = 1e6;
 
 // NOTE:
 // - These values must match with those used in k-Wave.
 // ----------------------------------------------------------------------------
-const double TISSUE_SOS = 1480;  			// Speed-of-sound of the tissue. [m/sec]
-const double DENSITY = 1000;	  			// Density of the tissue.
-const double PEZIO_OPTICAL_COEFF = 0.322;	// Pezio-optical coefficient of the tissue.
-const double N_BACKGROUND = 1.33;			// Refractive index of the unmodulated medium.
+//const double TISSUE_SOS = 1480;  			// Speed-of-sound of the tissue. [m/sec]
+//const double DENSITY = 1000;	  			// Density of the tissue.
+//const double PEZIO_OPTICAL_COEFF = 0.322;	// Pezio-optical coefficient of the tissue.
+//const double N_BACKGROUND = 1.33;			// Refractive index of the unmodulated medium.
 
 
 
@@ -618,30 +618,8 @@ void testDisplacements(void);
 void testPressures(void);
 
 
-//typedef std::vector<RNGSeeds> RNGSeedArray;
 
 
-// Simulation routines.
-//
-// This function simulates a large number of photons through the medium.
-// Based upon the attributes of the medium and exit-aperture, it saves
-// the seeds of the RNG that produced photons that made their way through
-// the medium and eventually exited through the exit-aperture.  Once this
-// has run it is possible to speed up the many simulations needed for
-// modeling AO since we are only injecting photons that would be detected.
-void generateSeeds(Medium *tissue, coords injectionCoords);
-
-// The acousto-optic simulation.
-void runAcoustoOptics(Medium *tissue, coords injectionCoords);
-
-// Load the RNG seeds into memory.
-//
-//RNGSeedArray loadRNGSeeds(const std::string &filename);
-
-// Create the Monte-Carlo medium, based on the k-Wave attributes.
-//
-//Medium *
-//CreateMonteCarloMedium(TParameters* Parameters);
 /**
  * ---------------------------------------------------------------------------------------------------------------------------
  */

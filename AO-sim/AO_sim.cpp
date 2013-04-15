@@ -41,8 +41,8 @@ AO_Sim::~AO_Sim()
     if (KSpaceSolver)
         delete KSpaceSolver;
     
-    if (m_medium)
-        delete m_medium;
+//    if (m_medium)
+//        delete m_medium;
     
 }
 
@@ -77,58 +77,46 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 //    ActPercent = 0;
     KSpaceSolver->FromMain_PrintOutputHeader();
 //
-    KSpaceSolver->StartIterationTime();
+    KSpaceSolver->IterationTimeStart();
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < Parameters->Get_Nt(); KSpaceSolver->IncrementTimeIndex()){
-        //    for (t_index = 0; t_index < Parameters->Get_Nt(); t_index ++){
-        //
-        //
-        cout << ".......... Running k-Wave ...........\n";
+        
+        cout << ".......... Running k-Wave ........... ("
+             << KSpaceSolver->GetTimeIndex() << " of "
+             << Parameters->Get_Nt() << ")\n";
 
         KSpaceSolver->FromMain_Compute_uxyz();
-//        //        Compute_uxyz();
-//        //
-//        //        // add in the velocity u source term
+
+	// add in the velocity u source term
         KSpaceSolver->FromMain_Add_u_source();
-//        //        Add_u_source();
-//        //
-//        //
-//        //        // add in the transducer source term (t = t1) to ux
-//        //        if (Parameters->Get_transducer_source_flag() > t_index)
+
+	// add in the transducer source term (t = t1) to ux
         if (Parameters->Get_transducer_source_flag() > KSpaceSolver->GetTimeIndex())
             KSpaceSolver->FromMain_AddTransducerSource();
-//        //            Get_ux_sgx().AddTransducerSource(Get_u_source_index(), Get_delay_mask(), Get_transducer_source_input());
-//        //
+
+
         KSpaceSolver->FromMain_Compute_duxyz();
-//        //        Compute_duxyz();
-//        //
-//        //
+
+
         if (Parameters->Get_nonlinear_flag())
             KSpaceSolver->FromMain_Compute_rhoxyz_nonlinear();
-//        //            Compute_rhoxyz_nonlinear();
         else
             KSpaceSolver->FromMain_Compute_rhoxyz_linear();
-//        //            Compute_rhoxyz_linear();
-//        //
-//        //
-//        //        // add in the source pressure term
+
+
+	// add in the source pressure term
         KSpaceSolver->FromMain_Add_p_source();
-//        //        Add_p_source();
-//        //
+
         if (Parameters->Get_nonlinear_flag()){
             KSpaceSolver->FromMain_Compute_new_p_nonlinear();
-//            //            Compute_new_p_nonlinear();
         }else {
             KSpaceSolver->FromMain_Compute_new_p_linear();
-//            //            Compute_new_p_linear();
+
         }
-//        //
-//        //
-//        //        //-- calculate initial pressure
-//        //        if ((t_index == 0) && (Parameters->Get_p0_source_flag() == 1)) Calculate_p0_source();
+
+
+	//-- calculate initial pressure
         if ((KSpaceSolver->GetTimeIndex() == 0) && (Parameters->Get_p0_source_flag() == 1))
             KSpaceSolver->FromMain_Calculate_p0_source();
-//        
-//        //
 
         
         /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
@@ -169,12 +157,12 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         /// Not saving seeds, so set to false.
         da_boost->Save_RNG_Seeds(false);
   
-#define DEBUG
+#undef DEBUG
 #ifdef DEBUG
         /// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
         /// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
-        /// f = 0.010; f/dx = 163 (voxel number) and assuming Nx = 512.  The rest are specified in the middle.
-        size_t x_voxel = 163;
+      
+        size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
         size_t y_voxel = m_medium->Get_Ny()/2;
         size_t z_voxel = m_medium->Get_Nz()/2;
         float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
@@ -187,16 +175,18 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
                                                            dispX, dispY, dispZ);
                                                            
-        
+	/// Testing if there is actually a rotation to what I'm doing.
+//	cout << "ux->GetElementFrom3d(x,y,z) = " << velX << "\n";
+//	cout << "ux->GetElementFrom3d(z,y,x) = " << currentVelocity_Xaxis->GetElementFrom3D(z_voxel, y_voxel, x_voxel) << "\n";        
 #else
         /// Run the MC-sim every ~100 ns, similar to stroboscopic AO experiments.
         static float stroboscopic_time_step = 100e-9;
-        static size_t cnt = stroboscopic_time_step/parameters->Get_dt();
+        static size_t cnt = stroboscopic_time_step/Parameters->Get_dt();
         
         if ((cnt % KSpaceSolver->GetTimeIndex()) == 0)
         {
             cout << ".......... Running MC-Boost ...........\n";
-            cout << "time: " << KSpaceSolver->GetTimeIndex()*parameters->Get_dt() << "\n";
+            cout << "time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << "\n";
             da_boost->Run_seeded_MC_sim_timestep(m_medium,
                                                  m_Laser_injection_coords,
                                                  KSpaceSolver->GetTimeIndex());
@@ -207,19 +197,35 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
         
-        
-        //float temp = currentPressure->GetElementFrom3D(100,100,58);
 
-//        //        //-- store the initial pressure at the first time step --//
-//        //
-//        KSpaceSolver.FromMain_StoreSensorData();
-//        //        StoreSensorData();
-//        //
+	//-- store the initial pressure at the first time step --//
+        //KSpaceSolver->FromMain_StoreSensorData();
+
         KSpaceSolver->FromMain_PrintStatistics();
-//        //        PrintStatisitcs();
-//        //        
-//        //
+
     }
+
+
+    KSpaceSolver->IterationTimeStop();
+
+    cout << "-------------------------------------------------------------\n";           
+    cout << "Elapsed time: " << KSpaceSolver->GetSimulationTime() << "\n";
+    cout << "-------------------------------------------------------------\n";           
+    
+    cout << "Post-processing phase......."; cout.flush();       
+    KSpaceSolver->PostProcessingTimeStart();
+  
+
+    KSpaceSolver->FromMain_PostProcessing();  
+    KSpaceSolver->PostProcessingTimeStop();
+    cout << "Done \n";
+    cout << "Elapsed time: " << KSpaceSolver->GetPostProcessingTime() << "\n";
+
+  
+    KSpaceSolver->FromMain_WriteOutputDataInfo();
+  
+    Parameters->HDF5_OutputFile.Close();
+  
     
 }
 

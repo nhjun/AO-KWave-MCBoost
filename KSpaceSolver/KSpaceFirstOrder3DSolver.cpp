@@ -257,7 +257,7 @@ void TKSpaceFirstOrder3DSolver::Compute(){
   PostProcessingTime.Start();
   
 
-        PostPorcessing();  
+        PostProcessing();  
   PostProcessingTime.Stop();
   fprintf(stdout,"Done \n");
   fprintf(stdout,"Elapsed time:          %8.2fs\n",PostProcessingTime.GetElapsedTime());
@@ -324,7 +324,7 @@ void TKSpaceFirstOrder3DSolver::PostCompute(){
     PostProcessingTime.Start();
     
     
-    PostPorcessing();
+    PostProcessing();
     PostProcessingTime.Stop();
     fprintf(stdout,"Done \n");
     fprintf(stdout,"Elapsed time:          %8.2fs\n",PostProcessingTime.GetElapsedTime());
@@ -2499,7 +2499,7 @@ void TKSpaceFirstOrder3DSolver::PrintOtputHeader(){
  * Post processing, and closing the output streams.
  *
  */
-void TKSpaceFirstOrder3DSolver::PostPorcessing(){
+void TKSpaceFirstOrder3DSolver::PostProcessing(){
     
                                  //-- p --//
     if (Parameters->IsStore_p_max()){
@@ -2639,7 +2639,7 @@ void TKSpaceFirstOrder3DSolver::PostPorcessing(){
     }//  I_avg
         
     
-}// end of PostPorcessing
+}// end of PostProcessing
 //------------------------------------------------------------------------------
   
   
