@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 50;
+const int MAX_PHOTONS = 1000;
 
 // Testing routines.
 void testVectorMath(void);
@@ -657,7 +657,7 @@ int main(int argc, char** argv) {
     /// ----------------------------------------------------------------------------------------------------
     
     /// Set the number of photons to simulate and how many threads will be run.
-    AO_simulation.Set_num_MC_threads(4);
+    AO_simulation.Set_num_MC_threads(1);
     //AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
     AO_simulation.Set_num_photons(MAX_PHOTONS);
     
