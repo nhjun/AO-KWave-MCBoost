@@ -44,6 +44,7 @@ MC_Boost::~MC_Boost(void)
 }
 
 
+
 void
 MC_Boost::Set_num_photons(size_t num_photons_to_simulate)
 {
@@ -78,7 +79,7 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
     // and a medium in which to run the simulation.
     assert (medium != NULL);
  
-    cout << "........... Generating Monte-Carlo Exit Seeds .........";
+    cout << "\n........... Generating Monte-Carlo Exit Seeds .........";
     cout.flush();
     
     
@@ -169,7 +170,7 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     /// Create the photon and thread objects.
     Photon *photons[NUM_PHOTON_OBJS];
     RNG *rng[NUM_PHOTON_OBJS];
-	boost::thread *threads[NUM_THREADS];
+	///boost::thread *threads[NUM_THREADS];
     
     
     /// Since each thread only runs a set of seeds that produced an exit photon,
@@ -270,7 +271,7 @@ MC_Boost::Load_exit_RNG_seeds()
 	}
     
     
-    cout << "........... Reading Monte-Carlo Exit Seeds ...........";
+    cout << "\n........... Reading Monte-Carlo Exit Seeds ...........";
 
     
     // Read in data from the stream.

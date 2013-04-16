@@ -41,7 +41,9 @@ public:
     
     
     /// Run the actual acousto-optic simulation.
-    void        Run_acousto_optics_sim(TParameters * Parameters);
+    void        Run_acousto_optics_sim(TParameters * Parameters,
+									   bool sim_displacement,
+									   bool sim_refractive_grad);
     
     
     /********************** k-Wave ****************************************************/
@@ -85,7 +87,24 @@ public:
     /// used in the k-Wave simulation.
     void    Create_MC_grid(TParameters * parameters);
     
-    
+	/// Set how often the monte-carlo simulation runs, with respect the k-Wave time steps.
+	void	Set_MC_time_step(const float mc_t_step)
+			{
+				MC_time_step = mc_t_step;
+			}    
+
+
+	/// Print the MC simulation attributes.
+	void	Print_MC_sim_params()
+			{
+				assert (m_medium != NULL);
+				assert (da_boost != NULL);
+				cout << "\n--------------------------------\nMC-Boost parameters\n--------------------------------\n";
+				cout << "Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
+				cout << "Medium size: [x=" << m_medium->getXbound() << ", y=" << m_medium->getYbound() << ", z=" << m_medium->getZbound() << "] (meters)\n";
+				cout << "Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
+				cout << "Time step: " << MC_time_step << '\n';
+			}
 
     
     
@@ -118,6 +137,13 @@ public:
                 m_Laser_injection_coords.x = laser_coords.x;
                 m_Laser_injection_coords.y = laser_coords.y;
                 m_Laser_injection_coords.z = laser_coords.z;
+
+				cout << "----------------------------------------\n"
+					 << "Laser injection coordinates set\n"
+					 << "----------------------------------------\n"
+				     << "Location: [x=" << m_Laser_injection_coords.x 
+					 << ", y=" << m_Laser_injection_coords.y
+					 << ", z=" << m_Laser_injection_coords.z << "] (meters)\n";
             }
     
     
@@ -145,17 +171,6 @@ public:
                 da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
             }
     
-    /// FOR TESTING PURPOSES:
-    void    Test_Seeded_MC_sim()
-    {
-        da_boost->Simulate_displacement(false);
-        da_boost->Simulate_refractive_gradient(false);
-        da_boost->Save_RNG_Seeds(false);
-        static int i = 0;
-        i++;
-        da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
-    }
-    
     
     /// Load the seeds that were saved to file.  These seeds produced paths of photons
     /// that eventually found their way out of the exit aperture.
@@ -171,11 +186,24 @@ public:
     double  Get_MC_Xaxis_depth() {return m_medium->getXbound();}
     
     
-    
     void    Set_pezio_optical_coeff(const float val)
             {
                 pezio_optical_coeff = val;
             }
+
+
+
+	/// TEST CASES
+	/// ------------------------------------------------------------------
+    void    Test_Seeded_MC_sim()
+    {
+        da_boost->Simulate_displacement(false);
+        da_boost->Simulate_refractive_gradient(false);
+        da_boost->Save_RNG_Seeds(false);
+        static int i = 0;
+        i++;
+        da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
+    }
     
     
 private:
@@ -184,6 +212,9 @@ private:
     
     /// Instance of the monte-carlo simulation.
     MC_Boost    * da_boost;
+
+	/// How often the MC simulation is run.  Based on the timesteps of k-Wave simulation.
+	float 		MC_time_step;
     
     /// Holds the coordinates where light is injected into the medium.
     coords      m_Laser_injection_coords;

@@ -596,21 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 1e6;
-
-// NOTE:
-// - These values must match with those used in k-Wave.
-// ----------------------------------------------------------------------------
-//const double TISSUE_SOS = 1480;  			// Speed-of-sound of the tissue. [m/sec]
-//const double DENSITY = 1000;	  			// Density of the tissue.
-//const double PEZIO_OPTICAL_COEFF = 0.322;	// Pezio-optical coefficient of the tissue.
-//const double N_BACKGROUND = 1.33;			// Refractive index of the unmodulated medium.
-
-
-
-
-
-
+const int MAX_PHOTONS = 25;
 
 // Testing routines.
 void testVectorMath(void);
@@ -696,19 +682,30 @@ int main(int argc, char** argv) {
     /// NOTE: Centering the detector on the x-y plane.
     Detector_Properties detector_props;
     detector_props.radius = 0.005;
-    detector_props.x_coord = AO_simulation.Get_MC_Xaxis_depth()/2;
+    detector_props.x_coord = 0.018;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
     detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
     detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
+	detector_props.xy_plane = true;
     AO_simulation.Add_circular_detector_MC_medium(detector_props);
     
     
     /// Define the injection point of light in the medium.
     coords LaserInjectionCoords;
-	LaserInjectionCoords.x = AO_simulation.Get_MC_Xaxis_depth()/2; // Centered
-	LaserInjectionCoords.y = AO_simulation.Get_MC_Yaxis_depth()/2; // Centered
+	/// Align the injection with the detection aperture.
+	LaserInjectionCoords.x = detector_props.x_coord;	//AO_simulation.Get_MC_Xaxis_depth()/2; // Centered
+	LaserInjectionCoords.y = detector_props.y_coord; 	//AO_simulation.Get_MC_Yaxis_depth()/2; // Centered
 	LaserInjectionCoords.z = 1e-16f;   // Just below the surface of the 'air' layer.
     AO_simulation.Set_laser_injection_coords(LaserInjectionCoords);
     
+	
+	/// Set how often the monte-carlo simulation runs.
+	float mc_t_step = 10e-9;
+	assert(mc_t_step >= Parameters->Get_dt());
+	AO_simulation.Set_MC_time_step(mc_t_step);
+
+
+	/// Display the monte-carlo simulation parameters
+	AO_simulation.Print_MC_sim_params();
     
     /// Run the monte-carlo simulation once, to save seeds, that produced paths,
     /// that made it through the exit aperture.
@@ -723,34 +720,39 @@ int main(int argc, char** argv) {
     /// k-Wave
     /// ----------------------------------------------------------------------------------------------------
     
-    /// set number of threads for the k-Wave simulation and bind them to cores.
-    omp_set_num_threads(Parameters->GetNumberOfThreads());
-    setenv("OMP_PROC_BIND","TRUE", 1);
-    
-    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
-    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
-    AO_simulation.Print_kWave_sim_params();
-    
-    
-    cout << FMT_SmallSeparator;
-    cout << ".......... k-Wave Initialization ........\n";
-    cout << "Memory allocation ..........";
-    AO_simulation.kWave_allocate_memory();
+//    /// set number of threads for the k-Wave simulation and bind them to cores.
+//    omp_set_num_threads(Parameters->GetNumberOfThreads());
+//    setenv("OMP_PROC_BIND","TRUE", 1);
+//    
+//    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
+//    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
+//    AO_simulation.Print_kWave_sim_params();
+//    
+//    
+//    cout << FMT_SmallSeparator;
+//    cout << ".......... k-Wave Initialization ........\n";
+//    cout << "Memory allocation ..........";
+//    AO_simulation.kWave_allocate_memory();
 
     
 #define DEBUG
 #ifdef DEBUG
     
-    Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
+    //Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
 
-    //AO_simulation.Test_Seeded_MC_sim();
-    
-#endif
+    AO_simulation.Test_Seeded_MC_sim();
+	AO_simulation.Test_Seeded_MC_sim();    
+
+#else
     
     /// Run the AO simulation.
-    AO_simulation.Run_acousto_optics_sim(Parameters);
+	bool sim_displacement = false;
+	bool sim_refractive_grad = false;
+    AO_simulation.Run_acousto_optics_sim(Parameters,
+										 sim_displacement,
+										 sim_refractive_grad);
     
-    
+#endif    
     
     
 

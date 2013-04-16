@@ -286,6 +286,7 @@ boost::shared_ptr<Vector3d> Medium::getDisplacementFromPhotonLocation(const boos
 
 void Medium::addDetector(Detector *detector)
 {
+	
 	p_detectors.push_back(detector);
 }
 

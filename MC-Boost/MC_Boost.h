@@ -44,7 +44,11 @@ public:
     
     // Get code name
     string GetCodeName() {return "MC-Boost v1.0"; };
-    
+
+	/// Get the number of CPU threads used in the simulation.
+	size_t	Get_CPU_threads() {return NUM_THREADS;};
+
+	    
     // Set number of threads.
     void    Set_num_threads(size_t num_threads);
     
@@ -70,6 +74,8 @@ public:
     
     /// Set whether or not to save seeds for this run.
     void    Save_RNG_Seeds(bool flag) {SAVE_SEEDS = flag;};
+
+
     
 private:
     // Number of threads that are running the simulation (max = boost::thread::hardware_concurrency()).

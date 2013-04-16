@@ -9,6 +9,7 @@
 #ifndef DETECTOR_H
 #define DETECTOR_H
 
+#include <boost/thread/mutex.hpp>
 #include "vector3D.h"
 #include "logger.h"
 #include "vectorMath.h"
@@ -23,6 +24,10 @@ typedef struct {
     double x_coord;
     double y_coord;
     double z_coord;
+
+	bool xy_plane;
+	bool xz_plane;
+	bool yz_plane;
     
 } Detector_Properties;
 
@@ -32,6 +37,7 @@ class Detector
 {
 public:
     Detector(const double x, const double y, const double z);
+	Detector(const Detector_Properties &props);
     Detector(const Vector3d &centerPoint);
     Detector(const boost::shared_ptr<Vector3d> centerPoint);
     virtual ~Detector();
@@ -95,7 +101,13 @@ protected:
     bool xy_plane;  
     bool xz_plane;
     bool yz_plane;
+
+	// Mutex to serialize access to the detector.
+	boost::mutex m_detector_mutex;
 };
 
 
 #endif
+
+
+

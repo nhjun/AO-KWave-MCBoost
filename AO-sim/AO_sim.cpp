@@ -27,6 +27,9 @@ AO_Sim::AO_Sim()
     m_Laser_injection_coords.x = -1;
     m_Laser_injection_coords.y = -1;
     m_Laser_injection_coords.z = -1;
+
+	/// Set default value.
+	MC_time_step = 0.0f;
     
 }
 
@@ -34,7 +37,7 @@ AO_Sim::AO_Sim()
 
 AO_Sim::~AO_Sim()
 {
-    cout << "AO_Sim:: destructor\n";
+    cout << "\n\nAO_Sim:: destructor\n";
     if (da_boost)
         delete da_boost;
     
@@ -50,7 +53,9 @@ AO_Sim::~AO_Sim()
 
 /// Run the actual acousto-optic simulation.
 void
-AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
+AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
+							   bool sim_displacement,
+							   bool sim_refractive_grad)
 {
     
     
@@ -78,7 +83,9 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
     KSpaceSolver->FromMain_PrintOutputHeader();
 //
     KSpaceSolver->IterationTimeStart();
-    for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < Parameters->Get_Nt(); KSpaceSolver->IncrementTimeIndex()){
+	//size_t k_wave_Nt = Parameters->Get_Nt();
+	size_t k_wave_Nt = 5;
+    for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
         
         cout << ".......... Running k-Wave ........... ("
              << KSpaceSolver->GetTimeIndex() << " of "
@@ -121,38 +128,53 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         
         /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
         ///
-        TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
-        TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
-        TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
-        TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
-        TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
-        TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
+
+		/// If the flag for simulating the influence of refractive index changes is set
+		/// we need to grab the appropriate data from k-Wave and build grids for
+		/// photon propagation to use in order to alter its path accordingly.
+		if (sim_refractive_grad)
+		{
+        	TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
+        	TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
+        	TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
+        	TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
+        	TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
+        	TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
+
+			/// Create a refractive map based upon the pressure at this time step.
+        	m_medium->Create_refractive_map(currentPressure,
+            	                            current_rhox,
+            	                            current_rhoy,
+            	                            current_rhoz,
+            	                            rho0,
+            	                            c2,
+            	                            pezio_optical_coeff);
+			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+			m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
+                                        	da_boost->Simulate_refractive_gradient(true);
         
-        TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
-        TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
-        TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
+		}
+		/// Similar to above (i.e. sim_refractive_grad)
+		if (sim_displacement)
+		{
+
+        	TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
+        	TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
+        	TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
         
 
-        /// Create a refractive map based upon the pressure at this time step.
-        m_medium->Create_refractive_map(currentPressure,
-                                        current_rhox,
-                                        current_rhoy,
-                                        current_rhoz,
-                                        rho0,
-                                        c2,
-                                        pezio_optical_coeff);
         
-        m_medium->Create_displacement_map(currentVelocity_Xaxis,
-                                          currentVelocity_Yaxis,
-                                          currentVelocity_Zaxis,
-                                          m_medium->kwave.US_freq,
-                                          m_medium->kwave.dt);
+        	/// Create a displacment map based upon the pressure at this time step.
+        	m_medium->Create_displacement_map(currentVelocity_Xaxis,
+            	                              currentVelocity_Yaxis,
+            	                              currentVelocity_Zaxis,
+            	                              m_medium->kwave.US_freq,
+            	                              m_medium->kwave.dt);
         
-        /// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
+        	/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+        	m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
                                         da_boost->Simulate_displacement(true);
-        m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
-                                        da_boost->Simulate_refractive_gradient(true);
+        }
         
         /// Not saving seeds, so set to false.
         da_boost->Save_RNG_Seeds(false);
@@ -175,18 +197,17 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
                                                            dispX, dispY, dispZ);
                                                            
-	/// Testing if there is actually a rotation to what I'm doing.
-//	cout << "ux->GetElementFrom3d(x,y,z) = " << velX << "\n";
-//	cout << "ux->GetElementFrom3d(z,y,x) = " << currentVelocity_Xaxis->GetElementFrom3D(z_voxel, y_voxel, x_voxel) << "\n";        
+	       
 #else
-        /// Run the MC-sim every ~100 ns, similar to stroboscopic AO experiments.
-        static float stroboscopic_time_step = 100e-9;
-        static size_t cnt = stroboscopic_time_step/Parameters->Get_dt();
         
-        if ((cnt % (KSpaceSolver->GetTimeIndex()+1)) == 0)
+        /// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
+		/// Similar to the stroboscopic experiments.
+        static size_t cnt = MC_time_step/Parameters->Get_dt();
+        
+        if ((KSpaceSolver->GetTimeIndex() % cnt) == 0)
         {
-            cout << ".......... Running MC-Boost ...........\n";
-            cout << "time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << "\n";
+            cout << ".......... Running MC-Boost ......... ";
+            cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
             da_boost->Run_seeded_MC_sim_timestep(m_medium,
                                                  m_Laser_injection_coords,
                                                  KSpaceSolver->GetTimeIndex());
@@ -196,8 +217,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
-        
-
 	//-- store the initial pressure at the first time step --//
         //KSpaceSolver->FromMain_StoreSensorData();
 
@@ -307,12 +326,8 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     //this->m_medium->kwave.speed_of_sound            = parameters->Get_c0_scalar();
     
     
-    
-//    cout << Nx*dx << " "
-//    << Ny*dy << " "
-//    << Nz*dz << endl;
-//    
-//    cout << "Simulation time steps: " << parameters->Get_Nt() << endl;
-    
 }
+
+
+
 

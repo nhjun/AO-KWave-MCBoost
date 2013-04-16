@@ -19,16 +19,17 @@ static const double THRESHOLD = 0.000000001;
 
 
 CircularDetector::CircularDetector(const Detector_Properties &props)
-:Detector(props.x_coord, props.y_coord, props.z_coord)
+:Detector(props)
 {
-    this->radius = props.radius;
-    
+	cout << "radius: " << props.radius << " (meters)\n";
+    this->radius = props.radius;   
 }
 
 
 CircularDetector::CircularDetector(const double radius, const Vector3d &centerPoint)
 :Detector(centerPoint)
 {
+	cout << "radius: " << radius << " (meters)\n";
     this->radius = radius;
 }
 
@@ -37,6 +38,7 @@ CircularDetector::CircularDetector(const double radius, const Vector3d &centerPo
 CircularDetector::CircularDetector(const double radius, const boost::shared_ptr<Vector3d> centerPoint)
 :Detector(centerPoint)
 {
+	cout << "radius: " << radius << " (meters)\n";
     this->radius = radius;
 }
 
@@ -50,6 +52,8 @@ CircularDetector::~CircularDetector()
 
 bool CircularDetector::photonHitDetector(const boost::shared_ptr<Vector3d> p0)
 {
+
+	boost::mutex::scoped_lock lock(m_detector_mutex);
     
     // Create a line segment from the center of the detector to the location of the photon.
     boost::shared_ptr<Vector3d> centerToPoint = center - (*p0);
@@ -106,7 +110,9 @@ bool CircularDetector::photonPassedThroughDetector(const boost::shared_ptr<Vecto
 {
     
     
-    
+    boost::mutex::scoped_lock lock(m_detector_mutex);
+
+
     // Create the new vector that is the line segment from the previous position of the photon (p0) to 
     // it's current position (p1).
     boost::shared_ptr<Vector3d> lineSegment = (*p1) - (*p0);
@@ -163,7 +169,8 @@ bool CircularDetector::photonPassedThroughDetector(const boost::shared_ptr<Vecto
 void CircularDetector::savePhotonExitCoordinates(const boost::shared_ptr<Vector3d> exitCoords)
 {
     // Use logger class to write out data.
-    Logger::getInstance()->writeExitData(exitCoords);
+    //Logger::getInstance()->writeExitData(exitCoords);
+	cout << "CircularDetector::savePhotonExitCoordinates() ... STUB!\n";
 }
 
 
@@ -171,12 +178,16 @@ void CircularDetector::savePhotonExitData(const boost::shared_ptr<Vector3d> phot
                                           const double weight,
                                           const bool tagged)
 {
-    Logger::getInstance()->writeExitData(photonVector, weight, tagged);
+    //Logger::getInstance()->writeExitData(photonVector, weight, tagged);
+	cout << "CircularDetector::savePhotonExitData() ... STUB!\n";
 }
 
 
 
 void CircularDetector::savePhotonExitWeight(void)
 {
-    
+    cout << "CircularDetector::savePhotonExitWeight() ... STUB!\n";
 }
+
+
+
