@@ -40,61 +40,21 @@ public:
     void createRNGSeedFile(const std::string &filename);
     void openAbsorberFile(const std::string &filename);
     void openTOFFile(const std::string &filename);
-    void Open_vel_disp_file(const std::string &filename);
-    
-    void write(double val);
-    void writeExitData(const boost::shared_ptr<Vector3d> vectorCoords);
-    void writeExitData(const boost::shared_ptr<Vector3d> vectorCoords,
-                       const double weight,
-                       bool tagged);
-    void writeExitData(const boost::shared_ptr<Vector3d> photonVector,
-                       const double weight);
-    void writeExitData(const boost::shared_ptr<Vector3d> photonVector,
-                       const double weight,
-                       const double transmissionAngle);
+	void Open_vel_disp_file(const std::string &filename);
     
     
-    void writeAbsorberData(const double absorbedWeight);
-    
-    // XXX: Finish me
-    void writeAbsorberData(const double absorbedWeight,
-                           const double theta,
-                           const double phi);
+	/// STUB
+    void	Write_absorber_data(const double absrobed_weight) {cout << "Logger::Write_absorber_data ... STUB\n";};
 
-    // Writes the photon's weight, transmission angle, modulated path length through the medium,
-    // and its exit location on the exit detector window.
-    //
-    void writeWeightAngleLengthCoords(const double exitWeight,
-                                      const double transmissionAngle,
-                                      const double modulatedPathLength,
-                                      const boost::shared_ptr<Vector3d> photonVector);
-    void writeWeightAngleLengthCoords(const double exitWeight,
-    								  const double dirx,
-    								  const double diry,
-    								  const double dirz,
-    								  const double modulatedPathLength,
-    								  const boost::shared_ptr<Vector3d> photonVector);
-    void writeWeightAngleLengthCoords(Photon &p);
+	/// Writes the weight, optical path lengths (displaced, refractive changes, combined) and exit coords (all axes).
+	void	Write_weight_OPLs_coords(Photon &p);
     
     
-    /// Writes the velocity and the corresponding displacement (at a specific location) obtained from the AO_sim calculations.
-    /// Allows the comparison between the two for identifying correct behavior.
-    void    Write_velocity_displacement(float ux, float uy, float uz,
-                                        float disp_x, float disp_y, float disp_z);  /// For 3-D axis.
-    void    Write_velocity_displacement(float u,
-                                        float disp);                             /// Along a single axis.
+	/// Writes velocity and displacements obtained from k-Wave/MC-Boost.
+	void	Write_velocity_displacement(float ux, float uy, float uz,
+                                         float disp_x, float disp_y, float disp_z);	
 
 
-    // XXX:
-    // - Does this introduce race conditions by pointing to a threaded object that could
-    //   potentially have data changing in obscure ways?  Unsure, but each object is given
-    //   it's own CPU "core" to run on, which means any object's state between switches (which
-    //   there should be none (i.e. context switching) in a perfect world since threads == cores)
-    //   should be coherent.
-    //
-    void    writePhoton(Photon *p);
-    
-    
     // Writes the seed that generated the random events that lead this photon to escape through
     // the aperture.
     //
@@ -104,7 +64,8 @@ public:
     
     // Returns the number of photons that were detected through the exit-aperture.
     //
-    int     getNumDetectedPhotons(void) {return photon_count;}
+    size_t     	Get_num_exited_photons(void) 		{return exit_cnt;};
+	size_t 		Get_num_detected_seed_photons(void)	{return seed_cnt;};
     
 
     // Writes the time-of-flight value for the photon bundle when it exits the medium.
@@ -135,11 +96,13 @@ private:
     ofstream absorber_data_stream;          // Absorber stream.
     ofstream rng_seed_stream;               // Random-number-generator stream.
     ofstream tof_stream;                    // Time-of-flight stream.
-    ofstream velocity_displacement_stream;  // Velocity and displacement stream.
+	ofstream velocity_displacement_stream;	// Velocity and displacement stream;
+
 
     
     // Tracks how many photons were detected through the aperture.
-    int photon_count;
+    size_t exit_cnt;
+	size_t seed_cnt;
     
     boost::mutex m_mutex;
     boost::mutex m_tof_mutex;

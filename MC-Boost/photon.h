@@ -301,9 +301,10 @@ private:
     RNGSeeds seeds;
 
 	// Tracks the path length of the photon through the medium.
-	double unmodulated_optical_path_length;
-	double displaced_optical_path_length;
-    double refractiveIndex_optical_path_length;
+	double unmodulated_optical_path_length;			/// OPL without any AO mechanisms.
+	double displaced_optical_path_length;			/// OPL from only the displacement of scattering events.
+    double refractiveIndex_optical_path_length;		/// OPL from only the refractive index changes.
+	double combined_OPL;			/// OPL from displacement and refractive index changes.
 
 	// Tracks whether or not a photon has hit a medium boundary.
 	bool hit_x_bound, hit_y_bound, hit_z_bound;

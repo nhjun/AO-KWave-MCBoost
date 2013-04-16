@@ -55,7 +55,7 @@ void Absorber::updateAbsorbedWeight(const double absorbed)
 
 void Absorber::writeData(void)
 {
-    Logger::getInstance()->writeAbsorberData(absorbedWeight);
+    Logger::getInstance()->Write_absorber_data(absorbedWeight);
 }
 
 Absorber::~Absorber()

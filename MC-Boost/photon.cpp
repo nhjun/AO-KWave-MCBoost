@@ -100,9 +100,10 @@ void Photon::initCommon(void)
 	time_of_flight = 0.0f;
 
 	// Set the path lengths during initialization.
-	unmodulated_optical_path_length = 0.0f;
-	displaced_optical_path_length = 0.0f;
+	unmodulated_optical_path_length 	= 0.0f;
+	displaced_optical_path_length 		= 0.0f;
 	refractiveIndex_optical_path_length = 0.0f;
+	combined_OPL 		= 0.0f;
 
 }
 
@@ -344,9 +345,10 @@ void Photon::reset()
 	num_steps = 0;
 
 	// Reset the path lengths of the photon.
-	unmodulated_optical_path_length = 0;
-	displaced_optical_path_length = 0;
-	refractiveIndex_optical_path_length = 0;
+	unmodulated_optical_path_length 	= 0.0f;
+	displaced_optical_path_length 		= 0.0f;
+	refractiveIndex_optical_path_length = 0.0f;
+	combined_OPL				 		= 0.0f;
 
 
 	// Reset the flags for hitting a layer boundary.
@@ -694,6 +696,8 @@ void Photon::writeCoordsToFile(void)
 
 void Photon::displacePhotonFromPressure(void)
 {    
+	cout << "Displace\n";
+	cout.flush();
 
 	// Photon does not get displaced on boundaries of medium.
 	if (hit_x_bound || hit_y_bound || hit_z_bound) return;
@@ -1068,6 +1072,15 @@ void Photon::displacePhotonAndAlterOPLFromAverageRefractiveChanges(void)
 	displacePhotonFromPressure();
 	alterOPLFromAverageRefractiveChanges();
 
+	/// Due to the order in which the above functions are called, the OPL of 
+	/// 'refractiveIndex_optical_path_length' contains the OPL under the influence of
+	/// both AO mechanisms (displacement, pressure induced refractive index).  However,
+	/// it's possible to run the simulation with any combination (all mechanisms on, one, etc.).
+	/// If we make it here, both have been turned on, and to remove any disambiguity we assign
+	/// 'combined_OPL' the value of 'refractiveIndex_optical_path_length' to
+	/// reduce the overhead of having to redo what is essentially embedded in 'refractiveIndex_optical_path_length'.
+	combined_OPL = refractiveIndex_optical_path_length;
+
 }
 
 
@@ -1166,12 +1179,6 @@ void Photon::transmit(const char *type)
 		// data is written out to file.
 		if (checkDetector())
 		{
-			// If we hit the detector when transmitting the photon, then we write the exit
-			// data to file.
-			//            Logger::getInstance()->writeWeightAngleLengthCoords(this->weight,
-			//                                                                this->transmission_angle,
-			//                                                                this->displaced_optical_path_length,
-			//                                                                this->currLocation);
 			
             // Update the direction cosines upon leaving the medium so calculations can be mode
 			// to see if this photon makes it's way to the detector (i.e. CCD camera).
@@ -1180,20 +1187,20 @@ void Photon::transmit(const char *type)
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
 			
-            //if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
-            //{
+            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+         	{
+
                 double ni = currLayer->getRefractiveIndex();
                 currLocation->setDirZ(cos(this->transmission_angle));
                 currLocation->setDirY(currLocation->getDirY()*ni);
                 currLocation->setDirX(currLocation->getDirX()*ni);
 
                 // Write exit data via the logger.
-                //Logger::getInstance()->writeExitData(currLocation);
-                Logger::getInstance()->writeWeightAngleLengthCoords(*this);
+                Logger::getInstance()->Write_weight_OPLs_coords(*this);
 
                 // Write time-of-flight data to logger.
                 //Logger::getInstance()->writeTOFData(time_of_flight);
-            //}
+         	}
             
 			// Write out the seeds that caused this photon to hop, drop and spin its way out the
 			// exit-aperture.
@@ -1201,10 +1208,6 @@ void Photon::transmit(const char *type)
 			if (SAVE_RNG_SEEDS)
 			{
 				Logger::getInstance()->writeRNGSeeds(seeds.s1, seeds.s2, seeds.s3, seeds.s4);
-//                cout << "s1=" << seeds.s1 << "\n"
-//                << "s2=" << seeds.s2 << "\n"
-//                << "s3=" << seeds.s3 << "\n"
-//                << "s4=" << seeds.s4 << "\n\n";
 			}
 
 		}

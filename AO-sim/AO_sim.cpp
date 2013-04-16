@@ -84,7 +84,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
 //
     KSpaceSolver->IterationTimeStart();
 	//size_t k_wave_Nt = Parameters->Get_Nt();
-	size_t k_wave_Nt = 5;
+	size_t k_wave_Nt = 10;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
         
         cout << ".......... Running k-Wave ........... ("
@@ -128,19 +128,24 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         
         /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
         ///
-
 		/// If the flag for simulating the influence of refractive index changes is set
 		/// we need to grab the appropriate data from k-Wave and build grids for
 		/// photon propagation to use in order to alter its path accordingly.
-		if (sim_refractive_grad)
-		{
-        	TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
-        	TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
-        	TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
-        	TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
-        	TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
-        	TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
 
+		TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
+        TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
+       	TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
+       	TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
+       	TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
+       	TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
+
+		TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
+        TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
+        TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
+
+		if (sim_refractive_grad &&
+			sim_displacement)
+		{
 			/// Create a refractive map based upon the pressure at this time step.
         	m_medium->Create_refractive_map(currentPressure,
             	                            current_rhox,
@@ -149,32 +154,51 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                            rho0,
             	                            c2,
             	                            pezio_optical_coeff);
-			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-			m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
-                                        	da_boost->Simulate_refractive_gradient(true);
-        
+
+			/// Create a displacment map based upon the pressure at this time step.
+        	m_medium->Create_displacement_map(currentVelocity_Xaxis,
+            	                              currentVelocity_Yaxis,
+            	                              currentVelocity_Zaxis,
+            	                              m_medium->kwave.US_freq,
+            	                              m_medium->kwave.dt);
+
+			da_boost->Simulate_refractive_gradient(true);
+			da_boost->Simulate_displacement(true);
+		}
+		else if (sim_refractive_grad)
+		{
+			/// Create a refractive map based upon the pressure at this time step.
+        	m_medium->Create_refractive_map(currentPressure,
+            	                            current_rhox,
+            	                            current_rhoy,
+            	                            current_rhoz,
+            	                            rho0,
+            	                            c2,
+            	                            pezio_optical_coeff);	
+			da_boost->Simulate_refractive_gradient(true);
+			da_boost->Simulate_displacement(false);		       
 		}
 		/// Similar to above (i.e. sim_refractive_grad)
-		if (sim_displacement)
+		else if (sim_displacement)
 		{
-
-        	TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
-        	TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
-        	TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
-        
-
-        
         	/// Create a displacment map based upon the pressure at this time step.
         	m_medium->Create_displacement_map(currentVelocity_Xaxis,
             	                              currentVelocity_Yaxis,
             	                              currentVelocity_Zaxis,
             	                              m_medium->kwave.US_freq,
             	                              m_medium->kwave.dt);
-        
-        	/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-        	m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
-                                        da_boost->Simulate_displacement(true);
+			da_boost->Simulate_refractive_gradient(false);
+			da_boost->Simulate_displacement(true);
         }
+	
+
+//		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+//		m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
+//                                       da_boost->Simulate_refractive_gradient(true);
+
+//		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+//        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
+//                                       da_boost->Simulate_displacement(true);
         
         /// Not saving seeds, so set to false.
         da_boost->Save_RNG_Seeds(false);
@@ -204,7 +228,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
 		/// Similar to the stroboscopic experiments.
         static size_t cnt = MC_time_step/Parameters->Get_dt();
         
-        if ((KSpaceSolver->GetTimeIndex() % cnt) == 0)
+        if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) && 
+			 (KSpaceSolver->GetTimeIndex() > 1))
         {
             cout << ".......... Running MC-Boost ......... ";
             cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";

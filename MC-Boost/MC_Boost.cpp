@@ -75,9 +75,10 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
     // Ensure we have something to simulate.
     assert (MAX_NUM_PHOTONS > 0);
     assert (NUM_THREADS > 0);
-
     // and a medium in which to run the simulation.
     assert (medium != NULL);
+
+    
  
     cout << "\n........... Generating Monte-Carlo Exit Seeds .........";
     cout.flush();
@@ -97,13 +98,13 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
     RNG *rng[NUM_PHOTON_OBJS];
 	boost::thread *threads[NUM_THREADS];
     
-    
-    for (size_t i = 0; i < NUM_THREADS; i++)
+	/// Generate seeds from only 1 thread, ensuring the seeds used in the threaded propagation are not
+	/// correlated.
+    size_t ONLY_ONE_THREAD = 1;
+    for (size_t i = 0; i < ONLY_ONE_THREAD; i++)
     {
       
         // Create an instance for the pseudo-random number generator for each photon object.
-        //RNG rng = RNG();
-        //RNG *rng = new RNG();
         rng[i] = new RNG();
         
         // Initialize the RNG with the independent seeds.
@@ -111,23 +112,18 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
                           rand() + 128*(i+1),
                           rand() + 128*(i+1),
                           rand() + 128*(i+1));
-        //(rng[i])->initRNG(817501462, 3451853807, 1786904099, 2960543463);
-        //(rng[i])->initRNG(384053651, 3206279130, 2743324459, 1296909233);
+       
         
         photons[i] = new Photon();
         threads[i] = new boost::thread(&Photon::injectPhoton, photons[i], medium,
-                                       MAX_NUM_PHOTONS/NUM_THREADS, rng[i],
+                                       MAX_NUM_PHOTONS/ONLY_ONE_THREAD, rng[i],
                                        LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
-//                threads[i] = new boost::thread(&Photon::injectPhoton, photons[i], medium,
-//                                               1, rng,
-//                                               LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
-//
-        
+
     }
     
     // Join all created threads once they have done their work.
 	//
-	for (size_t i = 0; i < NUM_THREADS; i++)
+	for (size_t i = 0; i < ONLY_ONE_THREAD; i++)
 	{
         if ((threads[i])->joinable())
             (threads[i])->join();
@@ -135,7 +131,7 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
     
     // Clean up memory.
     //
-    for (size_t j = 0; j < NUM_THREADS; j++)
+    for (size_t j = 0; j < ONLY_ONE_THREAD; j++)
     {
         delete photons[j];
         delete threads[j];
@@ -147,8 +143,9 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
         
     }
     
-    cout << "... done\n";
-    cout << "Detected: " << Logger::getInstance()->getNumDetectedPhotons() << " photons\n";
+    cout << "... done\n"
+		 << "Simulated: " << MAX_NUM_PHOTONS << '\n'
+    	 << "Detected: " << Logger::getInstance()->Get_num_detected_seed_photons() << " photons\n";
     
 }
 
@@ -251,7 +248,7 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
         }
     } // end WHILE_LOOP(exit_seeds.size())
     
-    cout << "Detected: " << Logger::getInstance()->getNumDetectedPhotons() << " photons\n";
+    cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";
 }
 
 
