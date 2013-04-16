@@ -1180,8 +1180,8 @@ void Photon::transmit(const char *type)
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
 			
-            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
-            {
+            //if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+            //{
                 double ni = currLayer->getRefractiveIndex();
                 currLocation->setDirZ(cos(this->transmission_angle));
                 currLocation->setDirY(currLocation->getDirY()*ni);
@@ -1193,7 +1193,7 @@ void Photon::transmit(const char *type)
 
                 // Write time-of-flight data to logger.
                 //Logger::getInstance()->writeTOFData(time_of_flight);
-            }
+            //}
             
 			// Write out the seeds that caused this photon to hop, drop and spin its way out the
 			// exit-aperture.
