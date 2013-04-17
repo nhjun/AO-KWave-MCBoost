@@ -696,8 +696,6 @@ void Photon::writeCoordsToFile(void)
 
 void Photon::displacePhotonFromPressure(void)
 {    
-	cout << "Displace\n";
-	cout.flush();
 
 	// Photon does not get displaced on boundaries of medium.
 	if (hit_x_bound || hit_y_bound || hit_z_bound) return;
@@ -738,6 +736,7 @@ void Photon::displacePhotonFromPressure(void)
 
 
 	// Subtle case where index into grid is negative because of rounding errors above.
+
 #ifdef DEBUG
 	if (_z < 0 || _x < 0 || _y < 0)
 	{
@@ -763,15 +762,28 @@ void Photon::displacePhotonFromPressure(void)
 	currLocation->location.y += m_medium->kwave.dmap->getDisplacementFromGridY(_x, _y, _z);
 	currLocation->location.z += m_medium->kwave.dmap->getDisplacementFromGridX(_x, _y, _z);
 
+	/// Get the appropriate voxel number for the 3-D grid.
+	_x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
+	_y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
+	_z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
+
 	// Get the local refractive index based on the coordinates of the displaced photon.
-	double local_refractive_index = m_medium->kwave.nmap->getRefractiveIndexFromGrid(currLocation->location.x,
-																					 currLocation->location.y,
-																					 currLocation->location.z);
+	/// NOTE:
+	/// - Not needed since we assume the mechanism of modulation is strictly the displacement
+	///   and nothing to do with spatially varying refractive index values.  Therefore, use
+	///   the background refractive index.
+	/// - How does this change with non-uniform density???
+	//double local_refractive_index = m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
+	double local_refractive_index = 1.33;	
+																			
+	// Get the distance between the previous location and the current location.
+	double distance_traveled = VectorMath::Distance(prevLocation, currLocation);
+
 
 	// Update the optical path length of the photon through the medium by
 	// calculating the distance between the two points and multiplying by the refractive index.
 	//displaced_optical_path_length += VectorMath::Distance(prevLocation, currLocation) * currLayer->getRefractiveIndex();
-	displaced_optical_path_length += VectorMath::Distance(prevLocation, currLocation) * local_refractive_index;
+	displaced_optical_path_length += distance_traveled * local_refractive_index;
 }
 
 
@@ -1005,6 +1017,8 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 
 	// Get the distance between the previous location and the current location.
 	double distance_traveled = VectorMath::Distance(prevLocation, currLocation);
+	cout << "distance = " << distance_traveled << "\n";
+	cout << "n_avg = " << n_avg << "\n";
 
 	// Make the final calculation of the OPL.
 	refractiveIndex_optical_path_length += distance_traveled * n_avg;

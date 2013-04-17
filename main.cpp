@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 1000;
+const int MAX_PHOTONS = 500e3;
 
 // Testing routines.
 void testVectorMath(void);
@@ -704,14 +704,15 @@ int main(int argc, char** argv) {
 	AO_simulation.Set_MC_time_step(mc_t_step);
 
 
-	/// Display the monte-carlo simulation parameters
-	AO_simulation.Print_MC_sim_params();
-    
+	
     /// Run the monte-carlo simulation once, to save seeds, that produced paths,
     /// that made it through the exit aperture.
     AO_simulation.Generate_exit_seeds();
     AO_simulation.Load_generated_seeds();
     
+    /// Display the monte-carlo simulation parameters
+	AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+	AO_simulation.Print_MC_sim_params();
     
     
     

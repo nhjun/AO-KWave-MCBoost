@@ -143,6 +143,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
         TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
 
+		/// NOTE:
+		/// 	- These need to be updated along every time step of k-Wave to remain accurate.
 		if (sim_refractive_grad &&
 			sim_displacement)
 		{
@@ -162,8 +164,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                              m_medium->kwave.US_freq,
             	                              m_medium->kwave.dt);
 
-			da_boost->Simulate_refractive_gradient(true);
-			da_boost->Simulate_displacement(true);
+			//da_boost->Simulate_refractive_gradient(true);
+			//da_boost->Simulate_displacement(true);
 		}
 		else if (sim_refractive_grad)
 		{
@@ -175,8 +177,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                            rho0,
             	                            c2,
             	                            pezio_optical_coeff);	
-			da_boost->Simulate_refractive_gradient(true);
-			da_boost->Simulate_displacement(false);		       
+			//da_boost->Simulate_refractive_gradient(true);
+			//da_boost->Simulate_displacement(false);		       
 		}
 		/// Similar to above (i.e. sim_refractive_grad)
 		else if (sim_displacement)
@@ -187,18 +189,18 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                              currentVelocity_Zaxis,
             	                              m_medium->kwave.US_freq,
             	                              m_medium->kwave.dt);
-			da_boost->Simulate_refractive_gradient(false);
-			da_boost->Simulate_displacement(true);
+			//da_boost->Simulate_refractive_gradient(false);
+			//da_boost->Simulate_displacement(true);
         }
 	
 
-//		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-//		m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
-//                                       da_boost->Simulate_refractive_gradient(true);
+		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+		m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
+                                       da_boost->Simulate_refractive_gradient(true);
 
-//		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-//        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
-//                                       da_boost->Simulate_displacement(true);
+		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
+                                       da_boost->Simulate_displacement(true);
         
         /// Not saving seeds, so set to false.
         da_boost->Save_RNG_Seeds(false);

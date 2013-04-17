@@ -362,6 +362,7 @@ RefractiveMap::Get_refractive_index_TRealMatrix(const int x_photon, const int y_
     
     /// ON FURTHER INSPECTION I BELIEVE THE ABOVE IS NOT TRUE.  I THINK IT IS ALREADY MADE BY LOOKING
     /// AT THE TRANSDUCER PLOT IN KWAVE.  VERIFY!
+	/// Verified by Jiri (k-Wave developer)
     return refractive_map->GetElementFrom3D(x_photon, y_photon, z_photon);
 
 }

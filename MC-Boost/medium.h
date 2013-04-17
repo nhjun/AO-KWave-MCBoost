@@ -105,14 +105,6 @@ public:
     // NOTE: 'eta' is the pezio-optical coefficient
     void	setDensitySOSPezio(const double density, const double SOS, const double eta);
 
-    // Set the density of the medium.
-    //void	setDensity(const double density) {kwave.density = density;}
-
-    // Set the Speed-of-Sound of the medium.
-    //void	setSOS(const double sos) {kwave.speed_of_sound = sos;}
-
-    // Set the pezio-optical coefficient of the medium.
-    //void	setPezioOpticCoeff(const double eta) {this->pezio_optical_coeff = eta;}
 
     // Set the background refractive index.
     void	setBackgroundRefractiveIndex(const double n_background) {this->background_refractive_index = n_background;}
