@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 500e3;
+const int MAX_PHOTONS = 1e6;
 
 // Testing routines.
 void testVectorMath(void);
@@ -699,7 +699,7 @@ int main(int argc, char** argv) {
     
 	
 	/// Set how often the monte-carlo simulation runs.
-	float mc_t_step = 10e-9;
+	float mc_t_step = 200e-9;
 	assert(mc_t_step >= Parameters->Get_dt());
 	AO_simulation.Set_MC_time_step(mc_t_step);
 

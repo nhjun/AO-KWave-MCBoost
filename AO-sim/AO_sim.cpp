@@ -83,8 +83,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
     KSpaceSolver->FromMain_PrintOutputHeader();
 //
     KSpaceSolver->IterationTimeStart();
-	//size_t k_wave_Nt = Parameters->Get_Nt();
-	size_t k_wave_Nt = 10;
+	size_t k_wave_Nt = Parameters->Get_Nt();
+	//size_t k_wave_Nt = 10;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
         
         cout << ".......... Running k-Wave ........... ("

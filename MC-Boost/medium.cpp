@@ -545,9 +545,7 @@ Medium::Create_displacement_map(TRealMatrix * ux,
     
     if (kwave.dmap == NULL)
     {
-        /// FIXME:
-        /// This is an approximation to the displacement and is innacurate.  This is the displacement to a
-        /// monochromatic planar ultrasound wave.
+        
         kwave.dmap = new DisplacementMap(ux, uy, uz, US_freq, dt);
     }
     else

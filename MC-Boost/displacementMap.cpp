@@ -147,98 +147,98 @@ void DisplacementMap::loadDisplacementMaps(const std::string &filename, const in
 
 
 
-	// Assure memory has been allocated for the pressure values that
-	// will be read in from file.  That is, initCommon() has already
-	// been called.
-	assert(displacement_gridX != NULL);
-	assert(displacement_gridY != NULL);
-	assert(displacement_gridZ != NULL);
+//	// Assure memory has been allocated for the pressure values that
+//	// will be read in from file.  That is, initCommon() has already
+//	// been called.
+//	assert(displacement_gridX != NULL);
+//	assert(displacement_gridY != NULL);
+//	assert(displacement_gridZ != NULL);
 
-	// A pointer to the string that is set for opening the displacement file.
-	std::string file_to_open;
+//	// A pointer to the string that is set for opening the displacement file.
+//	std::string file_to_open;
 
-	// A pointer to one of the displacement grid arrays.  Set depending on
-	// which grid should be filled below.
-	three_dim_array *p_displacement_grid = NULL;
+//	// A pointer to one of the displacement grid arrays.  Set depending on
+//	// which grid should be filled below.
+//	three_dim_array *p_displacement_grid = NULL;
 
-	// Load each data structure with their respective displacement data.
-	for (int i = 0; i < 3; i++)
-	{
-
-
-		// Open the file that contains the pressure values for the specific
-		// dimension based on the loop index.
-		//
-		if (i == 0)
-		{  // X-displacement file.
-
-			// Clear the string.
-			file_to_open.clear();
-
-			// Concatonate the values passed in to form a filename to read in.
-			file_to_open = filename + "X-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-			disp_file_stream.open(file_to_open.c_str());
-
-			// The appropriate displacement grid is assigned to be filled below.
-			p_displacement_grid = displacement_gridX;
-		}
-		else if (i == 1)
-		{  // Y-displacement file.
-
-			// Clear the string.
-			file_to_open.clear();
-
-			// Concatonate the values passed in to form a filename to read in.
-			file_to_open = filename + "Y-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-			disp_file_stream.open(file_to_open.c_str());
-
-			// The appropriate displacement grid is assigned to be filled below.
-			p_displacement_grid = displacement_gridY;
-		}
-		else
-		{  // Z-displacement file.
-			file_to_open.clear();
-
-			// Concatonate the values passed in to form a filename to read in.
-			file_to_open = filename + "Z-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-			disp_file_stream.open(file_to_open.c_str());
-
-			// The appropriate displacement grid is assigned to be filled below.
-			p_displacement_grid = displacement_gridZ;
-		}
+//	// Load each data structure with their respective displacement data.
+//	for (int i = 0; i < 3; i++)
+//	{
 
 
-		// Check for successful opening of the file.
-		if (!disp_file_stream)
-		{
-			cout << "!!! Error opening displacement map file " << file_to_open.c_str() << "!!!\n";
-			exit(1);
-		}
-		else
-		{
-			cout << "Displacement map " << file_to_open.c_str() << " opened successfully. ";
-			cout << "Loading displacement values...\n";
-		}
+//		// Open the file that contains the pressure values for the specific
+//		// dimension based on the loop index.
+//		//
+//		if (i == 0)
+//		{  // X-displacement file.
+
+//			// Clear the string.
+//			file_to_open.clear();
+
+//			// Concatonate the values passed in to form a filename to read in.
+//			file_to_open = filename + "X-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
+//			disp_file_stream.open(file_to_open.c_str());
+
+//			// The appropriate displacement grid is assigned to be filled below.
+//			p_displacement_grid = displacement_gridX;
+//		}
+//		else if (i == 1)
+//		{  // Y-displacement file.
+
+//			// Clear the string.
+//			file_to_open.clear();
+
+//			// Concatonate the values passed in to form a filename to read in.
+//			file_to_open = filename + "Y-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
+//			disp_file_stream.open(file_to_open.c_str());
+
+//			// The appropriate displacement grid is assigned to be filled below.
+//			p_displacement_grid = displacement_gridY;
+//		}
+//		else
+//		{  // Z-displacement file.
+//			file_to_open.clear();
+
+//			// Concatonate the values passed in to form a filename to read in.
+//			file_to_open = filename + "Z-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
+//			disp_file_stream.open(file_to_open.c_str());
+
+//			// The appropriate displacement grid is assigned to be filled below.
+//			p_displacement_grid = displacement_gridZ;
+//		}
 
 
-		double data = 0.0;
-		// Read in data to the proper displacement array.
-		for (array_index a = 0; a < Nx && disp_file_stream.good(); a++)
-		{
-			for (array_index b = 0; b < Nz; b++)
-			{
-				for (array_index c = 0; c < Ny; c++)
-				{
-					disp_file_stream >> data;
-					(*p_displacement_grid)[a][b][c] = data;
-					//cout << (*p_displacement_grid)[a][b][c] << endl;
-				}
-			}
-		}
+//		// Check for successful opening of the file.
+//		if (!disp_file_stream)
+//		{
+//			cout << "!!! Error opening displacement map file " << file_to_open.c_str() << "!!!\n";
+//			exit(1);
+//		}
+//		else
+//		{
+//			cout << "Displacement map " << file_to_open.c_str() << " opened successfully. ";
+//			cout << "Loading displacement values...\n";
+//		}
 
 
-		disp_file_stream.close();
-	}
+//		double data = 0.0;
+//		// Read in data to the proper displacement array.
+//		for (array_index a = 0; a < Nx && disp_file_stream.good(); a++)
+//		{
+//			for (array_index b = 0; b < Nz; b++)
+//			{
+//				for (array_index c = 0; c < Ny; c++)
+//				{
+//					disp_file_stream >> data;
+//					(*p_displacement_grid)[a][b][c] = data;
+//					//cout << (*p_displacement_grid)[a][b][c] << endl;
+//				}
+//			}
+//		}
+
+
+//		disp_file_stream.close();
+//	}
 }
 
 
@@ -355,34 +355,34 @@ boost::shared_ptr<Vector3d>
 DisplacementMap::getDisplacements(const Vector3d &photonLocation)
 {
 
-	boost::mutex::scoped_lock lock(m_displacement_mutex);
+//	boost::mutex::scoped_lock lock(m_displacement_mutex);
 
-	boost::shared_ptr<Vector3d> result(new Vector3d);
-
-
-	// Indices into the displacement grids.
-	int _x = photonLocation.location.x/dx - (photonLocation.location.x/dx)/Nx;
-	int _y = photonLocation.location.y/dy - (photonLocation.location.y/dy)/Ny;
-	int _z = photonLocation.location.z/dz - (photonLocation.location.z/dz)/Nz;
+//	boost::shared_ptr<Vector3d> result(new Vector3d);
 
 
-	// Sanity check.
-	assert(((_x < Nx && _x >= 0) &&
-			(_y < Ny && _y >= 0) &&
-			(_z < Nz && _z >= 0)) ||
-			assert_msg("_x=" << _x << " _y=" << _y << " _z=" << _z << "\n"
-					<< photonLocation.location.x << " "
-					<< photonLocation.location.y << " "
-					<< photonLocation.location.z));
+//	// Indices into the displacement grids.
+//	int _x = photonLocation.location.x/dx - (photonLocation.location.x/dx)/Nx;
+//	int _y = photonLocation.location.y/dy - (photonLocation.location.y/dy)/Ny;
+//	int _z = photonLocation.location.z/dz - (photonLocation.location.z/dz)/Nz;
+
+
+//	// Sanity check.
+//	assert(((_x < Nx && _x >= 0) &&
+//			(_y < Ny && _y >= 0) &&
+//			(_z < Nz && _z >= 0)) ||
+//			assert_msg("_x=" << _x << " _y=" << _y << " _z=" << _z << "\n"
+//					<< photonLocation.location.x << " "
+//					<< photonLocation.location.y << " "
+//					<< photonLocation.location.z));
 
 
 
 
-	result->location.x = getDisplacementFromGridX(_x, _y, _z);
-	result->location.y = getDisplacementFromGridY(_x, _y, _z);
-	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
+//	result->location.x = getDisplacementFromGridX(_x, _y, _z);
+//	result->location.y = getDisplacementFromGridY(_x, _y, _z);
+//	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
 
-	return result;
+//	return result;
 
 }
 
@@ -393,21 +393,21 @@ DisplacementMap::getDisplacements(const double x, const double y, const double z
 {
 
 
-	// Indices into the displacement grids.
+//	// Indices into the displacement grids.
 
-	boost::mutex::scoped_lock lock(m_displacement_mutex);
+//	boost::mutex::scoped_lock lock(m_displacement_mutex);
 
-	// Indices into the displacement grids.
-	int _x = x/dx - (x/dx)/Nx;
-	int _y = y/dy - (y/dy)/Ny;
-	int _z = z/dz - (z/dz)/Nz;
+//	// Indices into the displacement grids.
+//	int _x = x/dx - (x/dx)/Nx;
+//	int _y = y/dy - (y/dy)/Ny;
+//	int _z = z/dz - (z/dz)/Nz;
 
-	boost::shared_ptr<Vector3d> result (new Vector3d);
-	result->location.x = getDisplacementFromGridX(_x, _y, _z);
-	result->location.y = getDisplacementFromGridY(_x, _y, _z);
-	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
+//	boost::shared_ptr<Vector3d> result (new Vector3d);
+//	result->location.x = getDisplacementFromGridX(_x, _y, _z);
+//	result->location.y = getDisplacementFromGridY(_x, _y, _z);
+//	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
 
-	return result;
+//	return result;
 }
 
 
