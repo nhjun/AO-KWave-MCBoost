@@ -84,7 +84,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
 //
     KSpaceSolver->IterationTimeStart();
 	size_t k_wave_Nt = Parameters->Get_Nt();
-	//size_t k_wave_Nt = 10;
+	//size_t k_wave_Nt = 3;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
         
         cout << ".......... Running k-Wave ........... ("
@@ -163,9 +163,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                              currentVelocity_Zaxis,
             	                              m_medium->kwave.US_freq,
             	                              m_medium->kwave.dt);
-
-			//da_boost->Simulate_refractive_gradient(true);
-			//da_boost->Simulate_displacement(true);
 		}
 		else if (sim_refractive_grad)
 		{
@@ -177,8 +174,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                            rho0,
             	                            c2,
             	                            pezio_optical_coeff);	
-			//da_boost->Simulate_refractive_gradient(true);
-			//da_boost->Simulate_displacement(false);		       
 		}
 		/// Similar to above (i.e. sim_refractive_grad)
 		else if (sim_displacement)
@@ -189,8 +184,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                              currentVelocity_Zaxis,
             	                              m_medium->kwave.US_freq,
             	                              m_medium->kwave.dt);
-			//da_boost->Simulate_refractive_gradient(false);
-			//da_boost->Simulate_displacement(true);
         }
 	
 
@@ -244,8 +237,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
-	//-- store the initial pressure at the first time step --//
-        //KSpaceSolver->FromMain_StoreSensorData();
+        //-- store the initial pressure at the first time step --//
+        KSpaceSolver->FromMain_StoreSensorData();
 
         KSpaceSolver->FromMain_PrintStatistics();
 

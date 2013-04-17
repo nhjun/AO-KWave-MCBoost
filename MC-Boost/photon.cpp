@@ -132,23 +132,6 @@ void Photon::initTrajectory(void)
 
 
 
-void Photon::initRNG(unsigned int state1, unsigned int state2,
-		unsigned int state3, unsigned int state4)
-{
-
-	// Initialize the seeds and also save them in case this photon
-	// exits through the aperture and we want to write them out to
-	// disk.
-	//seeds.s1 =  z1 = state1;
-	//seeds.s2 =  z2 = state2;
-	//seeds.s3 = 	z3 = state3;
-	//seeds.s4 = 	z4 = state4;
-    
-    //RNG_generator.initRNG(state1, state2, state3, state4);
-}
-
-
-
 
 // BOOST thread library starts execution here.
 // 1) Hop - move the photon
@@ -758,14 +741,14 @@ void Photon::displacePhotonFromPressure(void)
 	//
 	// Index into the displacement grids to retrieve pre-calculated value of how much to
 	// displace the photon from it's current location based upon the pressure in the voxel.
-	currLocation->location.x += m_medium->kwave.dmap->getDisplacementFromGridZ(_x, _y, _z);
+	currLocation->location.x += m_medium->kwave.dmap->getDisplacementFromGridX(_x, _y, _z);
 	currLocation->location.y += m_medium->kwave.dmap->getDisplacementFromGridY(_x, _y, _z);
-	currLocation->location.z += m_medium->kwave.dmap->getDisplacementFromGridX(_x, _y, _z);
+	currLocation->location.z += m_medium->kwave.dmap->getDisplacementFromGridZ(_x, _y, _z);
 
 	/// Get the appropriate voxel number for the 3-D grid.
-	_x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
-	_y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
-	_z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
+//	_x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
+//	_y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
+//	_z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
 
 	// Get the local refractive index based on the coordinates of the displaced photon.
 	/// NOTE:
