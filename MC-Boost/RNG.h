@@ -9,6 +9,7 @@
 #ifndef __K_Wave_C__RNG__
 #define __K_Wave_C__RNG__
 
+#include <vector>
 
 
 
@@ -18,6 +19,10 @@ typedef struct {
 	unsigned int s3;
 	unsigned int s4;
 } RNGSeeds;
+
+
+
+typedef std::vector<RNGSeeds> RNG_seed_vector;
 
 
 

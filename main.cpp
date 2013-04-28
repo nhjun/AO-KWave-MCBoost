@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 33;
+const int MAX_PHOTONS = 10e6;
 
 // Testing routines.
 void testVectorMath(void);
@@ -669,7 +669,7 @@ int main(int argc, char** argv) {
     
     /// Add a layer to the monte-carlo medium defining the optical properties.
     Layer_Properties layer_props;
-    layer_props.mu_a        = 1.0f;
+    layer_props.mu_a        = 0.0f;
     layer_props.mu_s        = 70.0f;
     layer_props.refractive_index = 1.33f;
     layer_props.anisotropy  = 0.9f;
@@ -699,7 +699,7 @@ int main(int argc, char** argv) {
     
 	
 	/// Set how often the monte-carlo simulation runs.
-	float mc_step = 200e-9;
+	float mc_step = 100e-9;
 	assert(mc_step >= Parameters->Get_dt());
 	AO_simulation.Set_MC_time_step(mc_step);
 
@@ -708,10 +708,14 @@ int main(int argc, char** argv) {
     /// Run the monte-carlo simulation once, to save seeds, that produced paths,
     /// that made it through the exit aperture.
     AO_simulation.Generate_exit_seeds();
-    AO_simulation.Load_generated_seeds();
+    //AO_simulation.Load_generated_seeds();
     
     /// Display the monte-carlo simulation parameters
-	AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+	/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
+	/// Only want to run 4 hardware threads.
+	const size_t hardware_threads = 4;
+	///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+	AO_simulation.Set_num_MC_threads(hardware_threads);	
 	AO_simulation.Print_MC_sim_params();
     
     
@@ -736,7 +740,7 @@ int main(int argc, char** argv) {
     AO_simulation.kWave_allocate_memory();
 
     
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     
     //Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
@@ -747,7 +751,7 @@ int main(int argc, char** argv) {
 #else
     
     /// Run the AO simulation.
-	bool sim_displacement = true;
+	bool sim_displacement = false;
 	bool sim_refractive_grad = false;
     AO_simulation.Run_acousto_optics_sim(Parameters,
 										 sim_displacement,

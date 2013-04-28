@@ -141,8 +141,8 @@ public:
 							bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
 
 
-	void	TESTING(Medium * m, const int iter, RNG * rng, coords &c,
-                    bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS) {};
+	void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &c,
+                    bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
     
     
     // Hop, Drop, Spin, Roulette and everything in between.
@@ -293,12 +293,15 @@ private:
 
 
     // A Pseudo-random number generator with a large period.
-    RNG *RNG_generator;
+    RNG * RNG_generator;
+
+
+	RNG_seed_vector *iteration_seeds;
 	
     
     // Seeds that this photon used to seed the RNG that allowed it to produce
     // steps that eventually led it to exiting the medium through the exit-aperture.
-    RNGSeeds seeds;
+    RNGSeeds exit_seeds;
 
 	// Tracks the path length of the photon through the medium.
 	double unmodulated_optical_path_length;			/// OPL without any AO mechanisms.

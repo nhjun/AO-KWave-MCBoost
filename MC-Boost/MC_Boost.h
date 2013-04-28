@@ -9,8 +9,8 @@
 #ifndef __K_Wave_C__MC_Boost__
 #define __K_Wave_C__MC_Boost__
 
-#include "RNG.h"
-#include "coordinates.h"
+#include <MC-Boost/RNG.h>
+#include <MC-Boost/coordinates.h>
 #include <cmath>
 #include <ctime>
 #include <vector>
@@ -29,8 +29,6 @@ class Photon;
 class Medium;
 
 
-
-typedef std::vector<RNGSeeds> RNG_seed_vector;
 
 
 
@@ -88,6 +86,7 @@ private:
     
     // Vector containing all the seeds that produced photon paths that left through the exit aperture.
     RNG_seed_vector exit_seeds;
+
     // File to which the seeds are written.
     std::string     rng_seed_file;
     

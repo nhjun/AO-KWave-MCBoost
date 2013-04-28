@@ -142,6 +142,10 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coord
 		bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_SEEDS)
 {
 
+	// Before propagation we set the medium which will be used by the photon.
+	this->m_medium = medium;
+
+
 	// Set the GLOBAL values that dictate what mechanisms of AO are simulated and/or if the seeds
 	// for the RNG should be saved.
 	SIM_DISPLACEMENT 			= DISPLACE;
@@ -150,11 +154,8 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coord
 
 	
     // Assign this photon object a random number generator, which is passed in from main().
-    RNG_generator = rng;
+    //RNG_generator = rng;
 
-
-	// Before propagation we set the medium which will be used by the photon.
-	this->m_medium = medium;
 
 
 	// Set the location of illumination source and the initial cartesian coordinates of the photon
@@ -174,22 +175,96 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coord
 }
 
 
+void Photon::TESTING(Medium * medium, const int iterations, RNG_seed_vector *rng_seeds, coords &laser,
+		bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_SEEDS)
+{
+
+	// Before propagation we set the medium which will be used by the photon.
+	this->m_medium = medium;
+
+
+	// Set the GLOBAL values that dictate what mechanisms of AO are simulated and/or if the seeds
+	// for the RNG should be saved.
+	SIM_DISPLACEMENT 			= DISPLACE;
+	SIM_REFRACTIVE_GRADIENT 	= REFRACTIVE_GRADIENT;
+	SAVE_RNG_SEEDS				= SAVE_SEEDS;
+
+	
+    // Assign this photon object a random number generator, which is passed in from main().
+	
+	iteration_seeds = rng_seeds;
+
+
+	// Set the location of illumination source and the initial cartesian coordinates of the photon
+	// when it is first incident on the medium.
+	currLocation->location.x = this->illuminationCoords.x = laser.x;
+	currLocation->location.y = this->illuminationCoords.y = laser.y;
+	currLocation->location.z = this->illuminationCoords.z = laser.z;
+
+	// Set the current layer the photon starts propagating through.  This will
+	// be updated as the photon moves through layers by checking 'hitLayerBoundary'.
+	currLayer = m_medium->getLayerFromDepth(currLocation->location.z);
+
+	// Move the photon through the medium. 'iterations' represents the number of photons this
+	// object (which is a thread) will execute.
+	propagatePhoton(iterations);
+}
+
+
 void Photon::propagatePhoton(const int iterations)
 {
 
+	RNG_generator = new RNG();
 	// Inject 'iterations' number of photons into the medium.
 	int i;
 	for (i = 0; i < iterations; i++) 
 	{
 
+		/// If we are saving seeds, then we are propagating photons until they
+		/// exit, using the continous stream of the RNG in th process.  Otherwise
+		/// the exit seeds have already been generated, which means we have the seeds
+		/// and each iteration should use seeds that detected photons (i.e. photons that
+		/// exited the medium through the aperture).  So, the RNG is update each iteration
+		/// with the seed values that caused it to hop() through the medium, eventually 
+		/// finding its way through the exit aperture.
+		if ((iteration_seeds->size() == iterations))
+		{
+
+			///RNGSeeds blah = (*iteration_seeds)[1];
+			///unsigned int blah2 = (*iteration_seeds)[i].s1;
+			/// Case where we want each iteration to contain a RNG from new seeds.
+			/// That is, each iteration will contain, from the start of photon propagation,
+			/// seeds that had caused this photon to hop() until it exited the detection aperture.
+			RNG_generator->initRNG((*iteration_seeds)[i].s1,
+									(*iteration_seeds)[i].s2,
+									(*iteration_seeds)[i].s3,
+									(*iteration_seeds)[i].s4);
+			cout << "Here1\n";
+		}
+		else if ((iteration_seeds->size() == 1) && (i == 1))
+		{
+			/// Case where only one set of seeds has been given.
+			/// This is when the RNG needs to produce a continuous stream,
+			/// typically when seeds are going to be saved.
+			RNG_generator->initRNG((*iteration_seeds)[i].s1,
+									(*iteration_seeds)[i].s2,
+									(*iteration_seeds)[i].s3,
+									(*iteration_seeds)[i].s4);
+			cout << "Here2\n";
+		}
+//		else
+//		{
+//			/// If we make it here, something has gone awry.  We are not using detected seeds
+//			/// or creating a single stream.  Notify.
+//			cout << "!!! Number of seeds input is: " << iteration_seeds->size() << " Photon::propagatePhoton\n";
+//			cout.flush();
+//		}
+
 
         if (SAVE_RNG_SEEDS)
         {
-            seeds = RNG_generator->getState();
-//            cout << "s1=" << seeds.s1 << "\n"
-//                << "s2=" << seeds.s2 << "\n"
-//                << "s3=" << seeds.s3 << "\n"
-//                << "s4=" << seeds.s4 << "\n\n";
+			assert(RNG_generator != NULL);
+            exit_seeds = RNG_generator->getState();
         }
         
         // Initialize the photon's trajectory before any scattering event has taken place.
@@ -224,7 +299,6 @@ void Photon::propagatePhoton(const int iterations)
 				// Move the photon in the medium.
 				hop();
 
-
 				// Now displace the photon at its new location some distance depending on
 				// how the pressure has moved scattering particles and/or due to the change
 				// in the path of the photon due to refractive index gradient.
@@ -245,8 +319,6 @@ void Photon::propagatePhoton(const int iterations)
 
 
 
-
-
 				// Drop weight of the photon due to an interaction with the medium.
 				drop();
 
@@ -259,32 +331,11 @@ void Photon::propagatePhoton(const int iterations)
 
 			}
 
-
 		} // end while() loop
 
 
-
-		// Write out the x,y,z coordinates of the photons path as it propagated through
-		// the medium.
-		//writeCoordsToFile();
-
-		//Logger::getInstance()->writeRNGSeeds(seeds.s1, seeds.s2, seeds.s3, seeds.s4);
-
-		// Save seeds.
-        /*
-		if (SAVE_RNG_SEEDS)
-		{
-
-			seeds.s1 =  z1;
-			seeds.s2 =  z2;
-			seeds.s3 = 	z3;
-			seeds.s4 = 	z4;
-
-		}
-         */
 		// Reset the photon and start propogation over from the beginning.
-		//if (SAVE_RNG_SEEDS)
-			reset();
+		reset();
 
 	} // end for() loop
 
@@ -1204,7 +1255,7 @@ void Photon::transmit(const char *type)
 			//
 			if (SAVE_RNG_SEEDS)
 			{
-				Logger::getInstance()->writeRNGSeeds(seeds.s1, seeds.s2, seeds.s3, seeds.s4);
+				Logger::getInstance()->writeRNGSeeds(exit_seeds.s1, exit_seeds.s2, exit_seeds.s3, exit_seeds.s4);
 			}
 
 		}

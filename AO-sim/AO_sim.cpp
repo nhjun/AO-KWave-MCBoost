@@ -84,7 +84,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
 //
     KSpaceSolver->IterationTimeStart();
 	size_t k_wave_Nt = Parameters->Get_Nt();
-	//size_t k_wave_Nt = 3;
+	//size_t k_wave_Nt = 4;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
         
         cout << ".......... Running k-Wave ........... ("
@@ -224,13 +224,16 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         static size_t cnt = MC_time_step/Parameters->Get_dt();
         
         if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) && 
-			 (KSpaceSolver->GetTimeIndex() > 1))
+			 (KSpaceSolver->GetTimeIndex() > 0))
         {
             cout << ".......... Running MC-Boost ......... ";
             cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
-            da_boost->Run_seeded_MC_sim_timestep(m_medium,
-                                                 m_Laser_injection_coords,
-                                                 KSpaceSolver->GetTimeIndex());
+//            da_boost->Run_seeded_MC_sim_timestep(m_medium,
+//                                                 m_Laser_injection_coords,
+//                                                 KSpaceSolver->GetTimeIndex());
+
+			da_boost->Save_RNG_Seeds(true);
+            da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
         }
 #endif
         
