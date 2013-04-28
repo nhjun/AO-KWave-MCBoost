@@ -3,7 +3,7 @@
 clear all;
 
 
-PA_GUIDED_FOCUS = false;
+PA_GUIDED_FOCUS = true;
 
 % set the size of the perfectly matched layer (PML)
 PML_X_SIZE = 20;            % [grid points]
@@ -11,7 +11,7 @@ PML_Y_SIZE = 10;            % [grid points]
 PML_Z_SIZE = 10;            % [grid points]
 
 % set total number of grid points not including the PML
-Nx = 512/16;
+Nx = 512;
 Ny = 288;
 Nz = 256;
 
@@ -60,6 +60,7 @@ c0_heated_70 = speedSoundWater(70); % SOS of water at 70C.
 
 
 % Density, attenuation, SOS, etc. of breast tissue.
+% -------------------------------------------------
 % Ref: T. L. Szabo, Diagnostic Ultrasound Imaging (Elsevier, Burlington, 2004), pp. 4?6.
 rho0_breast             = 1020;                 % [kg/m^3]
 c0_breast               = 1510;                 % [m/s]
@@ -67,11 +68,20 @@ alpha_atten_breast      = 0.75;                 % [dB/(MHz^y cm)]
 alpha_power_breast      = 1.5;
 BonA_breast             = 9.63;
 
-rho0 = rho0_breast;
-c0 = c0_breast;
-medium.alpha_coeff = alpha_atten_breast; 	
-medium.alpha_power = alpha_power_breast;
-medium.BonA = BonA_breast;
+% Density, attenuation, SOS, etc. of Agar
+% ---------------------------------------
+rho0_agar           = 1024;
+c0_agar             = 1540;
+alpha_atten_agar    = 0.7;
+alpha_power_agar    = 1.5;
+BonA_agar           = 6.0;
+
+
+rho0 = rho0_agar;
+c0 = c0_agar;
+medium.alpha_coeff = alpha_atten_agar; 	
+medium.alpha_power = alpha_power_agar;
+medium.BonA = BonA_agar;
 
 % create the time array
 % -------------------------------------------------------------------------
@@ -80,7 +90,8 @@ cfl = 0.3;
 
 % Simulation runtime
 % Only transmitting, so t_end is only based on the time needed to reach the
-t_end = (Nx*dx)*2.2/c0;  
+% bottom of the medium (plus a little more, thus the 1.3 factor).
+t_end = (Nx*dx)*1.3/c0;  
 
 % Calculate time step.  Based on the CFL, max SOS and the minimum voxel
 % size.
@@ -96,8 +107,7 @@ else
     display('Using default: ')
     dt
 end
-%dt = dt/2;
-%dt = dt/2;
+
 
 % Calculate the number of steps we must take to allow the ultrasound to
 % reach the distance created by t_end/dt.
@@ -120,7 +130,7 @@ kgrid.t_array = 0:dt:(Nt-1)*dt;
 % =========================================================================
 
 % define properties of the input signal
-source_strength = 2.0e6;    	% [Pa]
+source_strength = 5.0e6;    	% [Pa]
 tone_burst_freq = 5.0e6;        % [Hz]
 source_freq = tone_burst_freq;
 tone_burst_cycles = 5;
@@ -154,8 +164,10 @@ transducer_width = transducer.number_elements*transducer.element_width ...
     + (transducer.number_elements - 1)*transducer.element_spacing;
 
 % use this to position the transducer in the middle of the computational grid
-transducer.position = round([1, Ny/2 - transducer_width/2, Nz/2 - transducer.element_length/2]);
-%transducer.position = round([Nx/2-transducer.element_length/2, Ny/2 - transducer_width/2, 1]);
+% Note the placement below the PML with some cushion.
+MIDDLE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz/2 - transducer.element_length/2]);
+EDGE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz - (transducer.element_length+2*PML_Z_SIZE)]);
+transducer.position = MIDDLE_of_medium;
 
 
 % properties used to derive the beamforming delays
@@ -163,11 +175,15 @@ transducer.sound_speed = c0;                % sound speed [m/s]
 % Provide delays from an experiment.  Convert back from MyLAB scaled ticks into
 % usecs.
 if (PA_GUIDED_FOCUS)
+    %info.filename = '/Volumes/TJS CRUZER/23-4-2013/PA_deep_bead.rfe';
     info.filename = '/Volumes/DISK_IMG/9-4-2013/PA_signal.rfe';
     info.middle_channel = 31;
     info.dt = 1/50e6;       % Set MyLAB acquisition time-step (based on 50 MHz sampling).
     delays = crossCorrelateTimeOfArrivals(info, []);
     smooth_delays = smooth(delays, 'rlowess');  % Remove any outliers by smoothing the delay curve.
+    
+    figure; plot(smooth_delays);
+    pause(0.5);
     
     % k-Wave does a lot of manipulation with the beamforming delays it
     % calculates.  In order to minimize modifications to k-Wave, we put the
@@ -214,31 +230,10 @@ background_map_std = 0.008;
 background_map = background_map_mean + background_map_std*randn([Nx, Ny, Nz]);
 
 
-% % Define a heated region from a spherical absorber.
-% % ---------------------------------------------------
-% % radius = 5e-3;      % [m]
-% % x_pos = 10e-3;    % [m]
-% % y_pos = 10e-3;    % [m]
-% %heated_region1 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), round(Nz_tot/2), round(radius/dx));
-% %heated_region1 = makeBall(Nx_tot, Ny_tot, Nz_tot, round(x_pos/dx), round(y_pos/dx), round(transducer.focus_distance/dx), round(radius/dx));
-% %heated_region1(:,:,round(Nz/2):end) = 0;  % Remove the upper half of the sphere.
-% %voxelPlot(heated_region1);
-% 
+ 
 % % define properties
 sound_speed_map = c0*ones(Nx, Ny, Nz).*background_map;
 density_map     = rho0*ones(Nx, Ny, Nz).*background_map;
-
-
-
-% % Add in the heated region.
-% % ---------------------------------------------------
-% %c0_heated_50 = speedSoundWater(50); % SOS of water at 50C.
-% %heating_map = c0_heated_50*ones(Nx_tot, Ny_tot, Nz_tot);
-% %heated_density_map = rho0_50*ones(Nx_tot, Ny_tot, Nz_tot);
-% % Update the global maps with the heated SOS and density from the Au bead.
-% %sound_speed_map(heated_region1 == 1) = heating_map(heated_region1 == 1);
-% %density_map(heated_region1 == 1) = heated_density_map(heated_region1 == 1);
-% 
 
  
 % % =========================================================================
@@ -251,10 +246,10 @@ info.return_velocity = false;
 % 
 % set the input settings
 input_args = {...
-    'PMLInside', false, 'PlotSim', false, 'PMLSize', [PML_X_SIZE, PML_Y_SIZE, PML_Z_SIZE], ...
-    'DisplayMask', transducer.mask,...
-    'PlotScale', [-(source_strength+source_strength/2), (source_strength+source_strength/2)],...
-    'ReturnVelocity', info.return_velocity};
+    'PMLInside', true, 'PlotSim', false, 'PMLSize', [PML_X_SIZE, PML_Y_SIZE, PML_Z_SIZE], ...
+    %'DisplayMask', transducer.mask,...
+    %'PlotScale', [-(source_strength+source_strength/2), (source_strength+source_strength/2)],...
+     };
     
 
 
@@ -266,13 +261,13 @@ medium.density = density_map(:, :, :);          % [kg/m^3]
 
 % Place sensors over the entire medium.
 sensor.mask = ones(Nx, Ny, Nz);
-sensor.record = {'p_max', 'p_rms'};
+%sensor.record = {'p_max', 'p_rms'};
  
 % save input files to disk
 if (PA_GUIDED_FOCUS)
-    filename = 'MyLAB_PA_Signal_Focus_INPUT.h5';
+    filename = 'MyLAB_PA_Signal_deep_bead.h5';
 else
     filename = 'MyLAB_Fixed_Focus_INPUT_debug.h5';
 end
-kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename);
+kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename, input_args{:});
 
