@@ -6,7 +6,7 @@
  */
 
 #include "debug.h"
-#include "vector3D.h"
+#include <MC-Boost/vector3D.h>
 #include "displacementMap.h"
 #include <boost/lexical_cast.hpp>
 
@@ -53,6 +53,9 @@ DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
                                  TRealMatrix * velocity_z,
                                  const float US_freq,
                                  const float dt)
+: X_PML_OFFSET(25), // defaults
+  Y_PML_OFFSET(10),
+  Z_PML_OFFSET(10)
 {
     /// Allocate displacement matrices for holding particle displacements used with MC sim.
     displacement_map_x = new TRealMatrix(velocity_x->GetDimensionSizes());
@@ -72,10 +75,6 @@ DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
     displacement_map_z->ZeroMatrix();
     
     
-    
-    velocity_map_x  = velocity_x;
-    velocity_map_y  = velocity_y;
-    velocity_map_z  = velocity_z;
     this->US_freq   = US_freq;
     this->dt        = dt;
     
@@ -86,6 +85,51 @@ DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
                             velocity_z);
     
 }
+
+
+
+DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
+                TRealMatrix * velocity_y,
+                TRealMatrix * velocity_z,
+                size_t x_pml_offset,
+                size_t y_pml_offset,
+                size_t z_pml_offset,
+                const float US_freq,
+                const float dt)
+{
+    /// Allocate displacement matrices for holding particle displacements used with MC sim.
+    displacement_map_x = new TRealMatrix(velocity_x->GetDimensionSizes());
+    displacement_map_y = new TRealMatrix(velocity_y->GetDimensionSizes());
+    displacement_map_z = new TRealMatrix(velocity_z->GetDimensionSizes());
+    
+    /// Sanity check.
+    assert (displacement_map_x != NULL);
+    assert (displacement_map_y != NULL);
+    assert (displacement_map_z != NULL);
+    
+    /// Displacements are updated per k-Wave time-step using a simple finite-difference scheme
+    /// d = d + dt*u;  where u is the velocity.
+    /// Since they are updated per time-step we need to zero them out.
+    displacement_map_x->ZeroMatrix();
+    displacement_map_y->ZeroMatrix();
+    displacement_map_z->ZeroMatrix();
+    
+    
+    this->US_freq   = US_freq;
+    this->dt        = dt;
+    
+    this->X_PML_OFFSET = x_pml_offset;
+    this->Y_PML_OFFSET = y_pml_offset;
+    this->Z_PML_OFFSET = z_pml_offset;
+    
+    
+    Update_displacement_map(velocity_x,
+                            velocity_y,
+                            velocity_z);
+    
+}
+
+
 
 void DisplacementMap::initCommon()
 {
@@ -252,99 +296,6 @@ void DisplacementMap::loadPressureAndCalculateDisplacements(const std::string &f
 															const double background_refractive_index)
 {
 
-//	// Assure memory has been allocated for the pressure values that
-//		// will be read in from file.  That is, initCommon() has already
-//		// been called.
-//		assert(displacement_gridX != NULL);
-//		assert(displacement_gridY != NULL);
-//		assert(displacement_gridZ != NULL);
-//
-//		// A pointer to the string that is set for opening the displacement file.
-//		std::string file_to_open;
-//
-//		// A pointer to one of the displacement grid arrays.  Set depending on
-//		// which grid should be filled below.
-//		three_dim_array *p_displacement_grid = NULL;
-//
-//		// Load each data structure with their respective displacement data.
-//		for (int i = 0; i < 3; i++)
-//		{
-//
-//
-//			// Open the file that contains the pressure values for the specific
-//			// dimension based on the loop index.
-//			//
-//			if (i == 0)
-//			{  // X-displacement file.
-//
-//				// Clear the string.
-//				file_to_open.clear();
-//
-//				// Concatonate the values passed in to form a filename to read in.
-//				file_to_open = filename + "X-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-//				disp_file_stream.open(file_to_open.c_str());
-//
-//				// The appropriate displacement grid is assigned to be filled below.
-//				p_displacement_grid = displacement_gridX;
-//			}
-//			else if (i == 1)
-//			{  // Y-displacement file.
-//
-//				// Clear the string.
-//				file_to_open.clear();
-//
-//				// Concatonate the values passed in to form a filename to read in.
-//				file_to_open = filename + "Y-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-//				disp_file_stream.open(file_to_open.c_str());
-//
-//				// The appropriate displacement grid is assigned to be filled below.
-//				p_displacement_grid = displacement_gridY;
-//			}
-//			else
-//			{  // Z-displacement file.
-//				file_to_open.clear();
-//
-//				// Concatonate the values passed in to form a filename to read in.
-//				file_to_open = filename + "Z-" + boost::lexical_cast<std::string>(timeStep) + ".txt";
-//				disp_file_stream.open(file_to_open.c_str());
-//
-//				// The appropriate displacement grid is assigned to be filled below.
-//				p_displacement_grid = displacement_gridZ;
-//			}
-//
-//
-//			// Check for successful opening of the file.
-//			if (!disp_file_stream)
-//			{
-//				cout << "!!! Error opening displacement map file " << file_to_open.c_str() << "!!!\n";
-//				exit(1);
-//			}
-//			else
-//			{
-//				cout << "Displacement map " << file_to_open.c_str() << " opened successfully. ";
-//				cout << "Loading displacement values...\n";
-//			}
-//
-//
-//			//double pressure_val = 0.0;
-//			// Read in data to the proper displacement array.
-//			for (array_index a = 0; a < Nx && disp_file_stream.good(); a++)
-//			{
-//				for (array_index b = 0; b < Nz; b++)
-//				{
-//					for (array_index c = 0; c < Ny; c++)
-//					{
-//						
-//                        cout << "DisplacementMap::loadPressureAndCalculateDisplacements NOT IMPLEMENTED!!!\n";
-//						(*p_displacement_grid)[a][b][c] = -1;
-//						//cout << (*p_displacement_grid)[a][b][c] << endl;
-//					}
-//				}
-//			}
-//
-//
-//			disp_file_stream.close();
-//		}
 }
 
 
@@ -355,35 +306,6 @@ boost::shared_ptr<Vector3d>
 DisplacementMap::getDisplacements(const Vector3d &photonLocation)
 {
 
-//	boost::mutex::scoped_lock lock(m_displacement_mutex);
-
-//	boost::shared_ptr<Vector3d> result(new Vector3d);
-
-
-//	// Indices into the displacement grids.
-//	int _x = photonLocation.location.x/dx - (photonLocation.location.x/dx)/Nx;
-//	int _y = photonLocation.location.y/dy - (photonLocation.location.y/dy)/Ny;
-//	int _z = photonLocation.location.z/dz - (photonLocation.location.z/dz)/Nz;
-
-
-//	// Sanity check.
-//	assert(((_x < Nx && _x >= 0) &&
-//			(_y < Ny && _y >= 0) &&
-//			(_z < Nz && _z >= 0)) ||
-//			assert_msg("_x=" << _x << " _y=" << _y << " _z=" << _z << "\n"
-//					<< photonLocation.location.x << " "
-//					<< photonLocation.location.y << " "
-//					<< photonLocation.location.z));
-
-
-
-
-//	result->location.x = getDisplacementFromGridX(_x, _y, _z);
-//	result->location.y = getDisplacementFromGridY(_x, _y, _z);
-//	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
-
-//	return result;
-
 }
 
 
@@ -392,22 +314,6 @@ boost::shared_ptr<Vector3d>
 DisplacementMap::getDisplacements(const double x, const double y, const double z)
 {
 
-
-//	// Indices into the displacement grids.
-
-//	boost::mutex::scoped_lock lock(m_displacement_mutex);
-
-//	// Indices into the displacement grids.
-//	int _x = x/dx - (x/dx)/Nx;
-//	int _y = y/dy - (y/dy)/Ny;
-//	int _z = z/dz - (z/dz)/Nz;
-
-//	boost::shared_ptr<Vector3d> result (new Vector3d);
-//	result->location.x = getDisplacementFromGridX(_x, _y, _z);
-//	result->location.y = getDisplacementFromGridY(_x, _y, _z);
-//	result->location.z = getDisplacementFromGridZ(_x, _y, _z);
-
-//	return result;
 }
 
 
@@ -444,19 +350,25 @@ double DisplacementMap::getDisplacementFromGridX(const int x, const int y, const
 {
 	//return (*displacement_gridX)[(array_index)a][(array_index)b][(array_index)c];
     
-    return Get_displacement_X_TRealMatrix(x, y, z);
+    return Get_displacement_X_TRealMatrix(x + X_PML_OFFSET,
+                                          y + Y_PML_OFFSET,
+                                          z + Z_PML_OFFSET);
 }
 
 double DisplacementMap::getDisplacementFromGridY(const int x, const int y, const int z)
 {
 	//return (*displacement_gridY)[(array_index)a][(array_index)b][(array_index)c];
     
-    return Get_displacement_Y_TRealMatrix(x, y, z);
+    return Get_displacement_Y_TRealMatrix(x + X_PML_OFFSET,
+                                          y + Y_PML_OFFSET,
+                                          z + Z_PML_OFFSET);
 }
 
 double DisplacementMap::getDisplacementFromGridZ(const int x, const int y, const int z)
 {
 	//return (*displacement_gridZ)[(array_index)a][(array_index)b][(array_index)c];
     
-    return Get_displacement_Z_TRealMatrix(x, y, z);
+    return Get_displacement_Z_TRealMatrix(x + X_PML_OFFSET,
+                                          y + Y_PML_OFFSET,
+                                          z + Z_PML_OFFSET);
 }

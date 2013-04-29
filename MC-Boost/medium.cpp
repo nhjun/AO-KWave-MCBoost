@@ -64,8 +64,12 @@ void Medium::initCommon(void)
 	kwave.nmap = NULL;		// Pointer to a RefractiveMap() object.
 	kwave.dmap = NULL;		// Pointer to a DisplacementMap() object.
 
-    coords_file.open("photon-paths.txt");
-	photon_data_file.open("photon-exit-data.txt");
+    X_PML_OFFSET = 0;
+    Y_PML_OFFSET = 0;
+    Z_PML_OFFSET = 0;
+    
+    //coords_file.open("photon-paths.txt");
+	//photon_data_file.open("photon-exit-data.txt");
 	
 }
 
@@ -578,13 +582,7 @@ Medium::Create_refractive_map(TRealMatrix * pressure,
     
     if(kwave.nmap == NULL)
     {
-        voxel_dims.Nx = dx;
-        voxel_dims.Ny = dy;
-        voxel_dims.Nz = dz;
-        
-        voxel_dims.Nx = Nx;
-        voxel_dims.Ny = Ny;
-        voxel_dims.Nz = Nz;
+
         
         /// Takes pressure as an argument in the constructor and forms the refractive map data.
         kwave.nmap = new RefractiveMap(pressure,
@@ -593,8 +591,6 @@ Medium::Create_refractive_map(TRealMatrix * pressure,
                                        rhoz,
                                        rho0,
                                        c2,
-                                       voxel_dims,
-                                       kwave.sensor_mask_index_size,
                                        pezio_optical_coeff,
                                        background_refractive_index);
         

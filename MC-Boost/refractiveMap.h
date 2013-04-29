@@ -49,26 +49,29 @@ public:
                   TRealMatrix *  rhoz,
                   TRealMatrix *  rho0,
                   TRealMatrix *  c2,
-                  VoxelAttributes voxel_dims,
-                  const long     sensor_mask_size,
                   const double   pezio_optical_coeff,
                   const double   n_background);
     
-	~RefractiveMap();
+    
+    RefractiveMap(TRealMatrix *  pressure,
+                  TRealMatrix *  rhox,
+                  TRealMatrix *  rhoy,
+                  TRealMatrix *  rhoz,
+                  TRealMatrix *  rho0,
+                  TRealMatrix *  c2,
+                  size_t x_pml_offset,
+                  size_t y_pml_offset,
+                  size_t z_pml_offset,
+                  const double   pezio_optical_coeff,
+                  const double   n_background);
+    
+	
+    ~RefractiveMap();
     
     
     // Common init function for constructors of the class.
 	void initCommon(VoxelAttributes voxel_dims);
     
-    
-
-//	void 	loadRefractiveMap(void);
-//	void	loadRefractiveMap(const std::string &filename, const int time_step);
-//	void 	loadRefractiveMap(const std::string &filename);
-
-    
-    /// Return the refractive index from the TRealMatrix.
-    float  Get_refractive_index_TRealMatrix(const int x, const int y, const int z);
     
     /// Updates the current values in 'refractive_map' when a new pressure matrix is obtained
     /// from a time step of the k-Wave simulation.
@@ -83,6 +86,10 @@ public:
     ///
 	float 	getRefractiveIndexFromGrid(const int x, const int z, const int y);
 
+    /// Return the refractive index from the TRealMatrix.
+    float  Get_refractive_index_TRealMatrix(const int x, const int y, const int z);
+    
+    
 	// Returns the pressure from cartesian coordinates of the photon.
 	double 	getRefractiveIndex(double x, double z, double y);
 	// Returns the pressure from cartesian coordinates in a position vector.
@@ -120,12 +127,11 @@ private:
 	// Holds the name of the text file that contains the pressure values.
 	std::string pressure_file;
 
-    
-    /// OLD WAY:
-	// Holds the pressure values obtained from k-Wave in a 3-dimensional grid
-	// allowing us to index into the grid based on the coordinates of the phton
-	// and retrieve the localized pressure.
-	//three_dim_array * refractive_grid;
+
+    /// For correct indexing into the refractive grid (taking into account the pml and size of MC grid).
+    size_t X_PML_OFFSET;
+    size_t Y_PML_OFFSET;
+    size_t Z_PML_OFFSET;
     
     /// NEW WAY:
     /// This holds the refractive map at a single time step.  That is the

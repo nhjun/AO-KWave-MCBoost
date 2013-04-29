@@ -19,19 +19,19 @@ RefractiveMap::RefractiveMap(TRealMatrix *  pressure,
                              TRealMatrix *  rhoz,
                              TRealMatrix *  rho0,
                              TRealMatrix *  c2,
-                             VoxelAttributes voxel_dims,
-                             const long     sensor_mask_size,
                              const double   pezio_optical_coeff,
                              const double   n_background)
+: X_PML_OFFSET(25),
+  Y_PML_OFFSET(10),
+  Z_PML_OFFSET(10)
 {
 
     refractive_map = new TRealMatrix(pressure->GetDimensionSizes());
 
-    this->sensor_mask_size      = sensor_mask_size;
     this->pezio_optical_coeff   = pezio_optical_coeff;
     this->n_background          = n_background;
 
-    initCommon(voxel_dims);
+    //initCommon(voxel_dims);
     
     Update_refractive_map(pressure,
                           rhox,
@@ -39,6 +39,39 @@ RefractiveMap::RefractiveMap(TRealMatrix *  pressure,
                           rhoz,
                           rho0,
                           c2);
+}
+
+
+RefractiveMap::RefractiveMap(TRealMatrix *  pressure,
+                             TRealMatrix *  rhox,
+                             TRealMatrix *  rhoy,
+                             TRealMatrix *  rhoz,
+                             TRealMatrix *  rho0,
+                             TRealMatrix *  c2,
+                             size_t x_pml_offset,
+                             size_t y_pml_offset,
+                             size_t z_pml_offset,
+                             const double   pezio_optical_coeff,
+                             const double   n_background)
+{
+    
+    
+    refractive_map = new TRealMatrix(pressure->GetDimensionSizes());
+    
+    this->pezio_optical_coeff   = pezio_optical_coeff;
+    this->n_background          = n_background;
+    
+    this->X_PML_OFFSET = x_pml_offset;
+    this->Y_PML_OFFSET = y_pml_offset;
+    this->Z_PML_OFFSET = z_pml_offset;
+    
+    Update_refractive_map(pressure,
+                          rhox,
+                          rhoy,
+                          rhoz,
+                          rho0,
+                          c2);
+    
 }
 
 
@@ -83,15 +116,15 @@ RefractiveMap::RefractiveMap(TRealMatrix *  pressure,
 
 void RefractiveMap::initCommon(VoxelAttributes vox_attr)
 {
-    voxel_dims.Nx = vox_attr.Nx;
-    voxel_dims.Ny = vox_attr.Ny;
-    voxel_dims.Nz = vox_attr.Nz;
-    
-    voxel_dims.dx = vox_attr.dx;
-    voxel_dims.dy = vox_attr.dy;
-    voxel_dims.dz = vox_attr.dz;
-    
-    
+//    voxel_dims.Nx = vox_attr.Nx;
+//    voxel_dims.Ny = vox_attr.Ny;
+//    voxel_dims.Nz = vox_attr.Nz;
+//    
+//    voxel_dims.dx = vox_attr.dx;
+//    voxel_dims.dy = vox_attr.dy;
+//    voxel_dims.dz = vox_attr.dz;
+//    
+//    
     
     
 //	// Make sure the grid size (voxels in each axis) has been defined.
@@ -340,7 +373,9 @@ RefractiveMap::getRefractiveIndexFromGrid(const int x_photon, const int y_photon
 	//return (*refractive_grid)[(array_index)a][(array_index)b][(array_index)c];
     
     /// NEW: Used to access k-Wave data structure.
-    return Get_refractive_index_TRealMatrix(x_photon, y_photon, z_photon);
+    return Get_refractive_index_TRealMatrix(x_photon + X_PML_OFFSET,
+                                            y_photon + Y_PML_OFFSET,
+                                            z_photon + Z_PML_OFFSET);
 }
 
 
@@ -397,7 +432,7 @@ RefractiveMap::Update_refractive_map(TRealMatrix *pressure,
     
     
     /// Update the values of refraction in the TRealMatrix, based on the pressure passed in, at this timestep.
-    for (int i = 0; i < sensor_mask_size; i++)
+    for (int i = 0; i < refractive_map->GetTotalElementCount(); i++)
     {
         /// Calculate the background density with the addition of the pressure induced variations.
         /// NOTE:

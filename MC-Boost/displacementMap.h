@@ -12,10 +12,10 @@
 
 #include <MatrixClasses/RealMatrix.h>
 
+#include <MC-Boost/vectorMath.h>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/multi_array.hpp>
-#include "vectorMath.h"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -54,6 +54,18 @@ public:
                     TRealMatrix * velocity_z,
                     const float US_freq,
                     const float dt);
+    
+    
+    /// Constructor for forming a displacement map object using k-Wave C++ version.
+    DisplacementMap(TRealMatrix * velocity_x,
+                    TRealMatrix * velocity_y,
+                    TRealMatrix * velocity_z,
+                    size_t x_pml_offset,
+                    size_t y_pml_offset,
+                    size_t z_pml_offset,
+                    const float US_freq,
+                    const float dt);
+    
     
     
     /// Update the pointers to the new velocities.
@@ -147,12 +159,12 @@ private:
 	three_dim_array * displacement_gridZ;
     
     
-    /// FIXME:
-    /// These are the velocities maps which are used to calculate the instantaneous displacement for a monochromatic
-    /// ultrasound wave.  It is an approximation and eventually needs to be changed to something more accurate.
-    TRealMatrix * velocity_map_x;
-    TRealMatrix * velocity_map_y;
-    TRealMatrix * velocity_map_z;
+    /// To keep the displacement computational grid as the same size of the k-Wave velocity grid,
+    /// but taking into account the PML, we have to offset into the displacement grid to match
+    /// the monte-carlo grid.  These take care of that.
+    size_t X_PML_OFFSET;
+    size_t Y_PML_OFFSET;
+    size_t Z_PML_OFFSET;
     
     
     /// Hold the displacement values calculated from velocities obtained by k-Wave.  Updated per k-Wave time step.

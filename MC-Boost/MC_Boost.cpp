@@ -96,7 +96,7 @@ MC_Boost::Generate_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
     
     /// Generate seeds from only 1 thread, ensuring the seeds used in the threaded propagation are not
 	/// correlated.
-    size_t ONLY_ONE_THREAD = 2;
+    size_t ONLY_ONE_THREAD = 1;
 	size_t THREAD_CNT = ONLY_ONE_THREAD;
     
     
@@ -261,11 +261,7 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     // Initialize the C++ RNG.
     srand(13);
     
-    
-    /// Generate seeds from only 1 thread, ensuring the seeds used in the threaded propagation are not
-	/// correlated.
-    size_t ONLY_ONE_THREAD = 2;
-	size_t THREAD_CNT = ONLY_ONE_THREAD;
+	size_t THREAD_CNT = NUM_THREADS;
     
     
     Photon *photons[NUM_PHOTON_OBJS];
@@ -320,12 +316,7 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     
     delete seeds;
     
-    cout << "... done\n"
-    << "Simulated: " << MAX_NUM_PHOTONS << '\n'
-    << "Detected: " << Logger::getInstance()->Get_num_detected_seed_photons() << " photons\n";
-    
-    
-
+    cout << "... done\n";
     cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";
 }
 

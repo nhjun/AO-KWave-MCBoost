@@ -1237,7 +1237,7 @@ void Photon::transmit(const char *type)
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
 			
-           // if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
          	{
 
                 double ni = currLayer->getRefractiveIndex();

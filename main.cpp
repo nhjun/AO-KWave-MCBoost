@@ -682,7 +682,7 @@ int main(int argc, char** argv) {
     /// NOTE: Centering the detector on the x-y plane.
     Detector_Properties detector_props;
     detector_props.radius = 0.0025;
-    detector_props.x_coord = 0.018;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+    detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
     detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
     detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
 	detector_props.xy_plane = true;
@@ -707,8 +707,11 @@ int main(int argc, char** argv) {
 	
     /// Run the monte-carlo simulation once, to save seeds, that produced paths,
     /// that made it through the exit aperture.
-    AO_simulation.Generate_exit_seeds();
-    AO_simulation.Load_generated_seeds();
+    /// FIXME:
+    /// - Using seeds is producing an enormous slow down.  Need to debug why this is happening.
+    ///   Turned off for now.
+    ///AO_simulation.Generate_exit_seeds();
+    ///AO_simulation.Load_generated_seeds();
     
     /// Display the monte-carlo simulation parameters
 	/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
@@ -721,44 +724,44 @@ int main(int argc, char** argv) {
     
     
     
-//    /// ----------------------------------------------------------------------------------------------------
-//    /// k-Wave
-//    /// ----------------------------------------------------------------------------------------------------
-//    
-//    /// set number of threads for the k-Wave simulation and bind them to cores.
-//    omp_set_num_threads(Parameters->GetNumberOfThreads());
-//    setenv("OMP_PROC_BIND","TRUE", 1);
-//    
-//    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
-//    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
-//    AO_simulation.Print_kWave_sim_params();
-//    
-//    
-//    cout << FMT_SmallSeparator;
-//    cout << ".......... k-Wave Initialization ........\n";
-//    cout << "Memory allocation ..........";
-//    AO_simulation.kWave_allocate_memory();
-//
-////    
-////#define DEBUG
-//#ifdef DEBUG
-//    
-//    //Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
-//
-//AO_simulation.Test_Seeded_MC_sim();
-////	//AO_simulation.Test_Seeded_MC_sim();    
-//
-//#else
-//    
-//    /// Run the AO simulation.
-//	bool sim_displacement = false;
-//	bool sim_refractive_grad = false;
-//    AO_simulation.Run_acousto_optics_sim(Parameters,
-//										 sim_displacement,
-//										 sim_refractive_grad);
-//    
-//#endif    
-//    
+    /// ----------------------------------------------------------------------------------------------------
+    /// k-Wave
+    /// ----------------------------------------------------------------------------------------------------
+    
+    /// set number of threads for the k-Wave simulation and bind them to cores.
+    omp_set_num_threads(Parameters->GetNumberOfThreads());
+    setenv("OMP_PROC_BIND","TRUE", 1);
+    
+    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
+    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
+    AO_simulation.Print_kWave_sim_params();
+    
+    
+    cout << FMT_SmallSeparator;
+    cout << ".......... k-Wave Initialization ........\n";
+    cout << "Memory allocation ..........";
+    AO_simulation.kWave_allocate_memory();
+
+   
+//#define DEBUG
+#ifdef DEBUG
+    
+    //Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
+
+    //AO_simulation.Test_Seeded_MC_sim();
+    //AO_simulation.Test_Seeded_MC_sim();    
+
+#else
+    
+    /// Run the AO simulation.
+	bool sim_displacement = true;
+	bool sim_refractive_grad = false;
+    AO_simulation.Run_acousto_optics_sim(Parameters,
+										 sim_displacement,
+										 sim_refractive_grad);
+    
+#endif    
+
 
 
 

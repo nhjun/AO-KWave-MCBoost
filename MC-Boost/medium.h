@@ -271,6 +271,15 @@ public:
     void Set_dim_y(double y) {this->y_bound = y;}
     void Set_dim_z(double z) {this->z_bound = z;}
     
+    
+    /// Set the size of the PML used in the k-Wave simulation.
+    /// This is used to correctly offset into the displacement
+    /// and refractive index grids.
+    void Set_X_PML(size_t x_pml_offset) {X_PML_OFFSET = x_pml_offset;};
+    void Set_Y_PML(size_t y_pml_offset) {Y_PML_OFFSET = y_pml_offset;};
+    void Set_Z_PML(size_t z_pml_offset) {Z_PML_OFFSET = z_pml_offset;};
+    
+    
     // Get dimensions of grid.
     size_t Get_Nx() {return Nx;}
     size_t Get_Ny() {return Ny;}
@@ -328,6 +337,13 @@ private:
     
     /// Create a small container for voxel size and numbers.
     VoxelAttributes voxel_dims;
+    
+    
+    /// The size (voxels) of the PML used in k-Wave simulation.
+    /// Used to correctly index into displacement/refractive grids.
+    size_t X_PML_OFFSET;
+    size_t Y_PML_OFFSET;
+    size_t Z_PML_OFFSET;
 
     // The density of the medium.
     //double density;

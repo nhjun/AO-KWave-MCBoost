@@ -203,19 +203,19 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         /// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
         /// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
       
-        size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
-        size_t y_voxel = m_medium->Get_Ny()/2;
-        size_t z_voxel = m_medium->Get_Nz()/2;
-        float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-        float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-        float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-        float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
-        float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
-        float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
-                                                                    
-        Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
-                                                           dispX, dispY, dispZ);
-                                                           
+//        size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
+//        size_t y_voxel = m_medium->Get_Ny()/2;
+//        size_t z_voxel = m_medium->Get_Nz()/2;
+//        float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
+//        float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
+//        float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
+//                                                                    
+//        Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
+//                                                           dispX, dispY, dispZ);
+        
 	       
 #else
         
@@ -228,12 +228,10 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         {
             cout << ".......... Running MC-Boost ......... ";
             cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
-//            da_boost->Run_seeded_MC_sim_timestep(m_medium,
-//                                                 m_Laser_injection_coords,
-//                                                 KSpaceSolver->GetTimeIndex());
+            da_boost->Run_seeded_MC_sim_timestep(m_medium,
+                                                 m_Laser_injection_coords,
+                                                 KSpaceSolver->GetTimeIndex());
 
-			da_boost->Save_RNG_Seeds(true);
-            da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
         }
 #endif
         
@@ -307,10 +305,24 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     ///        'parameters' to the appropriate Monte-carlo coordinates to achieve
     ///        the rotation.
     ///--------------------------------------------------------------------------
-    // Number of voxels in each axis.
-    size_t Nx = parameters->GetFullDimensionSizes().X;
-    size_t Ny = parameters->GetFullDimensionSizes().Y;
-    size_t Nz = parameters->GetFullDimensionSizes().Z;
+    // Number of voxels in each axis, with the PML taken into account.
+    // NOTE:
+    // - It is assumed that the PML is always included INSIDE the computational
+    //   medium (i.e. it is not expanded), as defined in the matlab script, and that there is a small
+    //   cushion (5 voxels along US transmission axis) to ensure the probe sits away from the PML.
+    //   These things are taken into account below in the monte-carlo simulation grid.
+    // - As an example, if the x-axis is 512 elements and the X_PML is 20 elements,
+    //   the US probe should sit at X_PML+OFFSET in the k-Wave computation medium, which
+    //   means the monte-carlo medium should reflect these changes because US data in the PML
+    //   is heavily distorted, as it should be.
+    size_t OFFSET = 5; /// An offset to apply to the transmission axis PML (i.e. x_pml).
+    size_t x_pml_offset = parameters->Get_pml_x_size()+OFFSET;
+    size_t y_pml_offset = parameters->Get_pml_y_size();
+    size_t z_pml_offset = parameters->Get_pml_z_size();
+    
+    size_t Nx = parameters->GetFullDimensionSizes().X - 2*x_pml_offset;
+    size_t Ny = parameters->GetFullDimensionSizes().Y - 2*y_pml_offset;
+    size_t Nz = parameters->GetFullDimensionSizes().Z - 2*z_pml_offset;
     
     // Size of each voxel along its respective axis.
     double dx = parameters->Get_dx();
@@ -337,6 +349,11 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     this->m_medium->Set_Nx(Nx);
     this->m_medium->Set_Ny(Ny);
     this->m_medium->Set_Nz(Nz);
+    
+    /// Set the size of the PML's used in the k-Wave simulation.
+    this->m_medium->Set_X_PML(x_pml_offset);
+    this->m_medium->Set_Y_PML(y_pml_offset);
+    this->m_medium->Set_Z_PML(z_pml_offset);
     
     
     /// Set the size of the sensor mask used in the kWave simulation.  This is the number
