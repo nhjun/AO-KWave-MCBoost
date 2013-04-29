@@ -169,7 +169,7 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     ///
     assert (MAX_NUM_PHOTONS > 0);
     assert (NUM_THREADS > 0);
-    assert (exit_seeds.size() > 0);
+    ///assert (exit_seeds.size() > 0);
     /// and a medium in which to run the simulation.
     ///
     assert (medium != NULL);
