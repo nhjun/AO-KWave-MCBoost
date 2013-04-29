@@ -271,26 +271,28 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     
 	/// Create a std::vector that contains objects of type 'RNGSeed', which will be the seeds fed
 	/// to the RNG during execution.
-	RNG_seed_vector *seeds = new RNG_seed_vector;
+	RNG_seed_vector *seeds[THREAD_CNT];
 	RNGSeeds temp;
     
     for (size_t i = 0; i < THREAD_CNT; ++i)
     {
-        
+		seeds[i] = new RNG_seed_vector;        
+
 		temp.s1 = rand() + 128*(i+1);
-		temp.s2 = rand() + 128*(i+1);
-		temp.s3 = rand() + 128*(i+1);
-		temp.s4 = rand() + 128*(i+1);
-		seeds->push_back(temp);
+		temp.s2 = rand()*rand() + 128*(i+1);
+		temp.s3 = rand()*rand()*rand() + 128*(i+1);
+		temp.s4 = rand()*rand()*rand()*rand() + 128*(i+1);
+		
+		(seeds[i])->push_back(temp);
         
-		cout << temp.s1 << " " << temp.s2 << " " << temp.s3 << " " << temp.s4 << '\n';
+		///cout << temp.s1 << " " << temp.s2 << " " << temp.s3 << " " << temp.s4 << '\n';
         photons[i] = new Photon();
         //        threads[i] = new boost::thread(&Photon::injectPhoton, photons[i], medium,
         //                                       MAX_NUM_PHOTONS/THREAD_CNT, rng[i],
         //                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
         
 		threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
-                                       MAX_NUM_PHOTONS/THREAD_CNT, seeds,
+                                       MAX_NUM_PHOTONS/THREAD_CNT, seeds[i],
                                        LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
         
     }
@@ -309,12 +311,14 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     {
         delete photons[j];
         delete threads[j];
+		delete seeds[j];
         
         photons[j] = NULL;
         threads[j] = NULL;
+		seeds[j]   = NULL;
     }
     
-    delete seeds;
+    
     
     cout << "... done\n";
     cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";

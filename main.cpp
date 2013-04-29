@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 5e6;
+const int MAX_PHOTONS = 20e6;
 
 // Testing routines.
 void testVectorMath(void);
@@ -716,7 +716,7 @@ int main(int argc, char** argv) {
     /// Display the monte-carlo simulation parameters
 	/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
 	/// Only want to run 4 hardware threads.
-	const size_t hardware_threads = 2;
+	const size_t hardware_threads = 4;
 	///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
 	AO_simulation.Set_num_MC_threads(hardware_threads);	
 	AO_simulation.Print_MC_sim_params();
