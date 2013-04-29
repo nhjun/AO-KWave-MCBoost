@@ -234,16 +234,21 @@ void Photon::propagatePhoton(const int iterations)
 			/// Case where we want each iteration to contain a RNG from new seeds.
 			/// That is, each iteration will contain, from the start of photon propagation,
 			/// seeds that had caused this photon to hop() until it exited the detection aperture.
+            //RNG_seed_vector temp = (*iteration_seeds);
+            //cout << temp[i].s1 << " " << temp[i].s2 << " " << temp[i].s3 << " " << temp[i].s4 << "\n";
 			RNG_generator->initRNG((*iteration_seeds)[i].s1,
 									(*iteration_seeds)[i].s2,
 									(*iteration_seeds)[i].s3,
 									(*iteration_seeds)[i].s4);
 		}
-		else if ((iteration_seeds->size() == 1) && (i == 1))
+		else if ((iteration_seeds->size() == 1) && (i == 0))
 		{
 			/// Case where only one set of seeds has been given.
 			/// This is when the RNG needs to produce a continuous stream,
 			/// typically when seeds are going to be saved.
+            //RNG_seed_vector temp = (*iteration_seeds);
+            //cout << temp[1].s1 << " " << temp[1].s2 << " " << temp[1].s3 << " " << temp[1].s4 << "\n";
+            //cout.flush();
 			RNG_generator->initRNG((*iteration_seeds)[i].s1,
 									(*iteration_seeds)[i].s2,
 									(*iteration_seeds)[i].s3,
@@ -1232,7 +1237,7 @@ void Photon::transmit(const char *type)
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
 			
-            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+           // if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
          	{
 
                 double ni = currLayer->getRefractiveIndex();
