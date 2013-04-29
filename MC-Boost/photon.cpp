@@ -191,7 +191,7 @@ void Photon::TESTING(Medium * medium, const int iterations, RNG_seed_vector *rng
 
 	
     // Assign this photon object a random number generator, which is passed in from main().
-	
+	RNG_generator = new RNG();
 	iteration_seeds = rng_seeds;
 
 
@@ -214,7 +214,6 @@ void Photon::TESTING(Medium * medium, const int iterations, RNG_seed_vector *rng
 void Photon::propagatePhoton(const int iterations)
 {
 
-	RNG_generator = new RNG();
 	// Inject 'iterations' number of photons into the medium.
 	int i;
 	for (i = 0; i < iterations; i++) 
@@ -239,7 +238,6 @@ void Photon::propagatePhoton(const int iterations)
 									(*iteration_seeds)[i].s2,
 									(*iteration_seeds)[i].s3,
 									(*iteration_seeds)[i].s4);
-			cout << "Here1\n";
 		}
 		else if ((iteration_seeds->size() == 1) && (i == 1))
 		{
@@ -250,7 +248,6 @@ void Photon::propagatePhoton(const int iterations)
 									(*iteration_seeds)[i].s2,
 									(*iteration_seeds)[i].s3,
 									(*iteration_seeds)[i].s4);
-			cout << "Here2\n";
 		}
 //		else
 //		{
