@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 20e6;
+const int MAX_PHOTONS = 4;
 
 // Testing routines.
 void testVectorMath(void);
@@ -627,7 +627,18 @@ int main(int argc, char** argv) {
     
     /// The Acouto-Optic simulation object.
     AO_Sim AO_simulation;
+
+	/// What should be simulated - Ultrasound, Monte-Carlo, Both (Acousto-Optics)?
+	bool sim_monte_carlo 	= false;
+	bool sim_kWave		 	= true;
+	bool sim_acousto_optics = false; 
+
+	/// What AO mechanisms will be turned on during the simulation.
+	bool sim_displacement 	 = false;
+	bool sim_refractive_grad = false;
     
+
+
     /// print headers
     cout << FMT_SmallSeparator;
     cout << AO_simulation.Print_kWave_header() << endl;
@@ -655,110 +666,135 @@ int main(int argc, char** argv) {
     /// ----------------------------------------------------------------------------------------------------
     /// MC-Boost
     /// ----------------------------------------------------------------------------------------------------
+    if (sim_monte_carlo || sim_acousto_optics)
+	{
+    	/// Set the number of photons to simulate and how many threads will be run.
+    	AO_simulation.Set_num_MC_threads(1);
+    	//AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+    	AO_simulation.Set_num_photons(MAX_PHOTONS);
     
-    /// Set the number of photons to simulate and how many threads will be run.
-    AO_simulation.Set_num_MC_threads(1);
-    //AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
-    AO_simulation.Set_num_photons(MAX_PHOTONS);
+    	/// Create the grid that the monte-carlo simulation will use.
+    	AO_simulation.Create_MC_grid(Parameters);
     
-    /// Create the grid that the monte-carlo simulation will use.
-    AO_simulation.Create_MC_grid(Parameters);
+    	/// Assign the pezio-optical coefficient.
+    	AO_simulation.Set_pezio_optical_coeff(0.322);
     
-    /// Assign the pezio-optical coefficient.
-    AO_simulation.Set_pezio_optical_coeff(0.322);
+    	/// Add a layer to the monte-carlo medium defining the optical properties.
+    	Layer_Properties layer_props;
+    	layer_props.mu_a        = 0.0f;
+    	layer_props.mu_s        = 70.0f;
+    	layer_props.refractive_index = 1.33f;
+    	layer_props.anisotropy  = 0.9f;
+    	layer_props.start_depth = 0.0f;
+    	layer_props.end_depth   = AO_simulation.Get_MC_Zaxis_depth();
+    	AO_simulation.Add_layer_MC_medium(layer_props);
     
-    /// Add a layer to the monte-carlo medium defining the optical properties.
-    Layer_Properties layer_props;
-    layer_props.mu_a        = 0.0f;
-    layer_props.mu_s        = 70.0f;
-    layer_props.refractive_index = 1.33f;
-    layer_props.anisotropy  = 0.9f;
-    layer_props.start_depth = 0.0f;
-    layer_props.end_depth   = AO_simulation.Get_MC_Zaxis_depth();
-    AO_simulation.Add_layer_MC_medium(layer_props);
-    
-    /// Add a detector to the medium (i.e. an exit aperture) for collecting photons that will make their way
-    /// to the CCD camera.
-    /// NOTE: Centering the detector on the x-y plane.
-    Detector_Properties detector_props;
-    detector_props.radius = 0.0025;
-    detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
-    detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
-    detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
-	detector_props.xy_plane = true;
-    AO_simulation.Add_circular_detector_MC_medium(detector_props);
+    	/// Add a detector to the medium (i.e. an exit aperture) for collecting photons that will make their way
+    	/// to the CCD camera.
+    	/// NOTE: Centering the detector on the x-y plane.
+    	Detector_Properties detector_props;
+    	detector_props.radius = 0.0025;
+    	detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+    	detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
+    	detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
+		detector_props.xy_plane = true;
+    	AO_simulation.Add_circular_detector_MC_medium(detector_props);
     
     
-    /// Define the injection point of light in the medium.
-    coords LaserInjectionCoords;
-	/// Align the injection with the detection aperture.
-	LaserInjectionCoords.x = detector_props.x_coord;	//AO_simulation.Get_MC_Xaxis_depth()/2; // Centered
-	LaserInjectionCoords.y = detector_props.y_coord; 	//AO_simulation.Get_MC_Yaxis_depth()/2; // Centered
-	LaserInjectionCoords.z = 1e-16f;   // Just below the surface of the 'air' layer.
-    AO_simulation.Set_laser_injection_coords(LaserInjectionCoords);
+    	/// Define the injection point of light in the medium.
+    	coords LaserInjectionCoords;
+		/// Align the injection with the detection aperture.
+		LaserInjectionCoords.x = detector_props.x_coord;	//AO_simulation.Get_MC_Xaxis_depth()/2; // Centered
+		LaserInjectionCoords.y = detector_props.y_coord; 	//AO_simulation.Get_MC_Yaxis_depth()/2; // Centered
+		LaserInjectionCoords.z = 1e-16f;   // Just below the surface of the 'air' layer.
+    	AO_simulation.Set_laser_injection_coords(LaserInjectionCoords);
     
 	
-	/// Set how often the monte-carlo simulation runs.
-	float mc_step = 100e-9;
-	assert(mc_step >= Parameters->Get_dt());
-	AO_simulation.Set_MC_time_step(mc_step);
+		/// Set how often the monte-carlo simulation runs.
+		float mc_step = 100e-9;
+		assert(mc_step >= Parameters->Get_dt());
+		AO_simulation.Set_MC_time_step(mc_step);
 
 
 	
-    /// Run the monte-carlo simulation once, to save seeds, that produced paths,
-    /// that made it through the exit aperture.
-    /// FIXME:
-    /// - Using seeds is producing an enormous slow down.  Need to debug why this is happening.
-    ///   Turned off for now.
-    ///AO_simulation.Generate_exit_seeds();
-    ///AO_simulation.Load_generated_seeds();
+    	/// Run the monte-carlo simulation once, to save seeds, that produced paths,
+    	/// that made it through the exit aperture.
+    	/// FIXME:
+    	/// - Using seeds is producing an enormous slow down.  Need to debug why this is happening.
+    	///   Turned off for now.
+    	///AO_simulation.Generate_exit_seeds();
+    	///AO_simulation.Load_generated_seeds();
     
-    /// Display the monte-carlo simulation parameters
-	/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
-	/// Only want to run 4 hardware threads.
-	const size_t hardware_threads = 4;
-	///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
-	AO_simulation.Set_num_MC_threads(hardware_threads);	
-	AO_simulation.Print_MC_sim_params();
-
+    	/// Display the monte-carlo simulation parameters
+		/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
+		/// Only want to run 4 hardware threads.
+		const size_t hardware_threads = 4;
+		///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
+		AO_simulation.Set_num_MC_threads(hardware_threads);	
+		AO_simulation.Print_MC_sim_params();
+	}
     
     
     
     /// ----------------------------------------------------------------------------------------------------
     /// k-Wave
     /// ----------------------------------------------------------------------------------------------------
+    if (sim_kWave || sim_acousto_optics)
+    {
+    	/// set number of threads for the k-Wave simulation and bind them to cores.
+    	omp_set_num_threads(Parameters->GetNumberOfThreads());
+    	setenv("OMP_PROC_BIND","TRUE", 1);
     
-    /// set number of threads for the k-Wave simulation and bind them to cores.
-    omp_set_num_threads(Parameters->GetNumberOfThreads());
-    setenv("OMP_PROC_BIND","TRUE", 1);
-    
-    cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
-    cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
-    AO_simulation.Print_kWave_sim_params();
+    	cout << "\n\n" << FMT_SmallSeparator << " k-Wave Parameters \n" << FMT_SmallSeparator;
+    	cout << "Number of CPU threads:    " << Parameters->GetNumberOfThreads() << endl;
+    	AO_simulation.Print_kWave_sim_params();
     
     
-    cout << FMT_SmallSeparator;
-    cout << ".......... k-Wave Initialization ........\n";
-    cout << "Memory allocation ..........";
-    AO_simulation.kWave_allocate_memory();
-
+    	cout << FMT_SmallSeparator;
+    	cout << ".......... k-Wave Initialization ........\n";
+    	cout << "Memory allocation ..........";
+    	AO_simulation.kWave_allocate_memory();
+	}
    
 //#define DEBUG
 #ifdef DEBUG
     
     //Logger::getInstance()->Open_vel_disp_file("Data/velocity_displacement.dat");
-
     //AO_simulation.Test_Seeded_MC_sim();
     //AO_simulation.Test_Seeded_MC_sim();    
 
 #else
-    
-    /// Run the AO simulation.
-	bool sim_displacement = true;
-	bool sim_refractive_grad = false;
-    AO_simulation.Run_acousto_optics_sim(Parameters,
-										 sim_displacement,
-										 sim_refractive_grad);
+
+
+	/// Run what was specified.
+	if (sim_monte_carlo && (!sim_kWave))
+	{
+		/// This will run the monte-carlo simulation once.
+		/// FIXME:
+		/// - Implement a call 'Run_monte_carlo()'
+		AO_simulation.Generate_exit_seeds();
+	}
+	else if (sim_kWave && (!sim_monte_carlo))
+	{
+		/// This runs the acousto_optics simulation with monte-carlo turned off.
+		/// FIXME:
+		/// - Implement a call 'Run_kWave()'
+		AO_simulation.Run_acousto_optics_sim(Parameters,
+											 false,
+											 false);
+	}
+    else if (sim_acousto_optics)
+    {
+    	/// Run the AO simulation.
+    	AO_simulation.Run_acousto_optics_sim(Parameters,
+											 sim_displacement,
+											 sim_refractive_grad);
+	}
+	else
+	{
+		cout << "\n\n!!! Error: Nothing has been selected to simulate (MC, kWave, AO) !!! (main.cpp)\n\n";
+		return EXIT_FAILURE;
+	}
     
 #endif    
 

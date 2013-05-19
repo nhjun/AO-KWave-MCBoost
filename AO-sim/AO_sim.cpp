@@ -128,113 +128,117 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
         
         /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
         ///
-		/// If the flag for simulating the influence of refractive index changes is set
+		/// If the flag for simulating the influence of refractive index changes or displacements is set
 		/// we need to grab the appropriate data from k-Wave and build grids for
 		/// photon propagation to use in order to alter its path accordingly.
 
-		TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
-        TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
-       	TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
-       	TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
-       	TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
-       	TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
-
-		TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
-        TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
-        TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
-
-		/// NOTE:
-		/// 	- These need to be updated along every time step of k-Wave to remain accurate.
-		if (sim_refractive_grad &&
-			sim_displacement)
+		if (sim_refractive_grad || sim_displacement )
 		{
-			/// Create a refractive map based upon the pressure at this time step.
-        	m_medium->Create_refractive_map(currentPressure,
-            	                            current_rhox,
-            	                            current_rhoy,
-            	                            current_rhoz,
-            	                            rho0,
-            	                            c2,
-            	                            pezio_optical_coeff);
 
-			/// Create a displacment map based upon the pressure at this time step.
-        	m_medium->Create_displacement_map(currentVelocity_Xaxis,
-            	                              currentVelocity_Yaxis,
-            	                              currentVelocity_Zaxis,
-            	                              m_medium->kwave.US_freq,
-            	                              m_medium->kwave.dt);
-		}
-		else if (sim_refractive_grad)
-		{
-			/// Create a refractive map based upon the pressure at this time step.
-        	m_medium->Create_refractive_map(currentPressure,
-            	                            current_rhox,
-            	                            current_rhoy,
-            	                            current_rhoz,
-            	                            rho0,
-            	                            c2,
-            	                            pezio_optical_coeff);	
-		}
-		/// Similar to above (i.e. sim_refractive_grad)
-		else if (sim_displacement)
-		{
-        	/// Create a displacment map based upon the pressure at this time step.
-        	m_medium->Create_displacement_map(currentVelocity_Xaxis,
-            	                              currentVelocity_Yaxis,
-            	                              currentVelocity_Zaxis,
-            	                              m_medium->kwave.US_freq,
-            	                              m_medium->kwave.dt);
-        }
+			TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
+        	TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
+       		TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
+       		TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
+       		TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
+       		TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
+
+			TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
+        	TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
+        	TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
+
+			/// NOTE:
+			/// 	- These need to be updated along every time step of k-Wave to remain accurate.
+			if (sim_refractive_grad &&
+				sim_displacement)
+			{
+				/// Create a refractive map based upon the pressure at this time step.
+        		m_medium->Create_refractive_map(currentPressure,
+            		                            current_rhox,
+            		                            current_rhoy,
+            		                            current_rhoz,
+            		                            rho0,
+            		                            c2,
+            		                            pezio_optical_coeff);
+
+				/// Create a displacment map based upon the pressure at this time step.
+        		m_medium->Create_displacement_map(currentVelocity_Xaxis,
+            		                              currentVelocity_Yaxis,
+            		                              currentVelocity_Zaxis,
+            		                              m_medium->kwave.US_freq,
+            		                              m_medium->kwave.dt);
+			}
+			else if (sim_refractive_grad)
+			{
+				/// Create a refractive map based upon the pressure at this time step.
+        		m_medium->Create_refractive_map(currentPressure,
+            		                            current_rhox,
+            		                            current_rhoy,
+            		                            current_rhoz,
+            		                            rho0,
+            		                            c2,
+            		                            pezio_optical_coeff);	
+			}
+			/// Similar to above (i.e. sim_refractive_grad)
+			else if (sim_displacement)
+			{
+        		/// Create a displacment map based upon the pressure at this time step.
+        		m_medium->Create_displacement_map(currentVelocity_Xaxis,
+            		                              currentVelocity_Yaxis,
+            		                              currentVelocity_Zaxis,
+            		                              m_medium->kwave.US_freq,
+            		                              m_medium->kwave.dt);
+        	}
 	
 
-		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-		m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
-                                       da_boost->Simulate_refractive_gradient(true);
+			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+			m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
+            	                           da_boost->Simulate_refractive_gradient(true);
 
-		/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
-        m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
-                                       da_boost->Simulate_displacement(true);
+			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
+        	m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
+            	                           da_boost->Simulate_displacement(true);
         
-        /// Not saving seeds, so set to false.
-        da_boost->Save_RNG_Seeds(false);
+        	/// Not saving seeds, so set to false.
+        	da_boost->Save_RNG_Seeds(false);
   
 #undef DEBUG
 #ifdef DEBUG
-        /// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
-        /// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
+        	/// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
+        	/// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
       
-//        size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
-//        size_t y_voxel = m_medium->Get_Ny()/2;
-//        size_t z_voxel = m_medium->Get_Nz()/2;
-//        float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
-//        float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
-//        float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
+//        	size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
+//        	size_t y_voxel = m_medium->Get_Ny()/2;
+//        	size_t z_voxel = m_medium->Get_Nz()/2;
+//        	float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        	float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        	float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
+//        	float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
+//        	float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
+//        	float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
 //                                                                    
-//        Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
+//        	Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
 //                                                           dispX, dispY, dispZ);
         
 	       
 #else
         
-        /// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
-		/// Similar to the stroboscopic experiments.
-        static size_t cnt = MC_time_step/Parameters->Get_dt();
+        	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
+			/// Similar to the stroboscopic experiments.
+        	static size_t cnt = MC_time_step/Parameters->Get_dt();
         
-        if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) && 
-			 (KSpaceSolver->GetTimeIndex() > 0))
-        {
-            cout << ".......... Running MC-Boost ......... ";
-            cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
-            da_boost->Run_seeded_MC_sim_timestep(m_medium,
-                                                 m_Laser_injection_coords,
-                                                 KSpaceSolver->GetTimeIndex());
+        	if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) && 
+				 (KSpaceSolver->GetTimeIndex() > 0))
+        	{
+            	cout << ".......... Running MC-Boost ......... ";
+            	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
+            	da_boost->Run_seeded_MC_sim_timestep(m_medium,
+            	                                     m_Laser_injection_coords,
+            	                                     KSpaceSolver->GetTimeIndex());
 
-        }
+        	}
 #endif
         
+		} // END if (sim_refractive_grad || sim_displacement )
         
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
