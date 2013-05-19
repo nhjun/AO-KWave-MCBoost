@@ -13,7 +13,7 @@ PML_Z_SIZE = 10;            % [grid points]
 % set total number of grid points not including the PML
 Nx = 512;
 Ny = 288;
-Nz = 256;
+Nz = 288;
 
 
 % calculate the spacing between the grid points.
@@ -122,7 +122,7 @@ Nt = t_end/dt;
 %Nt = Nt/2;
 
 
-% Form the time array from the about defined values.
+% Form the time array from the above defined values.
 kgrid.t_array = 0:dt:(Nt-1)*dt;
 
 % =========================================================================
@@ -167,7 +167,13 @@ transducer_width = transducer.number_elements*transducer.element_width ...
 % Note the placement below the PML with some cushion.
 MIDDLE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz/2 - transducer.element_length/2]);
 EDGE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz - (transducer.element_length+2*PML_Z_SIZE)]);
-transducer.position = MIDDLE_of_medium;
+
+% Bead is ~6 mm deep (optical axis), so center the US probe that depth along
+% z-axis (taking into account PML)
+BEAD_A_centered = round([(PML_X_SIZE+5), ...                                        % x-axis
+                         (Ny/2 - transducer_width/2), ...                           % y-axis
+                         (PML_Z_SIZE + 6e-3/dz  + transducer.element_length/2)]);   % z-axis
+transducer.position = BEAD_A_centered;
 
 
 % properties used to derive the beamforming delays
@@ -175,8 +181,8 @@ transducer.sound_speed = c0;                % sound speed [m/s]
 % Provide delays from an experiment.  Convert back from MyLAB scaled ticks into
 % usecs.
 if (PA_GUIDED_FOCUS)
-    %info.filename = '/Volumes/TJS CRUZER/23-4-2013/PA_deep_bead.rfe';
-    info.filename = '/Volumes/DISK_IMG/9-4-2013/PA_signal.rfe';
+    
+    info.filename = '/Volumes/TJS CRUZER/Tagging Volume Experiments/19-5-2013/PA_signals/PA_bead-A_steered.rfe';
     info.middle_channel = 31;
     info.dt = 1/50e6;       % Set MyLAB acquisition time-step (based on 50 MHz sampling).
     delays = crossCorrelateTimeOfArrivals(info, []);
@@ -265,7 +271,9 @@ sensor.mask = ones(Nx, Ny, Nz);
  
 % save input files to disk
 if (PA_GUIDED_FOCUS)
-    filename = 'MyLAB_PA_Signal_deep_bead.h5';
+    PA_file = strsplit(info.filename, '/');             % Split up string
+    PA_file = char(PA_file(1,end));                     % Convert last cell to char array
+    filename = ['MyLAB_', PA_file(1:end-4), 'INPUT', '.h5'];     % Form new file name
 else
     filename = 'MyLAB_Fixed_Focus_INPUT_debug.h5';
 end
