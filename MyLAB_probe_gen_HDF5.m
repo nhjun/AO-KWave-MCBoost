@@ -165,14 +165,18 @@ transducer_width = transducer.number_elements*transducer.element_width ...
 
 % use this to position the transducer in the middle of the computational grid
 % Note the placement below the PML with some cushion.
-MIDDLE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz/2 - transducer.element_length/2]);
-EDGE_of_medium = round([PML_X_SIZE+5, Ny/2 - transducer_width/2, Nz - (transducer.element_length+2*PML_Z_SIZE)]);
-
+MIDDLE_of_medium = round([PML_X_SIZE+5,...
+                          Ny/2 - transducer_width/2,...
+                          Nz/2 - transducer.element_length/2]);
+EDGE_of_medium = round([PML_X_SIZE+5,...
+                        Ny/2 - transducer_width/2,...
+                        Nz - (transducer.element_length+2*PML_Z_SIZE)]);
 % Bead is ~6 mm deep (optical axis), so center the US probe that depth along
 % z-axis (taking into account PML)
 BEAD_A_centered = round([(PML_X_SIZE+5), ...                                        % x-axis
                          (Ny/2 - transducer_width/2), ...                           % y-axis
                          (PML_Z_SIZE + 6e-3/dz  + transducer.element_length/2)]);   % z-axis
+% Assign the transducer position.
 transducer.position = BEAD_A_centered;
 
 
@@ -182,7 +186,7 @@ transducer.sound_speed = c0;                % sound speed [m/s]
 % usecs.
 if (PA_GUIDED_FOCUS)
     
-    info.filename = '/Volumes/TJS CRUZER/Tagging Volume Experiments/19-5-2013/PA_signals/PA_bead-A_steered.rfe';
+    info.filename = '/Volumes/TJS CRUZER/Tagging Volume Experiments/20-5-2013/PA_signals_20-5-2013/PA_bead-A_6mmshift.rfe';
     info.middle_channel = 31;
     info.dt = 1/50e6;       % Set MyLAB acquisition time-step (based on 50 MHz sampling).
     delays = crossCorrelateTimeOfArrivals(info, []);
@@ -273,7 +277,7 @@ sensor.mask = ones(Nx, Ny, Nz);
 if (PA_GUIDED_FOCUS)
     PA_file = strsplit(info.filename, '/');             % Split up string
     PA_file = char(PA_file(1,end));                     % Convert last cell to char array
-    filename = ['MyLAB_', PA_file(1:end-4), 'INPUT', '.h5'];     % Form new file name
+    filename = ['MyLAB_', PA_file(1:end-4), '_INPUT', '.h5'];     % Form new file name
 else
     filename = 'MyLAB_Fixed_Focus_INPUT_debug.h5';
 end
