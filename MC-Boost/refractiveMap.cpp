@@ -443,16 +443,27 @@ RefractiveMap::Update_refractive_map(TRealMatrix *pressure,
         /// 1) Verify that the error is not significant and live with it.
         /// 2) Implement the term in k-Wave and pass it in here as an addition to rho (need each axial component).
         /// 3) Use a 1st order approximation from (p=c0^2*rho).
-        density = rhox_data[i] + rhoy_data[i] + rhoz_data[i];       /// Density with error.
+        ///density = rhox_data[i] + rhoy_data[i] + rhoz_data[i];       /// Density with error.
         ///density = p_data[i] / c2_data[i];                           /// 1st order approxmation.
         
         
+
         ///  Calculate the modulation coefficient as described by Skadazac and Wang.
-        M = 2.0 * pezio_optical_coeff * (p_data[i] / (density * c2_data[i]));
-        
+	/// --------------------- THIS IS WRONG FOR PRESSURES I'M USING -------------------
+        ///M = 2.0 * pezio_optical_coeff * (p_data[i] / (density * c2_data[i]));
         /// Update the refractive index value based the pressure induced changes.
-        n_data[i] = n_background * (1 + 0.5 * M);
+        ///n_data[i] = n_background * (1 + 0.5 * M);
         
+
+
+	/// Spatially varying pressure induced density changes
+	density = sqrt(rhox_data[i]*rhox_data[i] +
+		       rhoy_data[i]*rhoy_data[i] + 
+		       rhoz_data[i]*rhoz_data[i]);
+	/// "Optical Measurement of Ultrasonic Poynting and Velocity Vector Fields".  (Pitts, 2002)	
+	/// Below uses the elasto-optical coefficient 
+	n_data[i] = n_background + (n_background*n_background - 1)/(2*rho0_data[i]*n_background) *(density - rho0_data[i]);
+
     }
 
 }
