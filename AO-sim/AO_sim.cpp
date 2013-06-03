@@ -80,8 +80,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
     
     
 //    ActPercent = 0;
-    KSpaceSolver->FromMain_PrintOutputHeader();
-//
+    KSpaceSolver->FromAO_sim_PrintOutputHeader();
     KSpaceSolver->IterationTimeStart();
 	size_t k_wave_Nt = Parameters->Get_Nt();
 	//size_t k_wave_Nt = 4;
@@ -91,161 +90,166 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
              << KSpaceSolver->GetTimeIndex() << " of "
              << Parameters->Get_Nt() << ")\n";
 
-        KSpaceSolver->FromMain_Compute_uxyz();
+        KSpaceSolver->FromAO_sim_Compute_uxyz();
 
 	// add in the velocity u source term
-        KSpaceSolver->FromMain_Add_u_source();
+        KSpaceSolver->FromAO_sim_Add_u_source();
 
 	// add in the transducer source term (t = t1) to ux
         if (Parameters->Get_transducer_source_flag() > KSpaceSolver->GetTimeIndex())
-            KSpaceSolver->FromMain_AddTransducerSource();
+            KSpaceSolver->FromAO_sim_AddTransducerSource();
 
 
-        KSpaceSolver->FromMain_Compute_duxyz();
+        KSpaceSolver->FromAO_sim_Compute_duxyz();
 
 
         if (Parameters->Get_nonlinear_flag())
-            KSpaceSolver->FromMain_Compute_rhoxyz_nonlinear();
+            KSpaceSolver->FromAO_sim_Compute_rhoxyz_nonlinear();
         else
-            KSpaceSolver->FromMain_Compute_rhoxyz_linear();
+            KSpaceSolver->FromAO_sim_Compute_rhoxyz_linear();
 
 
 	// add in the source pressure term
-        KSpaceSolver->FromMain_Add_p_source();
+        KSpaceSolver->FromAO_sim_Add_p_source();
 
         if (Parameters->Get_nonlinear_flag()){
-            KSpaceSolver->FromMain_Compute_new_p_nonlinear();
+            KSpaceSolver->FromAO_sim_Compute_new_p_nonlinear();
         }else {
-            KSpaceSolver->FromMain_Compute_new_p_linear();
+            KSpaceSolver->FromAO_sim_Compute_new_p_linear();
 
         }
 
 
 	//-- calculate initial pressure
         if ((KSpaceSolver->GetTimeIndex() == 0) && (Parameters->Get_p0_source_flag() == 1))
-            KSpaceSolver->FromMain_Calculate_p0_source();
+            KSpaceSolver->FromAO_sim_Calculate_p0_source();
 
+        
+        
+        //-- store the initial pressure at the first time step --//
+        /// Here is where the computation for the refractive index, displacements,
+        /// and all the values kWave needs, takes place if commandline flags for saving data hvave been set.
+        KSpaceSolver->FromAO_sim_StoreSensorData();
+
+        
+        KSpaceSolver->FromAO_sim_PrintStatistics();
+        
+        
         
         /// --------------------------- Begin Monte-Carlo Simulation ------------------------------------------------------
         ///
 		/// If the flag for simulating the influence of refractive index changes or displacements is set
 		/// we need to grab the appropriate data from k-Wave and build grids for
-		/// photon propagation to use in order to alter its path accordingly.
-
+		/// photon propagation.
 		if (sim_refractive_grad || sim_displacement )
 		{
-
-			TRealMatrix *currentPressure = &(KSpaceSolver->FromMain_Get_p());
-        	TRealMatrix *current_rhox    = &(KSpaceSolver->FromMain_Get_rhox());
-       		TRealMatrix *current_rhoy    = &(KSpaceSolver->FromMain_Get_rhoy());
-       		TRealMatrix *current_rhoz    = &(KSpaceSolver->FromMain_Get_rhoz());
-       		TRealMatrix *rho0            = &(KSpaceSolver->FromMain_Get_rho0());
-       		TRealMatrix *c2              = &(KSpaceSolver->FromMain_Get_c2());
-
-			TRealMatrix *currentVelocity_Xaxis = &(KSpaceSolver->FromMain_Get_ux());
-        	TRealMatrix *currentVelocity_Yaxis = &(KSpaceSolver->FromMain_Get_uy());
-        	TRealMatrix *currentVelocity_Zaxis = &(KSpaceSolver->FromMain_Get_uz());
-
+            TRealMatrix *refractive_x = NULL;
+            TRealMatrix *refractive_y = NULL;
+            TRealMatrix *refractive_z = NULL;
+            
+            TRealMatrix *disp_x = NULL;
+            TRealMatrix *disp_y = NULL;
+            TRealMatrix *disp_z = NULL;
+            
+            if (sim_refractive_grad)
+            {
+                /// Check if we are saving the refracive index data in KSpaceSolver, which is based on a commandline flag.
+                /// If we are, we don't want to run the computation from here, as it will already
+                /// be done in KSpaceSolver if we are saving the data.  This eliminates the possiblity
+                /// of computing something twice, which could happen when monte-carlo needs the data
+                /// and the flag has been set to save data in KSpaceSolver.
+                if (!(Parameters->IsStore_refractive_x() ||
+                      Parameters->IsStore_refractive_y() ||
+                      Parameters->IsStore_refractive_z()))
+                {
+                    /// This is executed when the AO simulation needs refractive index changes, but
+                    /// the commandline flags were not made to save the refractive index data, as
+                    /// discussed above.
+                    KSpaceSolver->FromAO_sim_compute_refractive_index();
+                }
+                
+                refractive_x = &(KSpaceSolver->FromAO_sim_Get_refractive_x());
+                refractive_y = &(KSpaceSolver->FromAO_sim_Get_refractive_y());
+                refractive_z = &(KSpaceSolver->FromAO_sim_Get_refractive_z());
+            }
+            
+            if (sim_displacement)
+            {
+                /// Same reasoning as above.
+                if (!(Parameters->IsStore_disp_x() ||
+                      Parameters->IsStore_disp_y() ||
+                      Parameters->IsStore_disp_z()))
+                {
+                    KSpaceSolver->FromAO_sim_compute_displacement();
+                }
+                
+                disp_x = &(KSpaceSolver->FromAO_sim_Get_disp_x());
+                disp_y = &(KSpaceSolver->FromAO_sim_Get_disp_y());
+                disp_z = &(KSpaceSolver->FromAO_sim_Get_disp_z());
+            }
+                
 			/// NOTE:
-			/// 	- These need to be updated along every time step of k-Wave to remain accurate.
+			/// - The refractive index and displacement values need to be updated every time step
+            ///   within kWave, otherwise what is assigned here is invalid.
 			if (sim_refractive_grad &&
 				sim_displacement)
 			{
-				/// Create a refractive map based upon the pressure at this time step.
-        		m_medium->Create_refractive_map(currentPressure,
-            		                            current_rhox,
-            		                            current_rhoy,
-            		                            current_rhoz,
-            		                            rho0,
-            		                            c2,
-            		                            pezio_optical_coeff);
-
+				/// Create a refractive map based upon the pressure and density changes at this time step.
+        		m_medium->Create_refractive_map(refractive_x,
+                                                refractive_y,
+                                                refractive_z);
+                
 				/// Create a displacment map based upon the pressure at this time step.
-        		m_medium->Create_displacement_map(currentVelocity_Xaxis,
-            		                              currentVelocity_Yaxis,
-            		                              currentVelocity_Zaxis,
-            		                              m_medium->kwave.US_freq,
-            		                              m_medium->kwave.dt);
+        		m_medium->Create_displacement_map(disp_x,
+                                                  disp_y,
+                                                  disp_z);
 			}
 			else if (sim_refractive_grad)
 			{
-				/// Create a refractive map based upon the pressure at this time step.
-        		m_medium->Create_refractive_map(currentPressure,
-            		                            current_rhox,
-            		                            current_rhoy,
-            		                            current_rhoz,
-            		                            rho0,
-            		                            c2,
-            		                            pezio_optical_coeff);	
+                /// Create a refractive map based upon the pressure and density changes at this time step.
+        		m_medium->Create_refractive_map(refractive_x,
+                                                refractive_y,
+                                                refractive_z);
 			}
 			/// Similar to above (i.e. sim_refractive_grad)
 			else if (sim_displacement)
 			{
-        		/// Create a displacment map based upon the pressure at this time step.
-        		m_medium->Create_displacement_map(currentVelocity_Xaxis,
-            		                              currentVelocity_Yaxis,
-            		                              currentVelocity_Zaxis,
-            		                              m_medium->kwave.US_freq,
-            		                              m_medium->kwave.dt);
+                /// Create a displacment map based upon the pressure at this time step.
+        		m_medium->Create_displacement_map(disp_x,
+                                                  disp_y,
+                                                  disp_z);
         	}
-	
-
+            
+            
 			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
 			m_medium->kwave.nmap == NULL ? da_boost->Simulate_refractive_gradient(false) :
-            	                           da_boost->Simulate_refractive_gradient(true);
-
+                                           da_boost->Simulate_refractive_gradient(true);
+            
 			/// Decide what to simulate (refractive gradient, displacement) based on whether those objects exist.
         	m_medium->kwave.dmap == NULL ? da_boost->Simulate_displacement(false) :
-            	                           da_boost->Simulate_displacement(true);
-        
+                                           da_boost->Simulate_displacement(true);
+            
         	/// Not saving seeds, so set to false.
         	da_boost->Save_RNG_Seeds(false);
+            
   
-#undef DEBUG
-#ifdef DEBUG
-        	/// Look at the middle of the medium, presumably where the focus is and the largest pressure and velocities.
-        	/// Assuming focal depth is 10 mm, we need to locate the correct voxel where this is located.
-      
-//        	size_t x_voxel = 293;  /// Using inspected voxel from PA_guided focus.
-//        	size_t y_voxel = m_medium->Get_Ny()/2;
-//        	size_t z_voxel = m_medium->Get_Nz()/2;
-//        	float velX  = currentVelocity_Xaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        	float velY  = currentVelocity_Yaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        	float velZ  = currentVelocity_Zaxis->GetElementFrom3D(x_voxel, y_voxel, z_voxel);
-//        	float dispX = m_medium->kwave.dmap->getDisplacementFromGridX(x_voxel, y_voxel, z_voxel);
-//        	float dispY = m_medium->kwave.dmap->getDisplacementFromGridY(x_voxel, y_voxel, z_voxel);
-//        	float dispZ = m_medium->kwave.dmap->getDisplacementFromGridZ(x_voxel, y_voxel, z_voxel);
-//                                                                    
-//        	Logger::getInstance()->Write_velocity_displacement(velX, velY, velZ,
-//                                                           dispX, dispY, dispZ);
-        
-	       
-#else
-        
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
 			/// Similar to the stroboscopic experiments.
         	static size_t cnt = MC_time_step/Parameters->Get_dt();
-        
-        	if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) && 
-				 (KSpaceSolver->GetTimeIndex() > 0))
+            
+        	if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) &&
+                (KSpaceSolver->GetTimeIndex() > 0))
         	{
             	cout << ".......... Running MC-Boost ......... ";
             	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
             	da_boost->Run_seeded_MC_sim_timestep(m_medium,
             	                                     m_Laser_injection_coords,
             	                                     KSpaceSolver->GetTimeIndex());
-
         	}
-#endif
-        
 		} // END if (sim_refractive_grad || sim_displacement )
         
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
-        //-- store the initial pressure at the first time step --//
-        KSpaceSolver->FromMain_StoreSensorData();
-
-        KSpaceSolver->FromMain_PrintStatistics();
 
     }
 
@@ -260,13 +264,13 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
     KSpaceSolver->PostProcessingTimeStart();
   
 
-    KSpaceSolver->FromMain_PostProcessing();  
+    KSpaceSolver->FromAO_sim_PostProcessing();
     KSpaceSolver->PostProcessingTimeStop();
     cout << "Done \n";
     cout << "Elapsed time: " << KSpaceSolver->GetPostProcessingTime() << "\n";
 
   
-    KSpaceSolver->FromMain_WriteOutputDataInfo();
+    KSpaceSolver->FromAO_sim_WriteOutputDataInfo();
   
     Parameters->HDF5_OutputFile.Close();
   
@@ -302,13 +306,6 @@ AO_Sim::kWave_allocate_memory()
 void
 AO_Sim::Create_MC_grid(TParameters * parameters)
 {
-    
-    /// NOTE:  There is a transormation of z-axis (kWave) to x-axis (Monte-carlo)
-    ///        so that ultrasound propagates orthogonally to light.  The object
-    ///        'parameters' is defined from kWave, so we assign values from
-    ///        'parameters' to the appropriate Monte-carlo coordinates to achieve
-    ///        the rotation.
-    ///--------------------------------------------------------------------------
     // Number of voxels in each axis, with the PML taken into account.
     // NOTE:
     // - It is assumed that the PML is always included INSIDE the computational
@@ -318,7 +315,8 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     // - As an example, if the x-axis is 512 elements and the X_PML is 20 elements,
     //   the US probe should sit at X_PML+OFFSET in the k-Wave computation medium, which
     //   means the monte-carlo medium should reflect these changes because US data in the PML
-    //   is heavily distorted, as it should be.
+    //   is heavily distorted, as it should be, and we don't want photons moving through those
+    //   regions.
     size_t OFFSET = 5; /// An offset to apply to the transmission axis PML (i.e. x_pml).
     size_t x_pml_offset = parameters->Get_pml_x_size()+OFFSET;
     size_t y_pml_offset = parameters->Get_pml_y_size();

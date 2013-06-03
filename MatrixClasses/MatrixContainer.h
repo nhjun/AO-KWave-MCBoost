@@ -87,6 +87,10 @@ enum TMatrixID     {kappa, c2, p,
                       Ix_sensor_avg, Iy_sensor_avg, Iz_sensor_avg,
                       Ix_sensor_max, Iy_sensor_max, Iz_sensor_max,
     
+                      /// ---------------------- JWJS -------------------------------------------------------
+                      refractive_x, refractive_y, refractive_z, refractive_total,
+                      disp_x, disp_y, disp_z,
+                      /// --------------------------------------
     
                        //--------------Temporary matrices -------------//    
                       Temp_1_RS3D, Temp_2_RS3D, Temp_3_RS3D,

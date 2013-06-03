@@ -117,45 +117,42 @@ public:
     void PostProcessingTimeStart () {PostProcessingTime.Start();};
     void PostProcessingTimeStop  () {PostProcessingTime.Stop();};
     
-    /// Since execution of 'Compute_Mainloop' is being pulled out
-    /// into main(), we need to let the rest of the simulation know
-    /// progress is being made.
     void    IncrementTimeIndex () {t_index++;};
     /// Get the time index at its current value in the simulation.
     void    SetTimeIndex (int t) {t_index = t;};
     int     GetTimeIndex () {return t_index;};
     
-    /// Public interface calls so we can execute from main()
-    void    FromMain_Compute_uxyz ()                {Compute_uxyz();};
-    void    FromMain_Add_u_source ()                {Add_u_source();};
-    void    FromMain_Compute_duxyz ()               {Compute_duxyz();};
-    void    FromMain_Compute_rhoxyz_nonlinear ()    {Compute_rhoxyz_nonlinear();};
-    void    FromMain_Compute_rhoxyz_linear ()       {Compute_rhoxyz_linear();}
-    void    FromMain_Add_p_source ()                {Add_p_source();};
-    void    FromMain_Compute_new_p_nonlinear ()     {Compute_new_p_nonlinear();};
-    void    FromMain_Compute_new_p_linear ()        {Compute_new_p_linear();};
-    void    FromMain_StoreSensorData ()             {StoreSensorData();};
-    void    FromMain_PrintStatisitcs ()             {PrintStatisitcs();};
-    void    FromMain_AddTransducerSource ()         {Get_ux_sgx().AddTransducerSource(Get_u_source_index(),
-                                                                                      Get_delay_mask(),
-                                                                                      Get_transducer_source_input());};
-    void    FromMain_Calculate_p0_source ()         {Calculate_p0_source();};
-    void    FromMain_PrintStatistics    ()             {PrintStatisitcs();};
-    void    FromMain_PrintOutputHeader  ()            {PrintOtputHeader();};
+    /// Public interface calls so we can execute protected methods from AO_sim
+    void    FromAO_sim_Compute_uxyz ()                {Compute_uxyz();};
+    void    FromAO_sim_Add_u_source ()                {Add_u_source();};
+    void    FromAO_sim_Compute_duxyz ()               {Compute_duxyz();};
+    void    FromAO_sim_Compute_rhoxyz_nonlinear ()    {Compute_rhoxyz_nonlinear();};
+    void    FromAO_sim_Compute_rhoxyz_linear ()       {Compute_rhoxyz_linear();}
+    void    FromAO_sim_Add_p_source ()                {Add_p_source();};
+    void    FromAO_sim_Compute_new_p_nonlinear ()     {Compute_new_p_nonlinear();};
+    void    FromAO_sim_Compute_new_p_linear ()        {Compute_new_p_linear();};
+    void    FromAO_sim_StoreSensorData ()             {StoreSensorData();};
+    void    FromAO_sim_PrintStatisitcs ()             {PrintStatisitcs();};
+    void    FromAO_sim_AddTransducerSource ()         {Get_ux_sgx().AddTransducerSource(Get_u_source_index(),
+                                                                                        Get_delay_mask(),
+                                                                                        Get_transducer_source_input());};
+    void    FromAO_sim_Calculate_p0_source ()         {Calculate_p0_source();};
+    void    FromAO_sim_PrintStatistics    ()          {PrintStatisitcs();};
+    void    FromAO_sim_PrintOutputHeader  ()          {PrintOtputHeader();};
 
-
-    void    FromMain_PostProcessing	()	    {PostProcessing();};
-    void    FromMain_WriteOutputDataInfo()          {WriteOutputDataInfo();};
+    void    FromAO_sim_PostProcessing	()            {PostProcessing();};
+    void    FromAO_sim_WriteOutputDataInfo()          {WriteOutputDataInfo();};
     
-    TRealMatrix & FromMain_Get_p    ()              {return Get_p();};
-    TRealMatrix & FromMain_Get_ux   ()              {return Get_ux_sgx();};
-    TRealMatrix & FromMain_Get_uy   ()              {return Get_uy_sgy();};
-    TRealMatrix & FromMain_Get_uz   ()              {return Get_uz_sgz();};
-    TRealMatrix & FromMain_Get_rhox ()              {return Get_rhox();};
-    TRealMatrix & FromMain_Get_rhoy ()              {return Get_rhoy();};
-    TRealMatrix & FromMain_Get_rhoz ()              {return Get_rhoz();};
-    TRealMatrix & FromMain_Get_rho0 ()              {return Get_rho0();};
-    TRealMatrix & FromMain_Get_c2   ()              {return Get_c2();};
+    void    FromAO_sim_compute_refractive_index()     {Compute_refractive_index_data();};
+    void    FromAO_sim_compute_displacement()         {Compute_displacement_data();};
+    
+    TRealMatrix & FromAO_sim_Get_refractive_x    ()   {return Get_refractive_x();};
+    TRealMatrix & FromAO_sim_Get_refractive_y    ()   {return Get_refractive_y();};
+    TRealMatrix & FromAO_sim_Get_refractive_z    ()   {return Get_refractive_z();};
+    
+    TRealMatrix & FromAO_sim_Get_disp_x          ()   {return Get_disp_x();};
+    TRealMatrix & FromAO_sim_Get_disp_y          ()   {return Get_disp_y();};
+    TRealMatrix & FromAO_sim_Get_disp_z          ()   {return Get_disp_z();};
     /// ---------------------------------------------------------------------------------------
     // End JWJS
     
@@ -183,16 +180,23 @@ protected:
     /// Store intensity data
     void StoreIntensityData();
     
-    /// Write statistics and header into the output file
-    void WriteOutputDataInfo(); 
+    /// ------------------------- JWJS --------------------------------------------------
+    /// Store refractive index data
+    void Compute_refractive_index_data();
+    /// Store max and min of refractive index data over all time
+    void Compute_refractive_index_data_total();
+    /// Store displacement data
+    void Compute_displacement_data();
+    /// -------------------------------
     
+    /// Write statistics and header into the output file
+    void WriteOutputDataInfo();
     
     /// compute new values of for ux_sgx, uy_sgy, uz_sgz
     void Compute_uxyz();
     
     /// Compute new values of for duxdx, duydy, dzdz
     void Compute_duxyz();
-    
        
     /// Compute new values of rhox, rhoy, rhoz for non-linear case
     void Compute_rhoxyz_nonlinear();
@@ -319,6 +323,8 @@ protected:
     /// Get the rho0 matrix from the container                                                    
     TRealMatrix        & Get_rho0() 
                 {return MatrixContainer.GetRealMatrix(rho0);};
+    
+    
     
     /// Get the ddx_k_shift_pos matrix from the container
     TComplexMatrix     & Get_ddx_k_shift_pos() 
@@ -528,8 +534,28 @@ protected:
     TFFTWComplexMatrix  & Get_FFT_Z_temp() 
                 {return MatrixContainer.GetFFTWComplexMatrix(FFT_Z_temp);};                
                 
-                                   
-              
+    
+    
+    
+    /// ------------------------ JWJS -------------------------------------------------------
+    TRealMatrix         & Get_refractive_total()
+                {return MatrixContainer.GetRealMatrix(refractive_total);};
+    TRealMatrix         & Get_refractive_x()
+                {return MatrixContainer.GetRealMatrix(refractive_x);};
+    TRealMatrix         & Get_refractive_y()
+                {return MatrixContainer.GetRealMatrix(refractive_y);};
+    TRealMatrix         & Get_refractive_z()
+                {return MatrixContainer.GetRealMatrix(refractive_z);};
+    
+    TRealMatrix         & Get_disp_x()
+                {return MatrixContainer.GetRealMatrix(disp_x);};
+    TRealMatrix         & Get_disp_y()
+                {return MatrixContainer.GetRealMatrix(disp_y);};
+    TRealMatrix         & Get_disp_z()
+                {return MatrixContainer.GetRealMatrix(disp_z);};
+    /// ------------------------------
+    
+    
     
     /// pressure raw data output stream (timeseries)
     TOutputHDF5Stream*  p_sensor_raw_OutputStream;        
@@ -539,8 +565,26 @@ protected:
     /// uy raw data output stream (timeseries)
     TOutputHDF5Stream*  uy_sensor_raw_OutputStream;    
     /// uz raw data output stream (timeseries)
-    TOutputHDF5Stream*  uz_sensor_raw_OutputStream;    
+    TOutputHDF5Stream*  uz_sensor_raw_OutputStream;
     
+    /// -------------------------- JWJS ------------------------------------------------------
+    /// refractive_total data output stream (timeseries)
+    TOutputHDF5Stream*  refractive_total_OutputStream;
+    /// refractive_x data output stream (timeseries)
+    TOutputHDF5Stream*  refractive_x_OutputStream;
+    /// refractive_y data output stream (timeseries)
+    TOutputHDF5Stream*  refractive_y_OutputStream;
+    /// refractive_z data output stream (timeseries)
+    TOutputHDF5Stream*  refractive_z_OutputStream;
+    
+    /// disp_x data output stream (timeseries)
+    TOutputHDF5Stream*  disp_x_OutputStream;
+    /// disp_y data output stream (timeseries)
+    TOutputHDF5Stream*  disp_y_OutputStream;
+    /// disp_z data output stream (timeseries)
+    TOutputHDF5Stream*  disp_z_OutputStream;
+    /// ------------------------------------------
+
     
     
     
@@ -551,7 +595,7 @@ private:
     /// Matrix container with all the matrix classes
     TMatrixContainer MatrixContainer;
     
-    /// actual time index (time step of the simulation
+    /// actual time index (time step of the simulation)
     int                t_index;    
     
     /// Percentage of the simulation done

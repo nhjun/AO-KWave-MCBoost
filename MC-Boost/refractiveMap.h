@@ -39,65 +39,31 @@ class Vector3d;
 class RefractiveMap
 {
 public:
-//    
-//	RefractiveMap(const std::string &filename, const int Nx, const int Nz, const int Ny, const int grid_size);
-//	RefractiveMap(const int Nx, const int Nz, const int Ny, const int grid_size);
 
-    RefractiveMap(TRealMatrix *  pressure,
-                  TRealMatrix *  rhox,
-                  TRealMatrix *  rhoy,
-                  TRealMatrix *  rhoz,
-                  TRealMatrix *  rho0,
-                  TRealMatrix *  c2,
-                  const double   pezio_optical_coeff,
-                  const double   n_background);
-    
-    
-    RefractiveMap(TRealMatrix *  pressure,
-                  TRealMatrix *  rhox,
-                  TRealMatrix *  rhoy,
-                  TRealMatrix *  rhoz,
-                  TRealMatrix *  rho0,
-                  TRealMatrix *  c2,
-                  size_t x_pml_offset,
-                  size_t y_pml_offset,
-                  size_t z_pml_offset,
-                  const double   pezio_optical_coeff,
-                  const double   n_background);
-    
-	
+
+    RefractiveMap();
     ~RefractiveMap();
     
     
     // Common init function for constructors of the class.
 	void initCommon(VoxelAttributes voxel_dims);
     
-    
-    /// Updates the current values in 'refractive_map' when a new pressure matrix is obtained
-    /// from a time step of the k-Wave simulation.
-    void    Update_refractive_map(TRealMatrix * pressure,
-                                  TRealMatrix * rhox,
-                                  TRealMatrix * rhoy,
-                                  TRealMatrix * rhoz,
-                                  TRealMatrix * rho0,
-                                  TRealMatrix * c2);
-    
 	/// Returns the refractive index from the grid based on localized pressure
-    ///
 	float 	getRefractiveIndexFromGrid(const int x, const int z, const int y);
 
     /// Return the refractive index from the TRealMatrix.
     float  Get_refractive_index_TRealMatrix(const int x, const int y, const int z);
     
-    
-	// Returns the pressure from cartesian coordinates of the photon.
-	double 	getRefractiveIndex(double x, double z, double y);
-	// Returns the pressure from cartesian coordinates in a position vector.
-	double  getRefractiveIndex(const Vector3d &location);
+    /// Assign the refractive index maps obtained from KSpaceSolver
+    void    Assign_refractive_map(TRealMatrix * refractive_index_x,
+                                  TRealMatrix * refractive_index_y,
+                                  TRealMatrix * refractive_index_z)
+    {
+        refractive_x = refractive_index_x;
+        refractive_y = refractive_index_y;
+        refractive_z = refractive_index_z;
+    }
 
-
-	//void	setDensity(const double density) {this->density = density;}
-	//void	setSOS(const double SOS) {this->speed_of_sound = SOS;}
 	void	setBackgroundRefractiveIndex(const double n_bg) {this->n_background = n_bg;}
 	void	setPezioOpticalCoeff(const double pzo) {this->pezio_optical_coeff = pzo;}
 
@@ -138,6 +104,10 @@ private:
     /// refractive map as it is obtained from 'KSpaceSolver' by converting pressure values
     /// to refractive index values, without any offline processing.
     TRealMatrix * refractive_map;
+    
+    TRealMatrix * refractive_x;
+    TRealMatrix * refractive_y;
+    TRealMatrix * refractive_z;
     
     /// The size of the sensor mask used in the kWave simulation.  That is, the number of voxels
     /// in the 3D grid used in the simulation.

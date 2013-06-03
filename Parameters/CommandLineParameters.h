@@ -99,6 +99,22 @@ Output flags:
    
   -s <timestep>                   : Time step when data collection begins
                                       (default = 1)
+ 
+ /// ----------------------------- JWJS -------------------------------------------------
+ -n                               : Store index of refraction\n");
+                                        (all axial components nx, ny, nz)
+ --refractive_total               : Store the norm of the index of refraction
+ --refractive_x                   : Store the x-component of the index of refraction
+ --refractive_y                   : Store the y-component of the index of refraction
+ --refractive_z                   : Store the z-component of the index of refraction
+ 
+ -d                               : Store displacements
+                                        (all axial components disp_x, disp_y, disp_z)
+ --disp_x                         : Store displacement along x-axis
+ --disp_y                         : Store displacement along y-axis
+ --disp_z                         : Store displacement along z-axis
+
+ -e <timestep>                    : Time step when data collection ends
 --------------------------------------------------------------------------  
 \endverbatim
  * 
@@ -163,6 +179,12 @@ public:
     int  GetVerboseInterval()           const {return VerboseInterval;};
     /// Get start time index when sensor data collection begins
     int GetStartTimeIndex()             const {return StartTimeStep;};
+    
+    
+    /// ---------------------- JWJS -----------------------------------
+    /// Get end time index when sensor data collection ends
+    int GetEndTimeIndex()               const {return EndTimeStep;};
+    /// ----------------------------
    
     /// Is --p_raw set?
     bool IsStore_p_raw()                const {return Store_p_raw;};
@@ -186,6 +208,26 @@ public:
     bool IsStore_I_avg()                const {return Store_I_avg;};
     /// Is --I_max set
     bool IsStore_I_max()                const {return Store_I_max;};
+    
+    
+    /// ------------------- JWJS ------------------------------------
+    /// Is --n_total set
+    bool IsStore_refractive_total()              const {return Store_refractive_total;};
+    /// Is --nx set
+    bool IsStore_refractive_x()                   const {return Store_refractive_x;};
+    /// Is --ny set
+    bool IsStore_refractive_y()                   const {return Store_refractive_y;};
+    /// Is --nz set
+    bool IsStore_refractive_z()                   const {return Store_refractive_z;};
+    
+    /// Is --disp_x set
+    bool IsStore_disp_x()               const {return Store_disp_x;};
+    /// Is --disp_y set
+    bool IsStore_disp_y()               const {return Store_disp_y;};
+    /// Is --disp_z set
+    bool IsStore_disp_z()               const {return Store_disp_z;};
+    /// -------------------------
+    
 
     /// Print usage and exit
     void PrintUsageAndExit();   
@@ -240,6 +282,26 @@ private:
     /// Store_u_final value
     bool        Store_u_final;
     
+    
+    /// -------------------------- JWJS --------------------------------------------
+    /// Store index of refraction values (total)
+    bool        Store_refractive_total;
+    /// Store index of refraction values of the x-component
+    bool        Store_refractive_x;
+    /// Store index of refraction values of the y-component
+    bool        Store_refractive_y;
+    /// Store index of refraction values of the z-component
+    bool        Store_refractive_z;
+    
+    /// Store displacement along x-axis;
+    bool        Store_disp_x;
+    /// Store displacement along y-axis;
+    bool        Store_disp_y;
+    /// Store displacement along z-axis;
+    bool        Store_disp_z;
+    /// ---------------------------------
+    
+    
     /// Store_I_avg value
     bool        Store_I_avg;
     /// Store_I_max value
@@ -247,6 +309,11 @@ private:
     /// StartTimeStep value
     int         StartTimeStep;
     
+    
+    /// ------------------------- JWJS -----------------------------------------------
+    /// EndTimeStep value (when to stop collecting data)
+    int         EndTimeStep;
+    /// -------------------------------
     
 
     /// Default compression level 

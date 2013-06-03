@@ -67,7 +67,18 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver():
         p_sensor_raw_OutputStream (NULL),     
         ux_sensor_raw_OutputStream(NULL),   
         uy_sensor_raw_OutputStream(NULL),
-        uz_sensor_raw_OutputStream(NULL),          
+        uz_sensor_raw_OutputStream(NULL),
+
+/// -------------------- JWJS ----------------------------------------------------------
+        refractive_total_OutputStream(NULL),
+        refractive_x_OutputStream(NULL),
+        refractive_y_OutputStream(NULL),
+        refractive_z_OutputStream(NULL),
+
+        disp_x_OutputStream(NULL),
+        disp_y_OutputStream(NULL),
+        disp_z_OutputStream(NULL),
+/// ----------------------------------------------------------
 
         MatrixContainer(),
         t_index(0), ActPercent(0),
@@ -125,6 +136,45 @@ void TKSpaceFirstOrder3DSolver::AllocateMemory(){
         if (!uz_sensor_raw_OutputStream) throw bad_alloc();        
     }// GetSaveUxyz
     
+    /// ---------------------------- JWJS --------------------------------------------------------
+    if (Parameters->IsStore_refractive_total())
+    {
+        refractive_total_OutputStream = new TOutputHDF5Stream();
+        if (!refractive_total_OutputStream) throw bad_alloc();
+    }
+    if (Parameters->IsStore_refractive_x())
+    {
+        refractive_x_OutputStream = new TOutputHDF5Stream();
+        if (!refractive_x_OutputStream) throw bad_alloc();
+    }
+    if (Parameters->IsStore_refractive_y())
+    {
+        refractive_y_OutputStream = new TOutputHDF5Stream();
+        if (!refractive_y_OutputStream) throw bad_alloc();
+    }
+    if (Parameters->IsStore_refractive_z())
+    {
+        refractive_z_OutputStream = new TOutputHDF5Stream();
+        if (!refractive_z_OutputStream) throw bad_alloc();
+    }
+    
+    if (Parameters->IsStore_disp_x())
+    {
+        disp_x_OutputStream = new TOutputHDF5Stream();
+        if (!disp_x_OutputStream) throw bad_alloc();
+    }
+    if (Parameters->IsStore_disp_y())
+    {
+        disp_y_OutputStream = new TOutputHDF5Stream();
+        if (!disp_y_OutputStream) throw bad_alloc();
+    }
+    if (Parameters->IsStore_disp_z())
+    {
+        disp_z_OutputStream = new TOutputHDF5Stream();
+        if (!disp_z_OutputStream) throw bad_alloc();
+    }
+    /// ----------------------------------------------
+    
     
 }// end of AllocateMemory
 //------------------------------------------------------------------------------
@@ -159,7 +209,40 @@ void TKSpaceFirstOrder3DSolver::FreeMemory(){
           delete uz_sensor_raw_OutputStream;
           uz_sensor_raw_OutputStream = NULL;
       }
-            
+    
+    
+    /// ------------------- JWJS ------------------------------------
+    if (refractive_total_OutputStream) {
+        delete refractive_total_OutputStream;
+        refractive_total_OutputStream = NULL;
+    }
+    if (refractive_x_OutputStream) {
+        delete refractive_x_OutputStream;
+        refractive_x_OutputStream = NULL;
+    }
+    if (refractive_y_OutputStream) {
+        delete refractive_y_OutputStream;
+        refractive_y_OutputStream = NULL;
+    }
+    if (refractive_z_OutputStream) {
+        delete refractive_z_OutputStream;
+        refractive_z_OutputStream = NULL;
+    }
+    
+    if (disp_x_OutputStream) {
+        delete disp_x_OutputStream;
+        disp_x_OutputStream = NULL;
+    }
+    if (disp_y_OutputStream) {
+        delete disp_y_OutputStream;
+        disp_y_OutputStream = NULL;
+    }
+    if (disp_z_OutputStream) {
+        delete disp_z_OutputStream;
+        disp_z_OutputStream = NULL;
+    }
+    /// -------------------------------------
+    
 }// end of FreeMemory
 //------------------------------------------------------------------------------
     
@@ -207,7 +290,39 @@ void TKSpaceFirstOrder3DSolver::LoadInputData(){
         uz_sensor_raw_OutputStream->CreateStream(HDF5_OutputFile,uz_Name,TotalSizes, ChunkSizes, Parameters->GetCompressionLevel());
     }
 
-   
+    /// --------------------------------------- JWJS ---------------------------------------------
+    if (Parameters->IsStore_refractive_total()) {
+        refractive_total_OutputStream->CreateStream(HDF5_OutputFile, refractive_x_Name, TotalSizes,
+                                                    ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    if (Parameters->IsStore_refractive_x()) {
+        refractive_x_OutputStream->CreateStream(HDF5_OutputFile, refractive_x_Name, TotalSizes,
+                                                ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    if (Parameters->IsStore_refractive_y()) {
+        refractive_y_OutputStream->CreateStream(HDF5_OutputFile, refractive_y_Name, TotalSizes,
+                                                ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    if (Parameters->IsStore_refractive_z()) {
+        refractive_z_OutputStream->CreateStream(HDF5_OutputFile, refractive_z_Name, TotalSizes,
+                                                ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    
+    if (Parameters->IsStore_disp_x()) {
+        disp_x_OutputStream->CreateStream(HDF5_OutputFile, disp_x_Name, TotalSizes,
+                                          ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    if (Parameters->IsStore_disp_y()) {
+        disp_y_OutputStream->CreateStream(HDF5_OutputFile, disp_y_Name, TotalSizes,
+                                          ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    if (Parameters->IsStore_disp_z()) {
+        disp_z_OutputStream->CreateStream(HDF5_OutputFile, disp_z_Name, TotalSizes,
+                                          ChunkSizes, Parameters->GetCompressionLevel());
+    }
+    /// ---------------------------------------------
+    
+    
 
    DataLoadTime.Stop();
    
@@ -345,7 +460,7 @@ void TKSpaceFirstOrder3DSolver::PostCompute(){
 void TKSpaceFirstOrder3DSolver::PrintParametersOfSimulation(FILE * file){
         
     
-    fprintf(file,"Domain dims:   [%4ld, %4ld,%4ld ]\n",              
+    fprintf(file,"Domain dims:   [%4ld, %4ld,%4ld]\n",              
                 Parameters->GetFullDimensionSizes().X,
                 Parameters->GetFullDimensionSizes().Y,
                 Parameters->GetFullDimensionSizes().Z);
@@ -2637,7 +2752,46 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
                                                MatrixContainer[Iz_sensor_avg].HDF5MatrixName.c_str(),
                                                Parameters->GetCompressionLevel());        
     }//  I_avg
+    
+    
+    
+    
+    /// ---------------------------- JWJS --------------------------------------------------------
+                                        //-- refractive index --//
+    /// Only collect data over the range of simulation time steps specified on the commandline
+    /// via the -s (start) and -e (end) flags.
+    if ((GetTimeIndex() > Parameters->GetStartTimeIndex()) &&
+        (GetTimeIndex() < Parameters->GetEndTimeIndex()))
+    {
+        if (Parameters->IsStore_refractive_total()) {
+            //        Get_refractive_total().WriteDataToHDF5File(Parameters->HDF5_OutputFile,
+            //                                                   MatrixContainer[refractive_total].HDF5MatrixName.c_str(),
+            //                                                   Parameters->GetCompressionLevel());
+            refractive_total_OutputStream->CloseStream();
+        }
+        if (Parameters->IsStore_refractive_x()) {
+            refractive_x_OutputStream->CloseStream();
+        }
+        if (Parameters->IsStore_refractive_y()) {
+            refractive_y_OutputStream->CloseStream();
+        }
+        if (Parameters->IsStore_refractive_z()) {
+            refractive_z_OutputStream->CloseStream();
+        }
         
+        
+        //-- displacements --//
+        if (Parameters->IsStore_disp_x()) {
+            disp_x_OutputStream->CloseStream();
+        }
+        if (Parameters->IsStore_disp_y()) {
+            disp_y_OutputStream->CloseStream();
+        }
+        if (Parameters->IsStore_disp_z()) {
+            disp_z_OutputStream->CloseStream();
+        }
+    }
+    /// -----------------------------------
     
 }// end of PostProcessing
 //------------------------------------------------------------------------------
@@ -2653,16 +2807,17 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     if (t_index < Parameters->GetStartTimeIndex()) return;
     
     
-    if (Parameters->IsStore_p_raw()){
+    if (Parameters->IsStore_p_raw()) {
        p_sensor_raw_OutputStream->AddData(Get_p(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
     }
     
-    if (Parameters->IsStore_u_raw()){
+    if (Parameters->IsStore_u_raw()) {
        ux_sensor_raw_OutputStream->AddData(Get_ux_sgx(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
        uy_sensor_raw_OutputStream->AddData(Get_uy_sgy(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
        uz_sensor_raw_OutputStream->AddData(Get_uz_sgz(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
     }
-
+    
+    
 
     if (Parameters->IsStore_p_max()){        
          
@@ -2738,15 +2893,194 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
     
     
-      if ((Parameters->IsStore_I_max()) || (Parameters->IsStore_I_avg())) StoreIntensityData();      
+      if ((Parameters->IsStore_I_max()) || (Parameters->IsStore_I_avg())) StoreIntensityData();
+    
+    
+    
+    /// ----------------------- JWJS ------------------------------------------------------------
+    /// If we want the data to be stored, based upon the specified flags, we save it here.
+    if (Parameters->IsStore_refractive_x() || Parameters->IsStore_refractive_y() || Parameters->IsStore_refractive_z())
+    {
+        refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        Compute_refractive_index_data();
+    }
+    
+    if (Parameters->IsStore_refractive_total())
+    {
+        refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        Compute_refractive_index_data_total();
+    }
+    
+    if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
+    {
+        disp_x_OutputStream->AddData(Get_disp_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        disp_y_OutputStream->AddData(Get_disp_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        disp_z_OutputStream->AddData(Get_disp_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        Compute_displacement_data();
+    }
+    /// --------------------------------
     
      
 }// end of StoreData
 //------------------------------------------------------------------------------
 
 
+
+/// ------------------------ JWJS ----------------------------------------------------------------
+void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data()
+{
+
+    float elasto_optical_coeff         = 0.0f;
+    float rho0_val                     = 0.0f;
+    const float n_background           = 1.33f;
+
+    const float* rhox_raw_data         = Get_rhox().GetRawData();
+    const float* rhoy_raw_data         = Get_rhoy().GetRawData();
+    const float* rhoz_raw_data         = Get_rhoz().GetRawData();
+    const float* rho0_raw_data         = Get_rho0().GetRawData();
+    ///const float* p0_raw_data           = Get_p().GetRawData();
+    ///const float* c2_raw_data           = Get_c2().GetRawData();
+    
+    float* n_x                         = Get_refractive_x().GetRawData();
+    float* n_y                         = Get_refractive_y().GetRawData();
+    float* n_z                         = Get_refractive_z().GetRawData();
+    
+    const long * index        = Get_sensor_mask_ind().GetRawData();
+    const size_t sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+
+    #ifndef __NO_OMP__
+        #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
+    #endif
+    for (size_t i = 0; i <sensor_size; i++)
+    {
+        /// Calculate the background density with the addition of the pressure induced variations.
+        /// NOTE:
+        /// The density passed in to this function is density obtained from k-Wave.  In the description
+        /// of how this density is calculated, described in k-wave_user_manual_1.0.1.pdf, it is not fully
+        /// accurate due to the removal of the -u*grad(rho0) term in the mass conservation equation (Eq. 2.4).
+        /// Three options exist:
+        /// 1) Verify that the error is not significant and live with it.
+        /// 2) Implement the term in k-Wave and pass it in here as an addition to rho (need each axial component).
+        /// 3) Use a 1st order approximation from (p=c0^2*rho).
+        ///density = rhox_data[i] + rhoy_data[i] + rhoz_data[i];       /// Density with error.
+        ///density = p_data[i] / c2_data[i];                           /// 1st order approxmation.
+        
+        
+        
+        ///  Calculate the modulation coefficient as described by Skadazac and Wang.
+        /// --------------------- THIS IS WRONG FOR PRESSURES I'M USING -------------------
+        ///M = 2.0 * pezio_optical_coeff * (p_data[i] / (density * c2_data[i]));
+        /// Update the refractive index value based the pressure induced changes.
+        ///n_data[i] = n_background * (1 + 0.5 * M);
+        
+        
+        
+        /// XXX: Should the refractive index have an axial component?
+        
+        
+        /// "Optical Measurement of Ultrasonic Poynting and Velocity Vector Fields".  (Pitts, 2002)
+        /// Below uses the elasto-optical coefficient to
+        /// calculate each component of the refractive index
+        elasto_optical_coeff = (n_background*n_background - 1) / (2*rho0_raw_data[index[i]]*n_background);
+        rho0_val = rho0_raw_data[index[i]];
+        
+        n_x[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhox_raw_data[index[i]]) - rho0_val);
+        n_y[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhoy_raw_data[index[i]]) - rho0_val);
+        n_z[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhoz_raw_data[index[i]]) - rho0_val);
+        
+    }
+    
+}
+
+
+void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data_total()
+{
+    float total_density                = 0.0f;
+    float elasto_optical_coeff         = 0.0f;
+    float rho0_val                     = 0.0f;
+    const float n_background           = 1.33f;
+    
+    const float* rhox_raw_data         = Get_rhox().GetRawData();
+    const float* rhoy_raw_data         = Get_rhoy().GetRawData();
+    const float* rhoz_raw_data         = Get_rhoz().GetRawData();
+    const float* rho0_raw_data         = Get_rho0().GetRawData();
+
+    float* n_total                     = Get_refractive_total().GetRawData();
+    
+    const long * index        = Get_sensor_mask_ind().GetRawData();
+    const size_t sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+
+    #ifndef __NO_OMP__
+        #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
+    #endif
+    for (size_t i = 0; i <sensor_size; i++)
+    {
+        /// Calculate the background density with the addition of the pressure induced variations.
+        /// NOTE:
+        /// The density passed in to this function is density obtained from k-Wave.  In the description
+        /// of how this density is calculated, described in k-wave_user_manual_1.0.1.pdf, it is not fully
+        /// accurate due to the removal of the -u*grad(rho0) term in the mass conservation equation (Eq. 2.4).
+        /// Three options exist:
+        /// 1) Verify that the error is not significant and live with it.
+        /// 2) Implement the term in k-Wave and pass it in here as an addition to rho (need each axial component).
+        /// 3) Use a 1st order approximation from (p=c0^2*rho).
+        ///density = rhox_data[i] + rhoy_data[i] + rhoz_data[i];       /// Density with error.
+        ///density = p_data[i] / c2_data[i];                           /// 1st order approxmation.
+        
+        ///  Calculate the modulation coefficient as described by Skadazac and Wang.
+        /// --------------------- THIS IS WRONG FOR PRESSURES I'M USING -------------------
+        ///M = 2.0 * pezio_optical_coeff * (p_data[i] / (density * c2_data[i]));
+        /// Update the refractive index value based the pressure induced changes.
+        ///n_data[i] = n_background * (1 + 0.5 * M);
+        
+        /// XXX: Should the refractive index have an axial component?
+        
+        /// "Optical Measurement of Ultrasonic Poynting and Velocity Vector Fields".  (Pitts, 2002)
+        /// Below uses the elasto-optical coefficient to
+        /// calculate each component of the refractive index
+        elasto_optical_coeff = (n_background*n_background - 1) / (2*rho0_raw_data[index[i]]*n_background);
+        rho0_val = rho0_raw_data[index[i]];
+        
+        total_density = sqrt(rhox_raw_data[index[i]]*rhox_raw_data[index[i]] +
+                             rhoy_raw_data[index[i]]*rhoy_raw_data[index[i]] +
+                             rhoz_raw_data[index[i]]*rhoz_raw_data[index[i]]);
+        
+        n_total[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + total_density) - rho0_val);
+    }
+
+}
+
+
+void TKSpaceFirstOrder3DSolver::Compute_displacement_data()
+{
+    
+    const float* ux_raw_data    = Get_ux_sgx().GetRawData();
+    const float* uy_raw_data    = Get_uy_sgy().GetRawData();
+    const float* uz_raw_data    = Get_uz_sgz().GetRawData();
+    
+    float *disp_x_raw_data      = Get_disp_x().GetRawData();
+    float *disp_y_raw_data      = Get_disp_y().GetRawData();
+    float *disp_z_raw_data      = Get_disp_z().GetRawData();
+    
+    const long * index        = Get_sensor_mask_ind().GetRawData();
+    const size_t sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+    
+    #ifndef __NO_OMP__
+        #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
+    #endif
+    for (size_t i = 0; i < sensor_size; i++)
+    {
+        disp_x_raw_data[index[i]] += ux_raw_data[index[i]]*Parameters->Get_dt();
+        disp_y_raw_data[index[i]] += uy_raw_data[index[i]]*Parameters->Get_dt();
+        disp_z_raw_data[index[i]] += uz_raw_data[index[i]]*Parameters->Get_dt();
+    }
+}
+
+
 /**
- * Store intensity data. This has to be calculated using spatial and 
+ * Store intensity data. This has to be calculated using spatial and
  * temporary staggered grid.
  */
 void TKSpaceFirstOrder3DSolver::StoreIntensityData(){

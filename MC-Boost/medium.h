@@ -139,83 +139,31 @@ public:
     
     /// Assigns the current pressure from k-Wave to the medium during run-time.
     /// NOTE: There is no offline processing, pressure matrices are passed in as they are obtained from 'AO_sim'.
-    void    Create_refractive_map(TRealMatrix * pressure,
-                                  TRealMatrix * rhox,
-                                  TRealMatrix * rhoy,
-                                  TRealMatrix * rhoz,
-                                  TRealMatrix * rho0,
-                                  TRealMatrix * c2,
-                                  float pezio_optical_coeff);
+    void    Create_refractive_map(TRealMatrix * refractive_x,
+                                  TRealMatrix * refractive_y,
+                                  TRealMatrix * refractive_z);
     
     /// Assigns the current velocity from k-Wave to the medium during run-time.
     /// NOTE: There is no offline processing, velocity matrices are passed in as they are obtained from 'AO_sim'.
-    void    Create_displacement_map(TRealMatrix * ux,
-                                    TRealMatrix * uy,
-                                    TRealMatrix * uz,
-                                    float US_freq,
-                                    float dt);
+    void    Create_displacement_map(TRealMatrix * disp_x,
+                                    TRealMatrix * disp_y,
+                                    TRealMatrix * disp_z);
     
+    /// Takes the refractive maps computed from KSpaceSolver directly
+    void    Assign_refractive_map(TRealMatrix * refractive_x,
+                                  TRealMatrix * refractive_y,
+                                  TRealMatrix * refractive_z);
     
-    /// Return the velocity from the voxel coordinates.
-    /// Voxel indices are specified from Monte-carlo simulation coordinates.
-    ///float   Get_velocity_from_voxel(voxel_x, voxel_y, voxel_z);
-    
-    /// Return the displacement from the voxel coordinates.
-    /// Voxel indices are specified from Monte-carlo simulation coordinates.
-    ///float   Get_displacement_from_voxel(voxel_x, voxel_y, voxel_z);
-    
+    /// Takes the displacement maps computed from KSpaceSolver directly
+    void    Assign_displacement_map(TRealMatrix * disp_x,
+                                    TRealMatrix * disp_y,
+                                    TRealMatrix * disp_z);
     
     // Add a refractive map object that holds refractive index values generated from k-Wave pressures.
     void	addRefractiveMap(RefractiveMap *n_map);
 
     // Add a displacement map object that holds pressure generated from k-Wave
     void    addDisplacementMap(DisplacementMap *d_map);
-    
-	// Load the pressure data generated from K-Wave (at simulation time step 'dt') into the pressure map object.
-	void 	loadPressure(std::string &filename, const int dt);
-
-	// Load the pressure data generated from K-Wave if only the file name is given.
-	void	loadPressure(std::string &filename);
-    
-	// Load the displacement data generated from K-Wave (at simulation time step 'dt') into the displacement map object.
-    void    loadDisplacements(std::string &filename, const int dt);
-    
-    // Loads a pressure file from k-Wave generated data and calculates the displacement, essentially converting the data to displacements
-    // representative of simulated pressures.
-    // TODO: Implement this method so that simulations can account for varying attributes over time due to heating from ultrasound.
-//    void	loadDisplacementsFromPressure(std::string &filename, const int dt,
-//    									  const double density,
-//    									  const double speed_of_sound,
-//    									  const double pezio_optical_coeff,
-//    									  const double background_refractive_index);
-
-    void	loadDisplacementsFromPressure(std::string &filename, const int dt);
-
-    // Load the pressure data generated from k-Wave and convert it to refractive index values.
-    // NOTE: eta is the pezio-optical coefficient of the medium.
-    void 	loadRefractiveMap(std::string &filename, const double density, const double sos, const double n_background, const double eta);
-    void    loadRefractiveMap(std::string &filename, const double density, const double sos, const double eta, const double n_background, const int dt);
-
-	// Return the pressure from the pressure grid based on cartesian coordinates
-	// of the current location of the photon in the medium.
-	double	getPressureFromCartCoords(double x, double z, double y);
-    
-    // Return the pressure from the pressure grid based on the location of the photon.
-    double  getPressureFromPhotonLocation(const boost::shared_ptr<Vector3d> photonCoords);
-    
-
-    // Return the displacement vector coordinates from the location of the photon in the medium.
-    boost::shared_ptr<Vector3d> getDisplacementFromPhotonLocation(const boost::shared_ptr<Vector3d> photonCoords);
-
-	// Return the pressure from the pressure grid based on array index into
-	// the matrix.
-	double	getPressureFromGridCoords(int x, int z, int y);
-
-	// Return the grid where absorption was accumulated.
-	double * getPlanarGrid() {return Cplanar;}
-
-	// Assign the array which will hold the planar absorbance values.
-	void	setPlanarArray(double *planar);
 	
 	// Returns the absorption coefficient (mu_a) for a given depth (i.e. a layer).
 	double	getLayerAbsorptionCoeff(double depth);
@@ -310,7 +258,11 @@ private:
     
 	// Mutex to serialize access to the sensor array.
 	boost::mutex m_sensor_mutex;
-
+    
+    /// Mutex for layers.
+    boost::mutex m_layer_above_mutex;
+    boost::mutex m_layer_below_mutex;
+    
 	// Mutex to serialize access to the data file that is written
 	// by photons.
 	boost::mutex m_data_file_mutex;

@@ -43,35 +43,20 @@ class Vector3d;
 class DisplacementMap
 {
 public:
-	DisplacementMap(const std::string &filename, const int Nx, const int Nz, const int Ny, const int grid_size);
-    DisplacementMap(const int Nx, const int Nz, const int Ny, const int grid_size);
+	DisplacementMap();
 
+    ~DisplacementMap();
     
-    
-    /// Constructor for forming a displacement map object using k-Wave C++ version.
-    DisplacementMap(TRealMatrix * velocity_x,
-                    TRealMatrix * velocity_y,
-                    TRealMatrix * velocity_z,
-                    const float US_freq,
-                    const float dt);
-    
-    
-    /// Constructor for forming a displacement map object using k-Wave C++ version.
-    DisplacementMap(TRealMatrix * velocity_x,
-                    TRealMatrix * velocity_y,
-                    TRealMatrix * velocity_z,
-                    size_t x_pml_offset,
-                    size_t y_pml_offset,
-                    size_t z_pml_offset,
-                    const float US_freq,
-                    const float dt);
-    
-    
-    
-    /// Update the pointers to the new velocities.
-    void    Update_displacement_map(TRealMatrix * velocity_x,
-                                    TRealMatrix * velocity_y,
-                                    TRealMatrix * velocity_z);
+
+    /// Assign the displacements along each respective acess from data provided by KSpaceSolver
+    void    Assign_displacement_map(TRealMatrix * disp_x,
+                                    TRealMatrix * disp_y,
+                                    TRealMatrix * disp_z)
+    {
+        displacement_map_x = disp_x;
+        displacement_map_y = disp_y;
+        displacement_map_z = disp_z;
+    }
     
     
     /// Return the displacement from the TRealMatrix based on axis.
@@ -87,29 +72,8 @@ public:
             {
                 return (displacement_map_z->GetElementFrom3D(x_voxel_index, y_voxel_index, z_voxel_index));
             }
-    
-
-    
-    
-    
-                    
-	~DisplacementMap();
-
-	// Loads a text file containing discrete displacement values at a given time step
-	// that were obtained from kWave simulation post-processed data.
-	void	loadDisplacementMaps(const std::string &filename, const int timeStep);
-	void	loadPressureAndCalculateDisplacements(const std::string &filename, const int dt,
-			  	  	  	  	  	  	  	  	  	  const double density,
-			  	  	  	  	  	  	  	  	  	  const double speed_of_sound,
-			  	  	  	  	  	  	  	  	  	  const double pezio_optical_coeff,
-			  	  	  	  	  	  	  	  	  	  const double background_refractive_index);
 
 
-	// Returns a Vector3d object holding values for displacements in all axes.
-	// That is the returned Vector3d objects holds the values the coordinates of
-	// the photon should be displaced accordingly.
-    boost::shared_ptr<Vector3d>	getDisplacements(const Vector3d &photonLocation);
-    boost::shared_ptr<Vector3d> getDisplacements(const double x, const double y, const double z);
     
     // Returns the individual axis displacements.
     double  getDisplacementFromGridX(const int x_voxel_index, const int y_voxel_index, const int z_voxel_index);
@@ -126,38 +90,15 @@ public:
     double  getDz(void) {return dz;}
 
 private:
-	// Ensure the default constructor can never be called.
-	DisplacementMap();
-
-	// Common initialization function.
-	void	initCommon();
-
 	// Input stream.
 	std::ifstream disp_file_stream;
-
-	// The bounds of the pressure grid. (meters)
-	int x_bound, y_bound, z_bound;
-
-	// The number of voxels in the x, y, and z directions. (meters)
-	int Nx, Nz, Ny;
-
-	// The voxel size. (meters)
-	double dx, dz, dy;
 
 	// Mutex to serialize access to the displacement arrays.
 	boost::mutex m_displacement_mutex;
 
-	// Holds the displacement values obtained from k-Wave in a 3-dimensional grid
-	// allowing indexing into the grid based on the coordinates of the photon
-	// and retrieve the localized displacement.
-	// NOTE:
-	// - Displacement happens on each dimension separate from the other, based on the
-	//   speed of sound in each direction.  Therefore post-processing of velocity data
-	//   leaves displacement values in each direction, therefore we need 3 grids.
-	three_dim_array * displacement_gridX;
-	three_dim_array * displacement_gridY;
-	three_dim_array * displacement_gridZ;
-    
+	
+    int Nx, Ny, Nz;
+    double dx, dy, dz;
     
     /// To keep the displacement computational grid as the same size of the k-Wave velocity grid,
     /// but taking into account the PML, we have to offset into the displacement grid to match

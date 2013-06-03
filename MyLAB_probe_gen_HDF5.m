@@ -3,7 +3,7 @@
 clear all;
 
 
-PA_GUIDED_FOCUS = true;
+PA_GUIDED_FOCUS = false;
 
 % set the size of the perfectly matched layer (PML)
 PML_X_SIZE = 20;            % [grid points]
@@ -11,8 +11,8 @@ PML_Y_SIZE = 10;            % [grid points]
 PML_Z_SIZE = 10;            % [grid points]
 
 % set total number of grid points not including the PML
-Nx = 512;
-Ny = 288;
+Nx = 729;
+Ny = 384;
 Nz = 288;
 
 
@@ -22,7 +22,7 @@ Nz = 288;
 % Definitions to match the SL3323 MyLAB probe
 elevation_height = 5e-3;
 pitch            = 0.245e-3;
-SL3323_active_elements  = 64;
+SL3323_active_elements  = 64/8;
 kerf = 0;                           % Assume zero kerf.
 
 % dx = x/Nx                  % [m]
@@ -91,7 +91,7 @@ cfl = 0.3;
 % Simulation runtime
 % Only transmitting, so t_end is only based on the time needed to reach the
 % bottom of the medium (plus a little more, thus the 1.3 factor).
-t_end = (Nx*dx)*1.3/c0;  
+t_end = (Nx*dx)*1.1/c0;  
 
 % Calculate time step.  Based on the CFL, max SOS and the minimum voxel
 % size.
@@ -119,7 +119,7 @@ Nt = t_end/dt;
 % passed the sensor location.  Here we've set the focus to be less than
 % half of the available medium, so cut simulation time in half to speed
 % this process up.
-%Nt = Nt/2;
+%Nt = 40;
 
 
 % Form the time array from the above defined values.
@@ -130,7 +130,7 @@ kgrid.t_array = 0:dt:(Nt-1)*dt;
 % =========================================================================
 
 % define properties of the input signal
-source_strength = 5.0e6;    	% [Pa]
+source_strength = 2.5e6;    	% [Pa]
 tone_burst_freq = 5.0e6;        % [Hz]
 source_freq = tone_burst_freq;
 tone_burst_cycles = 5;
@@ -203,7 +203,7 @@ if (PA_GUIDED_FOCUS)
     % Assign the delays to the transducer object.
     transducer.supplied_transmit_delays = smooth_delays;
 else
-    transducer.focus_distance = 16e-3;          % focus distance [m]
+    transducer.focus_distance = 21.5e-3;          % focus distance [m]
 end
 transducer.elevation_focus_distance = 21.5e-3;
 transducer.steering_angle = 0;              % steering angle [degrees]
@@ -279,7 +279,7 @@ if (PA_GUIDED_FOCUS)
     PA_file = char(PA_file(1,end));                     % Convert last cell to char array
     filename = ['MyLAB_', PA_file(1:end-4), '_INPUT', '.h5'];     % Form new file name
 else
-    filename = 'MyLAB_Fixed_Focus_INPUT_debug.h5';
+    filename = ['MyLAB_Fixed_Focus_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
 end
 kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename, input_args{:});
 

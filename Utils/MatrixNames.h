@@ -275,5 +275,26 @@ const char * const  Iy_max_Name = "Iy_max";
 /// Iz_max variable name        
 const char * const  Iz_max_Name = "Iz_max";
 
+
+/// ------------------------- JWJS ------------------------------------------------
+/// refractive_total variable name
+const char * const  refractive_total_Name = "refractive_total";
+/// refractive_x variable name
+const char * const  refractive_x_Name = "refractive_x";
+/// refractive_y variable name
+const char * const  refractive_y_Name = "refractive_y";
+/// refractive_z variable name
+const char * const  refractive_z_Name = "refractive_z";
+
+/// disp_x variable name
+const char * const disp_x_Name = "disp_x";
+/// disp_y variable name
+const char * const disp_y_Name = "disp_y";
+/// disp_z variable name
+const char * const disp_z_Name = "disp_z";
+/// ----------------------------------------------------------------
+
+
+
 #endif	/* MATRIXNAMES_H */
 

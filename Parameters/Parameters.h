@@ -185,6 +185,12 @@ public:
 
     /// Get start time index for sensor recording
     int GetStartTimeIndex()          const {return CommandLinesParameters.GetStartTimeIndex();};
+    
+    
+    /// ------------------------ JWJS ----------------------------------------------
+    /// Get end time index for sensor recording
+    int GetEndTimeIndex()            const {return CommandLinesParameters.GetEndTimeIndex();};
+    /// ------------------------------
    
     /// Is --version specified at the command line
     bool IsVersion()                    const {return CommandLinesParameters.IsVersion();};
@@ -210,7 +216,25 @@ public:
     bool IsStore_I_avg()                const {return CommandLinesParameters.IsStore_I_avg();};
     /// Is --I_max specified at the command line
     bool IsStore_I_max()                const {return CommandLinesParameters.IsStore_I_max();};
-
+    
+    
+    /// ------------------------ JWJS --------------------------------------------------------------------------------------
+    /// Is --n_total specified at the command line
+    bool IsStore_refractive_total()              const {return CommandLinesParameters.IsStore_refractive_total();};
+    /// Is --nx specified at the command line
+    bool IsStore_refractive_x()                   const {return CommandLinesParameters.IsStore_refractive_x();};
+    /// Is --nx specified at the command line
+    bool IsStore_refractive_y()                   const {return CommandLinesParameters.IsStore_refractive_y();};
+    /// Is --nx specified at the command line
+    bool IsStore_refractive_z()                   const {return CommandLinesParameters.IsStore_refractive_z();};
+    
+    /// Is --disp_x specified at the command line
+    bool IsStore_disp_x()               const {return CommandLinesParameters.IsStore_disp_x();};
+    /// Is --disp_x specified at the command line
+    bool IsStore_disp_y()               const {return CommandLinesParameters.IsStore_disp_y();};
+    /// Is --disp_x specified at the command line
+    bool IsStore_disp_z()               const {return CommandLinesParameters.IsStore_disp_z();};
+    /// ------------------------------------------------------------
     
             
     /// Handle to the input HDF5 file

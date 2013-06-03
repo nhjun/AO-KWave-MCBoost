@@ -14,169 +14,46 @@
 // It's an error to create a DisplacementMap object without specifying attributes,
 // therefore the default constructor should never be called.
 DisplacementMap::DisplacementMap()
-{
-	cout << "Error: Default DisplacementMap() constructor called\n";
-}
-
-
-DisplacementMap::DisplacementMap(const std::string &filename, const int Nx, const int Nz, const int Ny, const int grid_size)
-{
-	// Assign the number of grid points (pixels in k-wave) used in the simulation.
-	this->Nx = Nx;
-	this->Ny = Ny;
-	this->Nz = Nz;
-
-	x_bound = y_bound = z_bound = grid_size;  // (meters)
-
-
-	initCommon();
-}
-
-
-DisplacementMap::DisplacementMap(const int Nx, const int Nz, const int Ny, const int grid_size)
-{
-	// Assign the number of grid points (pixels in k-wave) used in the simulation.
-	this->Nx = Nx;
-	this->Ny = Ny;
-	this->Nz = Nz;
-
-	x_bound = y_bound = z_bound = grid_size;  // (meters)
-
-	initCommon();
-}
-
-
-
-/// Displacement map containing the velocities in each axial direction for this time step.
-DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
-                                 TRealMatrix * velocity_y,
-                                 TRealMatrix * velocity_z,
-                                 const float US_freq,
-                                 const float dt)
 : X_PML_OFFSET(25), // defaults
   Y_PML_OFFSET(10),
   Z_PML_OFFSET(10)
 {
-    /// Allocate displacement matrices for holding particle displacements used with MC sim.
-    displacement_map_x = new TRealMatrix(velocity_x->GetDimensionSizes());
-    displacement_map_y = new TRealMatrix(velocity_y->GetDimensionSizes());
-    displacement_map_z = new TRealMatrix(velocity_z->GetDimensionSizes());
-    
-    /// Sanity check.
-    assert (displacement_map_x != NULL);
-    assert (displacement_map_y != NULL);
-    assert (displacement_map_z != NULL);
-    
-    /// Displacements are updated per k-Wave time-step using a simple finite-difference scheme
-    /// d = d + dt*u;  where u is the velocity.
-    /// Since they are updated per time-step we need to zero them out.
-    displacement_map_x->ZeroMatrix();
-    displacement_map_y->ZeroMatrix();
-    displacement_map_z->ZeroMatrix();
-    
-    
-    this->US_freq   = US_freq;
-    this->dt        = dt;
-    
-    
-    
-    Update_displacement_map(velocity_x,
-                            velocity_y,
-                            velocity_z);
-    
+    displacement_map_x = displacement_map_y = displacement_map_z = NULL;
 }
 
-
-
-DisplacementMap::DisplacementMap(TRealMatrix * velocity_x,
-                TRealMatrix * velocity_y,
-                TRealMatrix * velocity_z,
-                size_t x_pml_offset,
-                size_t y_pml_offset,
-                size_t z_pml_offset,
-                const float US_freq,
-                const float dt)
-{
-    /// Allocate displacement matrices for holding particle displacements used with MC sim.
-    displacement_map_x = new TRealMatrix(velocity_x->GetDimensionSizes());
-    displacement_map_y = new TRealMatrix(velocity_y->GetDimensionSizes());
-    displacement_map_z = new TRealMatrix(velocity_z->GetDimensionSizes());
-    
-    /// Sanity check.
-    assert (displacement_map_x != NULL);
-    assert (displacement_map_y != NULL);
-    assert (displacement_map_z != NULL);
-    
-    /// Displacements are updated per k-Wave time-step using a simple finite-difference scheme
-    /// d = d + dt*u;  where u is the velocity.
-    /// Since they are updated per time-step we need to zero them out.
-    displacement_map_x->ZeroMatrix();
-    displacement_map_y->ZeroMatrix();
-    displacement_map_z->ZeroMatrix();
-    
-    
-    this->US_freq   = US_freq;
-    this->dt        = dt;
-    
-    this->X_PML_OFFSET = x_pml_offset;
-    this->Y_PML_OFFSET = y_pml_offset;
-    this->Z_PML_OFFSET = z_pml_offset;
-    
-    
-    Update_displacement_map(velocity_x,
-                            velocity_y,
-                            velocity_z);
-    
-}
-
-
-
-void DisplacementMap::initCommon()
-{
-//	assert(Nx != 0 &&
-//			Ny != 0 &&
-//			Nz != 0);
-//
-//	dx = (double)x_bound / (double)Nx; // (meters)
-//	dy = (double)y_bound / (double)Ny; // (meters)
-//	dz = (double)z_bound / (double)Nz; // (meters)
-//	displacement_gridX = new three_dim_array (boost::extents[Nx][Nz][Ny]);
-//	displacement_gridY = new three_dim_array (boost::extents[Nx][Nz][Ny]);
-//	displacement_gridZ = new three_dim_array (boost::extents[Nx][Nz][Ny]);
-}
 
 
 DisplacementMap::~DisplacementMap()
 {
-	if (displacement_gridX)
-		delete displacement_gridX;
-
-	if (displacement_gridY)
-		delete displacement_gridY;
-
-	if (displacement_gridZ)
-		delete displacement_gridZ;
-    
-    
-    
-    if (displacement_map_x)
-    {
-        delete displacement_map_x;
-        displacement_map_x = NULL;
-    }
-    
-    if (displacement_map_y)
-    {
-        delete displacement_map_y;
-        displacement_map_y = NULL;
-    }
-    
-    if (displacement_map_z)
-    {
-        delete displacement_map_z;
-        displacement_map_z = NULL;
-    }
-    
+//	if (displacement_gridX)
+//		delete displacement_gridX;
+//
+//	if (displacement_gridY)
+//		delete displacement_gridY;
+//
+//	if (displacement_gridZ)
+//		delete displacement_gridZ;
+//    
+//    
+//    
+//    if (displacement_map_x)
+//    {
+//        delete displacement_map_x;
+//        displacement_map_x = NULL;
+//    }
+//    
+//    if (displacement_map_y)
+//    {
+//        delete displacement_map_y;
+//        displacement_map_y = NULL;
+//    }
+//    
+//    if (displacement_map_z)
+//    {
+//        delete displacement_map_z;
+//        displacement_map_z = NULL;
+//    }
+//    
 }
 
 
@@ -186,11 +63,8 @@ DisplacementMap::~DisplacementMap()
 /// obtained from k-Wave (c++) at runtime.
 // Loads a text files containing discrete displacement values at a given time step, in all dimensions (i.e. x, y, z),
 // that were obtained from kWave simulation post-processed data.
-void DisplacementMap::loadDisplacementMaps(const std::string &filename, const int timeStep)
-{
-
-
-
+//void DisplacementMap::loadDisplacementMaps(const std::string &filename, const int timeStep)
+//{
 //	// Assure memory has been allocated for the pressure values that
 //	// will be read in from file.  That is, initCommon() has already
 //	// been called.
@@ -283,68 +157,10 @@ void DisplacementMap::loadDisplacementMaps(const std::string &filename, const in
 
 //		disp_file_stream.close();
 //	}
-}
+//}
 
 
-/// XXX:
-/// Old approach, no longer used.  No longer using offline calculations for particle displacements.  Currently data is
-/// obtained from k-Wave (c++) at runtime.
-void DisplacementMap::loadPressureAndCalculateDisplacements(const std::string &filename, const int timeStep,
-															const double density,
-															const double speed_of_sound,
-															const double pezio_optic_coeff,
-															const double background_refractive_index)
-{
-
-}
-
-
-
-
-// Returns a Vector3d object holding values for displacements in all axes.
-boost::shared_ptr<Vector3d>
-DisplacementMap::getDisplacements(const Vector3d &photonLocation)
-{
-
-}
-
-
-
-boost::shared_ptr<Vector3d>
-DisplacementMap::getDisplacements(const double x, const double y, const double z)
-{
-
-}
-
-
-
-void DisplacementMap::Update_displacement_map(TRealMatrix * velocity_x,
-                                              TRealMatrix * velocity_y,
-                                              TRealMatrix * velocity_z)
-{
-    assert (velocity_x != NULL);
-    assert (velocity_y != NULL);
-    assert (velocity_z != NULL);
-
-    float *ux = velocity_x->GetRawData();
-    float *uy = velocity_y->GetRawData();
-    float *uz = velocity_z->GetRawData();
-    
-    float *d_map_x = displacement_map_x->GetRawData();
-    float *d_map_y = displacement_map_y->GetRawData();
-    float *d_map_z = displacement_map_z->GetRawData(); 
-    
-    size_t totalElements = velocity_x->GetTotalElementCount();
-    
-    for (size_t i = 0; i < totalElements; i++)
-    {
-        d_map_x[i] += ux[i]*dt;
-        d_map_y[i] += uy[i]*dt;
-        d_map_z[i] += uz[i]*dt;
-    }
-}
-
-
+ 
 // Returns the individual axis displacement value from their location in the grid.
 double DisplacementMap::getDisplacementFromGridX(const int x, const int y, const int z)
 {
