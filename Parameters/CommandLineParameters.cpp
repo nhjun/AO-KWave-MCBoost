@@ -198,7 +198,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
     
    char c;
    int longIndex;
-   const char * shortOpts = "i:o:v:c:t:puIhsend:";
+   const char * shortOpts = "i:o:v:c:t:s:e:puIhnd:";
     
    const struct option longOpts[] = {
         { "benchmark", required_argument , NULL, 0},
@@ -229,6 +229,9 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
         { "disp_x", no_argument, NULL, 0},
         { "disp_y", no_argument, NULL, 0},
         { "disp_z", no_argument, NULL, 0},
+       
+        { "s", required_argument, NULL, 's'},
+        { "e", required_argument, NULL, 'e'},
         /// ----------------------
        
         { NULL, no_argument, NULL, 0 }
