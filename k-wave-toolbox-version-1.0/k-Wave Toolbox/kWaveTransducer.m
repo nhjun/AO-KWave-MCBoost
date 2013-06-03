@@ -612,7 +612,9 @@ classdef kWaveTransducer < handle
             obj.stored_beamforming_delays_offset = 0;
             
             % get the element beamforming delays and reverse
-            delay_times = -obj.beamforming_delays;            
+            delay_times = -obj.beamforming_delays;  
+            figure; plot(delay_times);
+            title('function set.steering_angle_max(obj, steering_angle_max)');
             
             % get the maximum and minimum beamforming delays
             max_delay = max(delay_times);
@@ -664,6 +666,8 @@ classdef kWaveTransducer < handle
             % convert the delays to be in units of time points
             delay_times = round(delay_times/obj.dt);
             %delay_times = delay_times + abs(min(delay_times))+1;
+            figure, plot(delay_times);
+            title('JWJS function delay_times = supplied_beamforming_delays(obj)');
         end
         
         
@@ -691,7 +695,9 @@ classdef kWaveTransducer < handle
             end
                         
             % convert the delays to be in units of time points
-            delay_times = round(delay_times/obj.dt);            
+            delay_times = round(delay_times/obj.dt); 
+            figure, plot(delay_times);
+            title('function delay_times = beamforming_delays(obj)');
             
         end
         
@@ -711,11 +717,15 @@ classdef kWaveTransducer < handle
                 % reverse 
                 delay_times = -round(delay_times/obj.dt);
                 
+                figure, plot(delay_times);
+                title('function delay_times = elevation_beamforming_delays(obj)');
+                
             else
                
-                % create an empty array
+                % create an empty array             
                 delay_times = zeros(1, obj.element_length);
-                
+                figure; plot(delay_times);
+                title('function delay_times = elevation_beamforming_delays(obj)');
             end
 
         end
@@ -804,16 +814,35 @@ classdef kWaveTransducer < handle
 
             % calculate azimuth focus delay times provided they are not all
             % zero
-            if (~isinf(obj.focus_distance) || (obj.steering_angle ~= 0)) && (nargin == 1 || mode ~= 2)
+            if (~isinf(obj.focus_distance) || (obj.steering_angle ~= 0)) &&...
+                    (nargin == 1 || mode ~= 2) &&...
+                    (obj.focus_distance ~= -1.23456789)
                 
+
                 % get the element beamforming delays and reverse
                 delay_times = -obj.beamforming_delays;
                 
                 % add delay times
                 mask(active_elements_index) = delay_times(indexed_active_elements_mask(active_elements_index));
                 
+                figure; plot(delay_times);
+                title('(~isinf(obj.focus_distance) || (obj.steering_angle ~= 0)) && (nargin == 1 || mode ~= 2)');
             end
 
+            % assign the user supplied time delays
+            % mode: 4
+            % JWJS
+            if ~isinf(obj.supplied_transmit_delays)% && isinf(obj.focus_distance) && (nargin == 1 || mode ~= 4)
+                % get the element beamforming delays
+                delay_times = -obj.supplied_beamforming_delays;
+                
+                % add delay times
+                mask(active_elements_index) = delay_times(indexed_active_elements_mask(active_elements_index));
+                
+                figure; plot(delay_times);
+                title('JWJS ~isinf(obj.supplied_transmit_delays)');
+            end
+            
             % calculate elevation focus time delays provided each element
             % is longer than one grid point
             if ~isinf(obj.elevation_focus_distance) && (obj.element_length > 1) && (nargin == 1 || mode ~= 3)
@@ -827,19 +856,10 @@ classdef kWaveTransducer < handle
                 % add delay times
                 mask(active_elements_index) = mask(active_elements_index) + elevation_delay_times(element_voxel_mask(active_elements_index)).';
                 
+                
             end
             
-             % assign the user supplied time delays
-            % mode: 4
-            % JWJS
-            if ~isinf(obj.supplied_transmit_delays)% && isinf(obj.focus_distance) && (nargin == 1 || mode ~= 4)
-                % get the element beamforming delays
-                delay_times = -obj.supplied_beamforming_delays;
-                
-                % add delay times
-                mask(active_elements_index) = delay_times(indexed_active_elements_mask(active_elements_index));
-                
-            end
+           
             
             % shift delay times (these should all be >= 0, where a value of
             % 0 means no delay)
