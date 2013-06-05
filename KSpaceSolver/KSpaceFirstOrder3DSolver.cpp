@@ -45,6 +45,8 @@
 #include <MatrixClasses/FFTWComplexMatrix.h>
 #include <MatrixClasses/MatrixContainer.h>
 
+#include <iostream>
+
 using namespace std;
 
 //----------------------------------------------------------------------------//
@@ -78,7 +80,7 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver():
         disp_x_OutputStream(NULL),
         disp_y_OutputStream(NULL),
         disp_z_OutputStream(NULL),
-/// ----------------------------------------------------------
+/// --------------------------
 
         MatrixContainer(),
         t_index(0), ActPercent(0),
@@ -89,7 +91,8 @@ TKSpaceFirstOrder3DSolver::TKSpaceFirstOrder3DSolver():
 {    
     TotalTime.Start();
                 
-    Parameters        = TParameters::GetInstance();            
+    Parameters        = TParameters::GetInstance();         
+    
     
 }// end of TKSpace3DSolver
 //------------------------------------------------------------------------------
@@ -264,6 +267,13 @@ void TKSpaceFirstOrder3DSolver::LoadInputData(){
    MatrixContainer.LoadMatricesDataFromDisk(HDF5_InputFile);
    
    HDF5_InputFile.Close();
+   
+   
+   /// ------------------------ JWJS -------------------
+    /// If the EndTime has not been set via the commandline, then it defaults to the
+    /// end of the simulation.
+    if (Parameters->GetEndTimeIndex() == -1) {Parameters->SetEndTimeIndex(Parameters->Get_Nt());}
+   /// ------------------------------
    
    
    
@@ -2758,11 +2768,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
     
     /// ---------------------------- JWJS --------------------------------------------------------
                                         //-- refractive index --//
-    /// Only collect data over the range of simulation time steps specified on the commandline
-    /// via the -s (start) and -e (end) flags.
-    if ((GetTimeIndex() > Parameters->GetStartTimeIndex()) &&
-        (GetTimeIndex() < Parameters->GetEndTimeIndex()))
-    {
+
         if (Parameters->IsStore_refractive_total()) {
             //        Get_refractive_total().WriteDataToHDF5File(Parameters->HDF5_OutputFile,
             //                                                   MatrixContainer[refractive_total].HDF5MatrixName.c_str(),
@@ -2790,7 +2796,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
         if (Parameters->IsStore_disp_z()) {
             disp_z_OutputStream->CloseStream();
         }
-    }
+
     /// -----------------------------------
     
 }// end of PostProcessing
@@ -2806,8 +2812,8 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
     /// ---------------------- JWJS --------------------------
     /// Only store data to disk over the time period given.
-    if (!(t_index >= Parameters->GetStartTimeIndex()) &&
-        (t_index <= Parameters->GetEndTimeIndex()))
+    if ((t_index < Parameters->GetStartTimeIndex()) ||
+        (t_index > Parameters->GetEndTimeIndex()))
         return;
     /// ----------------------------
     

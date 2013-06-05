@@ -63,7 +63,7 @@ TCommandLineParameters::TCommandLineParameters() :
         Store_refractive_total(false), Store_refractive_x(false), Store_refractive_y(false), Store_refractive_z(false),
         Store_disp_x(false), Store_disp_y(false), Store_disp_z(false),
         /// -------------------------
-        StartTimeStep(0)
+        StartTimeStep(0), EndTimeStep(-1)
 {
     
 }// end of TCommandLineParameters

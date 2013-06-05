@@ -190,6 +190,9 @@ public:
     /// ------------------------ JWJS ----------------------------------------------
     /// Get end time index for sensor recording
     int GetEndTimeIndex()            const {return CommandLinesParameters.GetEndTimeIndex();};
+    
+    /// Set end time index for sensor recording
+    void SetEndTimeIndex(const int end_time) {CommandLinesParameters.SetEndTimeIndex(end_time);};
     /// ------------------------------
    
     /// Is --version specified at the command line

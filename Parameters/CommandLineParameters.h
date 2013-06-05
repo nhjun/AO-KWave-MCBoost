@@ -184,6 +184,9 @@ public:
     /// ---------------------- JWJS -----------------------------------
     /// Get end time index when sensor data collection ends
     int GetEndTimeIndex()               const {return EndTimeStep;};
+    
+    /// Set end time index when sensor data collection ends
+    void SetEndTimeIndex(const int end) 	  {EndTimeStep = end;};
     /// ----------------------------
    
     /// Is --p_raw set?
