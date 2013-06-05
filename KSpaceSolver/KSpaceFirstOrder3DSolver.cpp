@@ -2806,8 +2806,8 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
     /// ---------------------- JWJS --------------------------
     /// Only store data to disk over the time period given.
-    if ((t_index < Parameters->GetStartTimeIndex()) &&
-        (t_index < Parameters->GetEndTimeIndex()))
+    if (!(t_index >= Parameters->GetStartTimeIndex()) &&
+        (t_index <= Parameters->GetEndTimeIndex()))
         return;
     /// ----------------------------
     
