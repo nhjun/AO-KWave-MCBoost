@@ -2804,7 +2804,12 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
  */
 void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
-    if (t_index < Parameters->GetStartTimeIndex()) return;
+    /// ---------------------- JWJS --------------------------
+    /// Only store data to disk over the time period given.
+    if ((t_index < Parameters->GetStartTimeIndex()) &&
+        (t_index < Parameters->GetEndTimeIndex()) 
+        return;
+    /// ----------------------------
     
     
     if (Parameters->IsStore_p_raw()) {
@@ -2898,28 +2903,28 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
     
     /// ----------------------- JWJS ------------------------------------------------------------
-    /// If we want the data to be stored, based upon the specified flags, we save it here.
-    if (Parameters->IsStore_refractive_x() || Parameters->IsStore_refractive_y() || Parameters->IsStore_refractive_z())
-    {
-        refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        Compute_refractive_index_data();
-    }
+    	/// If we want the data to be stored, based upon the specified flags, we save it here.
+    	if (Parameters->IsStore_refractive_x() || Parameters->IsStore_refractive_y() || Parameters->IsStore_refractive_z())
+    	{
+    		Compute_refractive_index_data();
+        	refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+       		refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        	refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+    	}
     
-    if (Parameters->IsStore_refractive_total())
-    {
-        refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        Compute_refractive_index_data_total();
-    }
+    	if (Parameters->IsStore_refractive_total())
+    	{
+    		Compute_refractive_index_data_total();
+    	    refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+   		}
     
-    if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
-    {
-        disp_x_OutputStream->AddData(Get_disp_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        disp_y_OutputStream->AddData(Get_disp_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        disp_z_OutputStream->AddData(Get_disp_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        Compute_displacement_data();
-    }
+    	if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
+    	{
+	    	Compute_displacement_data();
+        	disp_x_OutputStream->AddData(Get_disp_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        	disp_y_OutputStream->AddData(Get_disp_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        	disp_z_OutputStream->AddData(Get_disp_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        }
     /// --------------------------------
     
      
