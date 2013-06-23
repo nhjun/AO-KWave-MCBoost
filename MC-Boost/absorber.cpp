@@ -27,7 +27,7 @@ Absorber::Absorber(const Vector3d &c)
     center->location.x = c.location.x;
     center->location.y = c.location.y;
     center->location.z = c.location.z;
-    
+
     InitCommon();
 }
 
@@ -37,7 +37,7 @@ Absorber::Absorber(const boost::shared_ptr<Vector3d> c)
     center->location.x = c->location.x;
     center->location.y = c->location.y;
     center->location.z = c->location.z;
-    
+
     InitCommon();
 }
 
@@ -61,6 +61,6 @@ void Absorber::writeData(void)
 Absorber::~Absorber()
 {
 
-    // STUB
+    // STUB, NOTHING TO DO HERE
 }
 
