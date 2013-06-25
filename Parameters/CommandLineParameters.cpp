@@ -219,13 +219,13 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
         { "I_max", no_argument, NULL, 0 },
 
         /// ---------------- JWJS -----------------------
-        //{ "n", no_argument, NULL, 'n'},
+        { "n", no_argument, NULL, 'n'},
         { "refractive_total", no_argument, NULL, 0},
         { "refractive_x", no_argument, NULL, 0},
         { "refractive_y", no_argument, NULL, 0},
         { "refractive_z", no_argument, NULL, 0},
 
-        //{ "d", no_argument, NULL, 'd'},
+        { "d", no_argument, NULL, 'd'},
         { "disp_x", no_argument, NULL, 0},
         { "disp_y", no_argument, NULL, 0},
         { "disp_z", no_argument, NULL, 0},
