@@ -2848,12 +2848,34 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
          const long  * index       = Get_sensor_mask_ind().GetRawData();
          const size_t  sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
 
+        /// ------------------------------ JWJS --------------------------------------------
+        static float max_val = 0.0f;
+        static float temp_max = 0.0f;
+        /// ------------------------------------
          #ifndef __NO_OMP__
                 #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
          #endif
-         for (size_t i = 0; i <sensor_size; i++){
-             if (p_max[i] < p[index[i]]) p_max[i] = p[index[i]];
+         for (size_t i = 0; i <sensor_size; i++) {
+             if (p_max[i] < p[index[i]])
+             {
+                 p_max[i] = p[index[i]];
+                 /// ---------------------------- JWJS -------------------------------------
+                 if (p_max[i] > max_val) max_val = p_max[i];
+                 /// ----------------------------------
+             }
          }
+        
+        /// -------------------------------------- JWJS ------------------------------------
+        /// If this is true, then pressure has reached its peak (i.e. focus) and is now starting
+        /// to decline, therefore we know that the time step before the current one had the largest
+        /// peak pressure, and we should display this.
+        if (max_val < temp_max)
+        {
+            cout << "Max Pressure: " << temp_max << '\n';
+            cout << "Time step for max pressure: " << t_index - 1 << '\n';
+        }
+        temp_max = max_val;
+        /// --------------------------------------------
       }// p_max
 
     if (Parameters->IsStore_p_rms()){
