@@ -2849,8 +2849,8 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
          const size_t  sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
 
         /// ------------------------------ JWJS --------------------------------------------
-        static float max_val = 0.0f;
-        static float temp_max = 0.0f;
+        static float max_val  = 0.0f;
+        float temp_max = 0.0f;
         /// ------------------------------------
          #ifndef __NO_OMP__
                 #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
@@ -2859,22 +2859,26 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
              if (p_max[i] < p[index[i]])
              {
                  p_max[i] = p[index[i]];
-                 /// ---------------------------- JWJS -------------------------------------
-                 if (p_max[i] > max_val) max_val = p_max[i];
-                 /// ----------------------------------
              }
+             /// ---------------------------- JWJS -------------------------------------
+             if (p[index[i]] > temp_max) temp_max = p[index[i]];
+             /// ----------------------------------
          }
         
         /// -------------------------------------- JWJS ------------------------------------
         /// If this is true, then pressure has reached its peak (i.e. focus) and is now starting
         /// to decline, therefore we know that the time step before the current one had the largest
         /// peak pressure, and we should display this.
-        if (max_val < temp_max)
+        if (temp_max > max_val)
         {
-            cout << "Max Pressure: " << temp_max << '\n';
-            cout << "Time step for max pressure: " << t_index - 1 << '\n';
+        	max_val = temp_max;
+        	cout << "Updating max pressure: " << max_val << '\n'; 
         }
-        temp_max = max_val;
+        else
+        {
+           	cout << "Max Pressure: " << temp_max << '\n';
+        	cout << "Time step for max pressure: " << t_index - 1 << '\n';
+        }
         /// --------------------------------------------
       }// p_max
 
