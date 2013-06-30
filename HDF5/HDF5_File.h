@@ -139,15 +139,15 @@ Name                            Size           Data type       Domain Type      
   3.1 Regular Medium Properties
  
   rho0                          (Nx, Ny, Nz)    float         real              heterogenous
-  		           	(1, 1, 1)       float         real              homogenous
+                                (1, 1, 1)       float         real              homogenous
   rho0_sgx                      (Nx, Ny, Nz)    float         real              heterogenous
                                 (1, 1, 1)       float         real              homogenous
   rho0_sgy                      (Nx, Ny, Nz)    float         real              heterogenous
                                 (1, 1, 1)       float         real              homogenous
   rho0_sgz                      (Nx, Ny, Nz)    float         real              heterogenous
-				(1, 1, 1)       float         real              homogenous
+                                (1, 1, 1)       float         real              homogenous
   c0                            (Nx, Ny, Nz)    float         real              heterogenous
-  		       		(1, 1, 1)       float         real              homogenous
+                                (1, 1, 1)       float         real              homogenous
   c_ref                         (1, 1, 1)       float         real
 
   3.2 Nonlinear Medium Properties (defined if (nonlinear_flag == 1))
@@ -242,8 +242,8 @@ Name                            Size           Data type        Domain Type     
   p0_source_flag                (1, 1, 1)       long          real
   transducer_source_flag        (1, 1, 1)       long          real
   nonuniform_grid_flag          (1, 1, 1)       long          real              
-  nonlinear_flag		(1, 1, 1)       long          real
-  absorbing_flag		(1, 1, 1)       long          real
+  nonlinear_flag                (1, 1, 1)       long          real
+  absorbing_flag                (1, 1, 1)       long          real
   u_source_mode                 (1, 1, 1)       long          real              if u_source
   u_source_many                 (1, 1, 1)       long          real              if u_source
   p_source_mode                 (1, 1, 1)       long          real              if p_source
@@ -404,6 +404,12 @@ public:
     void WriteHyperSlab(const hid_t HDF5_Dataset_id, const TDimensionSizes & Position , const TDimensionSizes & Size, const float * Data);    
     /// Write a hyper-slab into the dataset
     void WriteHyperSlab(const hid_t HDF5_Dataset_id, const TDimensionSizes & Position , const TDimensionSizes & Size, const long * Data);
+    
+    
+    /// ---------------------------------- JWJS ---------------------------------
+    /// Read a hyper-slab from the dataset
+    void ReadHyperSlab(const hid_t HDF5_Dataset_id, const TDimensionSizes & Position , const TDimensionSizes & Size, float * Data);
+    /// ----------------------------------------
     
     /// Write the scalar value
     void WriteScalarValue(const char * DatasetName, const float Value);

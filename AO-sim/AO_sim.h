@@ -23,6 +23,11 @@
 #include <MC-Boost/circularDetector.h>
 #include <MC-Boost/coordinates.h>
 
+/**
+ * Includes for reading HDF5 data file
+ */
+#include <MatrixClasses/InputHDF5Stream.h>
+
 
 
 #include <exception>
@@ -95,17 +100,7 @@ public:
 
 
 	/// Print the MC simulation attributes.
-	void	Print_MC_sim_params()
-			{
-				assert (m_medium != NULL);
-				assert (da_boost != NULL);
-				cout << "\n--------------------------------\nMC-Boost parameters\n--------------------------------\n";
-				cout << "Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
-				cout << "Medium size: [x=" << m_medium->getXbound() << ", y=" << m_medium->getYbound() << ", z=" << m_medium->getZbound() << "] (meters)\n";
-				cout << "Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
-				cout << "Time step: " << MC_time_step << '\n';
-			}
-
+	void	Print_MC_sim_params();
     
     
     /// Add a layer to the medium, which defines the optical properties of that layer
@@ -204,6 +199,16 @@ public:
         i++;
         da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
     }
+    
+    void    Test_Read_HDF5_File(TParameters * Parameters);
+    /// end TEST CASES
+    
+    
+    
+protected:
+    TInputHDF5Stream* refractive_index_InputStream;
+    TInputHDF5Stream* displacement_InputStream;
+    
     
     
 private:

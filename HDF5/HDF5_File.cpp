@@ -337,6 +337,63 @@ void THDF5_File::WriteCompleteDataset (const char * DatasetName, const TDimensio
 
 
 
+/// -------------------------------------- JWJS -----------------------------------------------------
+/**
+ * Read a hyperslab.
+ *
+ * @param [in] HDF5_Dataset_id - Dataset id
+ * @param [in] Position - Position in the dataset
+ * @param [in] Size - Size of the hyperslab
+ * @param [in] Data
+ * @throw ios::failure
+ *
+ */
+void THDF5_File::ReadHyperSlab(const hid_t HDF5_Dataset_id, const TDimensionSizes & Position,
+                               const TDimensionSizes & Size, float * Data)
+{
+    
+    // Select hyperslab
+    const int MatrixRank = 3;
+    hsize_t ElementCount[MatrixRank] = {Size.Z, Size.Y, Size.X};
+    hsize_t Offset[MatrixRank] = {Position.Z,Position.Y,Position.X};
+    
+    herr_t status;
+    hid_t  HDF5_Filespace,HDF5_Memspace;
+    
+    // Select hyperslab in the file.
+    HDF5_Filespace = H5Dget_space(HDF5_Dataset_id);
+    
+    
+    status = H5Sselect_hyperslab(HDF5_Filespace, H5S_SELECT_SET, Offset, 0, ElementCount, NULL);
+    if (status < 0) {
+        char ErrorMessage[256];
+        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotWriteTo,"");
+        throw ios::failure(ErrorMessage);
+    }
+    
+    
+    // assign memspace
+    HDF5_Memspace = H5Screate_simple(MatrixRank, ElementCount, NULL);
+    
+    
+    status = H5Dread(HDF5_Dataset_id, H5T_NATIVE_FLOAT, HDF5_Memspace, HDF5_Filespace,  H5P_DEFAULT, Data);
+    if (status < 0) {
+        char ErrorMessage[256];
+        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotWriteTo,"");
+        
+        throw ios::failure(ErrorMessage);
+    }
+    
+    H5Sclose(HDF5_Memspace);
+    H5Sclose(HDF5_Filespace);
+    
+   
+}
+// end of ReadHyperSlab
+/// --------------------------------------------
+
+
+
 /**
  * Write a hyperslab into the dataset.
  * 

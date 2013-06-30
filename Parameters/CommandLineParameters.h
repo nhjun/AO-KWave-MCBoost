@@ -60,7 +60,15 @@
  *
  *
 \verbatim
----------------------------------- Usage ---------------------------------  
+---------------------------------- Usage ---------------------------------
+ /// -------------------------------------- JWJS ----------------------------------------
+Simulation flags (which simulation to run): 
+  --AO_sim                         : Run the Acousto-Optic simulation with data provided at runtime
+  --AO_sim_loadData                : Run the Acousto-Optic simulation with precomputed data
+  --MC_sim                         : Run the Monte-Carlo simulation
+  --kWave_sim                      : Run the kWave simulation
+ /// --------------------------------------------
+ 
 Mandatory parameters:
   -i <input_file_name>            : HDF5 input file 
   -o <output_file_name>           : HDF5 output file
@@ -115,7 +123,8 @@ Output flags:
  --disp_z                         : Store displacement along z-axis
 
  -e <timestep>                    : Time step when data collection ends
---------------------------------------------------------------------------  
+ 
+----------------------------------------  
 \endverbatim
  * 
  * 
@@ -215,13 +224,13 @@ public:
     
     /// ------------------- JWJS ------------------------------------
     /// Is --n_total set
-    bool IsStore_refractive_total()              const {return Store_refractive_total;};
+    bool IsStore_refractive_total()     const {return Store_refractive_total;};
     /// Is --nx set
-    bool IsStore_refractive_x()                   const {return Store_refractive_x;};
+    bool IsStore_refractive_x()         const {return Store_refractive_x;};
     /// Is --ny set
-    bool IsStore_refractive_y()                   const {return Store_refractive_y;};
+    bool IsStore_refractive_y()         const {return Store_refractive_y;};
     /// Is --nz set
-    bool IsStore_refractive_z()                   const {return Store_refractive_z;};
+    bool IsStore_refractive_z()         const {return Store_refractive_z;};
     
     /// Is --disp_x set
     bool IsStore_disp_x()               const {return Store_disp_x;};
@@ -229,6 +238,15 @@ public:
     bool IsStore_disp_y()               const {return Store_disp_y;};
     /// Is --disp_z set
     bool IsStore_disp_z()               const {return Store_disp_z;};
+    
+    /// Is --AO_sim set
+    bool IsRun_AO_sim()                 const {return Run_AO_sim;};
+    /// Is --AO_sim_loadData set
+    bool IsRun_AO_sim_loadData()        const {return Run_AO_sim_loadData;};
+    /// Is --MC_sim set
+    bool IsRun_MC_sim()                 const {return Run_MC_sim;};
+    /// Is --kWave_sim set
+    bool IsRun_kWave_sim()              const {return Run_kWave_sim;};
     /// -------------------------
     
 
@@ -302,6 +320,16 @@ private:
     bool        Store_disp_y;
     /// Store displacement along z-axis;
     bool        Store_disp_z;
+    
+                        /// Options to decide what is run, via the commandline ///
+    /// Run AO_sim that uses data as it's produced from kWave (i.e. US simulation runs)
+    bool        Run_AO_sim;
+    /// Run AO_sim that loads precomputed displacement and refractive index data
+    bool        Run_AO_sim_loadData;
+    /// Run only the monte-carlo simulation
+    bool        Run_MC_sim;
+    /// Run only the kWave simulation
+    bool        Run_kWave_sim;
     /// ---------------------------------
     
     

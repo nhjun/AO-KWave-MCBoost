@@ -100,6 +100,10 @@ void TParameters::ParseCommandLine(int argc, char** argv){
     }
     
     ReadScalarsFromHDF5InputFile(HDF5_InputFile);
+    
+    /// -------------------------------- JWJS -----------------------------
+    if (CommandLinesParameters.IsRun_AO_sim_loadData()) OpenOutputFile(HDF5_OutputFile);
+    /// --------------------------------------
    
     if (CommandLinesParameters.IsBenchmarkFlag())
         Nt = CommandLinesParameters.GetBenchmarkTimeStepsCount();
@@ -112,6 +116,49 @@ void TParameters::ParseCommandLine(int argc, char** argv){
    
 }// end of ParseCommandLine
 //------------------------------------------------------------------------------
+
+
+/// ---------------------------------------- JWJS -------------------------------
+void TParameters::OpenOutputFile(THDF5_File & HDF5_OutputFile)
+{
+    TDimensionSizes ScalarSizes(1,1,1);
+    
+    if (!HDF5_OutputFile.IsOpened()) {
+        
+        // Open file
+        try{
+            HDF5_OutputFile.Open(CommandLinesParameters.GetOutputFileName().c_str());
+        } catch (ios::failure e){
+            fprintf(stderr,"%s",e.what());
+            PrintUsageAndExit();
+        }
+        
+    }
+    
+    HDF5_FileHeader.ReadHeaderFromInputFile(HDF5_OutputFile);
+    
+    if (HDF5_FileHeader.GetFileType() != THDF5_FileHeader::hdf5_ft_output) {
+        char ErrorMessage[256] = "";
+        sprintf(ErrorMessage,Parameters_ERR_FMT_IncorrectInputFileFormat,GetInputFileName().c_str());
+        throw ios::failure(ErrorMessage);
+    }
+    
+    if (!HDF5_FileHeader.CheckMajorFileVersion()) {
+        char ErrorMessage[256] = "";
+        sprintf(ErrorMessage,Parameters_ERR_FMT_IncorrectMajorHDF5FileVersion,GetInputFileName().c_str(),
+                HDF5_FileHeader.GetSupportedHDF5_MajorVersion().c_str());
+        throw ios::failure(ErrorMessage);
+    }
+    
+    if (!HDF5_FileHeader.CheckMinorFileVersion()) {
+        char ErrorMessage[256] = "";
+        sprintf(ErrorMessage,Parameters_ERR_FMT_IncorrectMinorHDF5FileVersion,GetInputFileName().c_str(),
+                HDF5_FileHeader.GetSupportedHDF5_MinorVersion().c_str());
+        throw ios::failure(ErrorMessage);
+    }
+}
+/// end OpenOutputFile()
+/// -------------------------------------------
 
 
 /**

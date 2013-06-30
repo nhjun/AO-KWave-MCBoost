@@ -65,6 +65,11 @@ public:
     /// Save scalars into the output HDF5 file
     void SaveScalarsToHDF5File(THDF5_File & HDF5_OutputFile);
     
+    /// ------------------------------ JWJS ------------------------------------------
+    /// Open the output file that holds the refractive index, displacement and other data.
+    void OpenOutputFile(THDF5_File & HDF5_OutputFile);
+    /// ------------------------------------
+    
     /// Full dimension sizes of the simulation (real clases)
     TDimensionSizes GetFullDimensionSizes   () const {return FullDimensionSizes; };
     /// Reduced dimension sizes of the simulation (complex clases)
@@ -237,6 +242,24 @@ public:
     bool IsStore_disp_y()               const {return CommandLinesParameters.IsStore_disp_y();};
     /// Is --disp_x specified at the command line
     bool IsStore_disp_z()               const {return CommandLinesParameters.IsStore_disp_z();};
+    
+    
+    /// Is --AO_sim specified at the command line
+    bool IsRun_AO_sim()                 const {return CommandLinesParameters.IsRun_AO_sim();};
+    /// Is --AO_sim_loadData specified at the command line
+    bool IsRun_AO_sim_loadData()        const {return CommandLinesParameters.IsRun_AO_sim_loadData();};
+    /// Is --MC_sim specified at the command line
+    bool IsRun_MC_sim()                 const {return CommandLinesParameters.IsRun_MC_sim();};
+    /// Is --kWave_sim specified at the command line
+    bool IsRun_kWave_sim()              const {return CommandLinesParameters.IsRun_kWave_sim();};
+    
+    /// Reuse commandline flags for deciding what AO mechanism to simulate.
+    bool IsSim_refractive_index()       const {return (IsStore_refractive_x() ||
+                                                       IsStore_refractive_y() ||
+                                                       IsStore_refractive_z());};
+    bool IsSim_displacement()           const {return (IsStore_disp_x() ||
+                                                       IsStore_disp_y() ||
+                                                       IsStore_disp_z());};
     /// ------------------------------------------------------------
     
             

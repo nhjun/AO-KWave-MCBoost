@@ -76,6 +76,14 @@ void TCommandLineParameters::PrintUsageAndExit(){
 
 
  printf("---------------------------------- Usage ---------------------------------\n");
+ /// -------------------------------------- JWJS ------------------------------------------
+ printf("Simulation flags (which simulation to run):\n");
+ printf(" --AO_sim                         : Run the Acousto-Optic simulation with data provided at runtime\n");
+ printf(" --AO_sim_loadData                : Run the Acousto-Optic simulation with precomputed data\n");
+ printf(" --MC_sim                         : Run the Monte-Carlo simulation\n");
+ printf(" --kWave_sim                      : Run the kWave simulation\n");
+ /// --------------------------------------------
+ printf("\n");
  printf("Mandatory parameters:\n");
  printf("  -i <input_file_name>            : HDF5 input file\n");
  printf("  -o <output_file_name>           : HDF5 output file\n");
@@ -128,9 +136,8 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf("  --disp_y                        : Store displacement along y-axis\n");
  printf("  --disp_z                        : Store displacement along z-axis\n");
  printf("\n");
- printf("  -e <timestep>                    : Time step when data collection ends\n");
- /// --------------------------------------------------------
- printf("\n");
+ printf("  -e <timestep>                   : Time step when data collection ends\n");
+ /// ----------------------------
  printf("  -s <timestep>                   : Time step when data collection begins\n");
  printf("                                      (default = 1)\n");
  printf("--------------------------------------------------------------------------\n");
@@ -232,6 +239,11 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
 
         { "s", required_argument, NULL, 's'},
         { "e", required_argument, NULL, 'e'},
+       
+        { "AO_sim",          no_argument, NULL, 0},
+        { "AO_sim_loadData", no_argument, NULL, 0},
+        { "MC_sim",          no_argument, NULL, 0},
+        { "kWave_sim",          no_argument, NULL, 0},
         /// ----------------------
 
         { NULL, no_argument, NULL, 0 }
@@ -400,9 +412,21 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                 } else
                 if( strcmp( "disp_y", longOpts[longIndex].name ) == 0) {
                     Store_disp_y = true;
-                }else
+                } else
                 if( strcmp( "disp_z", longOpts[longIndex].name ) == 0) {
                     Store_disp_z = true;
+                } else
+                if(strcmp( "AO_sim", longOpts[longIndex].name ) == 0) {
+                    Run_AO_sim = true;
+                } else
+                if( strcmp( "AO_sim_loadData", longOpts[longIndex].name ) == 0) {
+                    Run_AO_sim_loadData = true;
+                } else
+                if( strcmp( "MC_sim", longOpts[longIndex].name ) == 0) {
+                    Run_MC_sim = true;
+                } else
+                if( strcmp( "kWave_sim", longOpts[longIndex].name ) == 0) {
+                    Run_kWave_sim = true;
                 }
                /// ---------------------------
                 else {

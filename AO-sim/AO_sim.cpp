@@ -10,7 +10,7 @@
 
 #include "AO_sim.h"
 #include <MC-Boost/logger.h>
-
+#include <HDF5/HDF5_File.h>
 
 
 
@@ -369,6 +369,63 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
 
 
 }
+
+
+
+
+
+
+
+void
+AO_Sim::Print_MC_sim_params()
+{
+    assert (m_medium != NULL);
+    assert (da_boost != NULL);
+    cout << "\n--------------------------------\nMC-Boost parameters\n--------------------------------\n";
+    cout << "Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
+    cout << "Medium size: [x=" << m_medium->getXbound() << ", y=" << m_medium->getYbound() << ", z=" << m_medium->getZbound() << "] (meters)\n";
+    cout << "Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
+    cout << "Time step: " << MC_time_step << '\n';
+}
+
+
+
+
+
+/// TEST CASES
+///------------------------------------------------------------------------------------------------------------------------------
+void
+AO_Sim::Test_Read_HDF5_File(TParameters * Parameters)
+{
+    cout << "------------------- In AO_Sim::Test_Read_HDF5_File() ------------------\n";
+    cout << "Opened: " << Parameters->GetOutputFileName() << '\n';
+    if (Parameters->IsSim_refractive_index()) cout << "Loading refractive index data\n";
+    if (Parameters->IsSim_displacement()) cout << "Loading displacement data\n";
+    
+    cout << "Domain dims: [" << Parameters->GetFullDimensionSizes().X << ", "
+                             << Parameters->GetFullDimensionSizes().Y  << ", "
+                             << Parameters->GetFullDimensionSizes().Z  << "]"
+                             << '\n';
+    cout << "Simulation time steps (total): " << Parameters->Get_Nt() << '\n';
+    
+    
+    THDF5_File& HDF5_OutputFile = Parameters->HDF5_OutputFile;
+    THDF5_File& HDF5_InputFile = Parameters->HDF5_InputFile;
+    
+    TDimensionSizes ScalarSizes(1,1,1);
+    long int Nt;
+
+    //cout << HDF5_InputFile.ReadStringAttribute("Nt", "size") << '\n';
+    TDimensionSizes temp = HDF5_OutputFile.GetDatasetDimensionSizes(refractive_x_Name);
+    // long int temp2 = HDF5_OutputFile.GetDatasetElementCount(refractive_x_Name);
+    //HDF5_OutputFile.ReadCompleteDataset(Nt_Name,  ScalarSizes, &Nt);
+    
+    hid_t nx = HDF5_OutputFile.OpenDataset("refractive_x");
+    //HDF5_InputFile.ReadHyperSlab();
+}
+/// end Test_Read_HDF5_File()
+
+
 
 
 

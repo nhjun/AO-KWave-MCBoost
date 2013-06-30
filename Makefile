@@ -98,13 +98,13 @@ ifeq ($(COMPILER),GNU)
 
   # CFLAGS for running 
   #------------------------
-  CXXFLAGS = -O3 -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
+  #CXXFLAGS = -O3 -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
 
   # CFLAGS for debugging
   #------------------------
-  #CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
+  CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
 
   ifeq ($(LINKING),STATIC)
 
@@ -172,6 +172,7 @@ $(TARGET):	main.o 					\
 		MatrixClasses/LongMatrix.o		\
 		MatrixClasses/MatrixContainer.o		\
 		MatrixClasses/OutputHDF5Stream.o	\
+		MatrixClasses/InputHDF5Stream.o		\
 		MatrixClasses/RealMatrix.o		\
 		MatrixClasses/UXYZ_SGXYZMatrix.o	\
 		Parameters/CommandLineParameters.o	\
@@ -205,6 +206,7 @@ $(TARGET):	main.o 					\
 		MatrixClasses/LongMatrix.o          	\
 		MatrixClasses/MatrixContainer.o		\
 		MatrixClasses/OutputHDF5Stream.o	\
+		MatrixClasses/InputHDF5Stream.o		\
 		MatrixClasses/RealMatrix.o          	\
 		MatrixClasses/UXYZ_SGXYZMatrix.o	\
 		Parameters/CommandLineParameters.o	\

@@ -614,7 +614,7 @@ void testPressures(void);
 
 
 /// separator
-static const char * FMT_SmallSeparator = "--------------------------------\n";
+static const char * FMT_SmallSeparator = "--------------------------------------------\n";
 
 /** 
  *  The main function
@@ -622,23 +622,13 @@ static const char * FMT_SmallSeparator = "--------------------------------\n";
  * @param argv
  * @return 
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     
-    
+
     /// The Acouto-Optic simulation object.
     AO_Sim AO_simulation;
-
-	/// What should be simulated - Ultrasound, Monte-Carlo, Both (Acousto-Optics)?
-	bool sim_monte_carlo 	= false;
-	bool sim_kWave		 	= true;
-	bool sim_acousto_optics = false; 
-
-	/// What AO mechanisms will be turned on during the simulation.
-	bool sim_displacement 	 = false;
-	bool sim_refractive_grad = false;
     
-
-
     /// print headers
     cout << FMT_SmallSeparator;
     cout << AO_simulation.Print_kWave_header() << endl;
@@ -662,12 +652,23 @@ int main(int argc, char** argv) {
     }
     
     
+	/// What should be simulated - Ultrasound, Monte-Carlo, Both (Acousto-Optics)?
+	bool sim_monte_carlo 	= Parameters->IsRun_MC_sim();
+	bool sim_kWave		 	= Parameters->IsRun_kWave_sim();
+	bool sim_acousto_optics = Parameters->IsRun_AO_sim();
+    bool sim_acousto_optics_loadData = Parameters->IsRun_AO_sim_loadData();
+    
+	/// What AO mechanisms will be turned on during the simulation.
+	bool sim_displacement 	 = false;
+	bool sim_refractive_grad = false;
+    
     
     /// ----------------------------------------------------------------------------------------------------
     /// MC-Boost
     /// ----------------------------------------------------------------------------------------------------
     if (sim_monte_carlo || sim_acousto_optics)
 	{
+        
     	/// Set the number of photons to simulate and how many threads will be run.
     	AO_simulation.Set_num_MC_threads(1);
     	//AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
@@ -769,6 +770,10 @@ int main(int argc, char** argv) {
 	/// Run what was specified.
 	if (sim_monte_carlo && (!sim_kWave))
 	{
+        cout << FMT_SmallSeparator;
+        cout << " Simulation: Monte-Carlo\n";
+        cout << FMT_SmallSeparator;
+        
 		/// This will run the monte-carlo simulation once.
 		/// FIXME:
 		/// - Implement a call 'Run_monte_carlo()'
@@ -776,7 +781,11 @@ int main(int argc, char** argv) {
 	}
 	else if (sim_kWave && (!sim_monte_carlo))
 	{
-		/// This runs the acousto_optics simulation with monte-carlo turned off.
+        cout << FMT_SmallSeparator;
+        cout << " Simulation: kWave\n";
+        cout << FMT_SmallSeparator;
+		
+        /// This runs the acousto_optics simulation with monte-carlo turned off.
 		/// FIXME:
 		/// - Implement a call 'Run_kWave()'
 		AO_simulation.Run_acousto_optics_sim(Parameters,
@@ -785,11 +794,24 @@ int main(int argc, char** argv) {
 	}
     else if (sim_acousto_optics)
     {
-    	/// Run the AO simulation.
+        cout << FMT_SmallSeparator;
+        cout << " Simulation: Acousto-Optics\n";
+        cout << FMT_SmallSeparator;
+    	
+        /// Run the AO simulation.
     	AO_simulation.Run_acousto_optics_sim(Parameters,
 											 sim_displacement,
 											 sim_refractive_grad);
 	}
+    else if (sim_acousto_optics_loadData)
+    {
+        cout << FMT_SmallSeparator;
+        cout << " Simulation: Acousto-Optics (loading pre-computed data)\n";
+        cout << FMT_SmallSeparator;
+        
+        /// Run the AO simulation from precomputed data that is stored in hdf5 file.
+        AO_simulation.Test_Read_HDF5_File(Parameters);
+    }
 	else
 	{
 		cout << "\n\n!!! Error: Nothing has been selected to simulate (MC, kWave, AO) !!! (main.cpp)\n\n";
