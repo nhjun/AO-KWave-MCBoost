@@ -102,6 +102,9 @@ void TParameters::ParseCommandLine(int argc, char** argv){
     ReadScalarsFromHDF5InputFile(HDF5_InputFile);
     
     /// -------------------------------- JWJS -----------------------------
+    /// If the --AO_sim_loadData commandline flag was given, then the simulation
+    /// needs to load in the precomputed data from the hdf5 file.  The outputfile
+    /// from the previously run kWave simulation is used, thus we need to open it.
     if (CommandLinesParameters.IsRun_AO_sim_loadData()) OpenOutputFile(HDF5_OutputFile);
     /// --------------------------------------
    

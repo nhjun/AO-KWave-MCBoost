@@ -146,6 +146,7 @@ public:
     void    FromAO_sim_compute_refractive_index()     {Compute_refractive_index_data();};
     void    FromAO_sim_compute_displacement()         {Compute_displacement_data();};
 
+    TRealMatrix & FromAO_sim_Get_refractive_total()   {return Get_refractive_total();};
     TRealMatrix & FromAO_sim_Get_refractive_x    ()   {return Get_refractive_x();};
     TRealMatrix & FromAO_sim_Get_refractive_y    ()   {return Get_refractive_y();};
     TRealMatrix & FromAO_sim_Get_refractive_z    ()   {return Get_refractive_z();};

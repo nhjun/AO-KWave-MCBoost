@@ -40,16 +40,29 @@ using namespace std;
 //                              Constants                                     //
 //----------------------------------------------------------------------------//
 
-/// --------------------------------- JWJS ---------------------------------------
-
 
 //------------------------------------------------------------------------------
+
+/**
+ * Open the input stream and the dataset
+ *
+ */
+void TInputHDF5Stream::SetHDF5File(THDF5_File & HDF5_File)
+{
+    this->HDF5_File = &HDF5_File;
+    
+    Position = TDimensionSizes(0,0,0);
+
+}// end of SetHDF5File
+//------------------------------------------------------------------------------
+
 
 /**
  * Close the output stream and the dataset
  *
  */
-void TInputHDF5Stream::CloseStream(){
+void TInputHDF5Stream::CloseStream()
+{
     
     HDF5_File->CloseDataset(HDF5_Dataset_id);
     HDF5_Dataset_id  = H5I_BADID;
@@ -67,7 +80,8 @@ void TInputHDF5Stream::CloseStream(){
  * @param [in, out] TempBuffer - Temp buffer to make the data block contiguous
  *
  */
-void TInputHDF5Stream::ReadData(TRealMatrix& SourceMatrix, TLongMatrix& Index, float * TempBuffer){
+void TInputHDF5Stream::ReadData(const char * DatasetName, float * TempBuffer)
+{
     
     
 //#ifndef __NO_OMP__
@@ -78,10 +92,32 @@ void TInputHDF5Stream::ReadData(TRealMatrix& SourceMatrix, TLongMatrix& Index, f
 //    }
     
     
-    TDimensionSizes BlockSize(Index.GetTotalElementCount(),1,1);
     
+    
+///    TDimensionSizes ScalarSizes(1,1,1);
+///    long int Nx, Ny, Nz;
+///    HDF5_File.ReadCompleteDataset(Nt_Name, ScalarSizes, &Nt);
+    
+    HDF5_Dataset_id = HDF5_File->OpenDataset(DatasetName);
+    TDimensionSizes Dims = HDF5_File->GetDatasetDimensionSizes(DatasetName);
+    
+    /// The size of the block of data for this timestep.
+    TDimensionSizes BlockSize(Dims.X,1,1);
+    
+    /// Dims.X is the total number of sensor elements.
+    Position.X = Dims.X;
+    
+    /// Read the appropriate hyperslab from the HDF5 file.
+    /// Note: What ends up getting passed to ReadHyperSlab is,
+    ///       Position  = {1, timestep, Nx*Ny*Nz}
+    ///       BlockSize = {1, 1, Nx*Ny*Nz}
+    Position.Y = 2;
     HDF5_File->ReadHyperSlab(HDF5_Dataset_id, Position, BlockSize, TempBuffer);
+    
+    /// Position.Y tracks the timestep to load.
     Position.Y++;
+    
+    HDF5_File->CloseDataset(HDF5_Dataset_id);
     
 }// end of ReadData
 //------------------------------------------------------------------------------
@@ -92,7 +128,8 @@ void TInputHDF5Stream::ReadData(TRealMatrix& SourceMatrix, TLongMatrix& Index, f
  * Destructor
  *
  */
-TInputHDF5Stream::~TInputHDF5Stream(){
+TInputHDF5Stream::~TInputHDF5Stream()
+{
     
     if (HDF5_Dataset_id != -1) HDF5_File->CloseDataset(HDF5_Dataset_id);
     

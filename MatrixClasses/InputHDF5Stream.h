@@ -51,14 +51,15 @@ public:
     TInputHDF5Stream() : HDF5_File(NULL), HDF5_Dataset_id(H5I_BADID), Position(0,0,0) {};
     
     /// Create stream
-    //virtual void CreateStream(THDF5_File & HDF5_File, const char * DatasetName,
-    //                          const TDimensionSizes & TotalSize, const TDimensionSizes & ChunkSize,
-    //                          const int CompressionLevel);
+    virtual void SetHDF5File(THDF5_File & HDF5_File);
+    //const char * DatasetName,
+    //                        const TDimensionSizes & TotalSize, const TDimensionSizes & ChunkSize);
+    
     /// Close stream
     virtual void CloseStream();
     
     /// Add data into stream
-    virtual void ReadData   (TRealMatrix& Source_matrix, TLongMatrix& Index, float * TempBuffer);
+    virtual void ReadData(const char * DatasetName, float * DataIn);
     
     /// Destructor
     virtual ~TInputHDF5Stream();
@@ -73,12 +74,23 @@ private:
     TInputHDF5Stream & operator = (const TInputHDF5Stream& src);
     
     /// HDF5 file handle
-    THDF5_File* HDF5_File;
+    THDF5_File*     HDF5_File;
     /// HDF5 dataset handle
-    hid_t       HDF5_Dataset_id;
+    hid_t           HDF5_Dataset_id;
     
     /// Position in the dataset
     TDimensionSizes Position;
+    
+//    /// The matrices containing the refractive index values, for the current timestep, of the precomputed data.
+//    TRealMatrix * refractive_x;
+//    TRealMatrix * refractive_y;
+//    TRealMatrix * refractive_z;
+//    
+//    /// The matrices containing the refractive index values, for the current timestep, of the precomputed data.
+//    TRealMatrix * disp_x;
+//    TRealMatrix * disp_y;
+//    TRealMatrix * disp_z;
+    
     
 };// end of TInputHDF5Stream
 

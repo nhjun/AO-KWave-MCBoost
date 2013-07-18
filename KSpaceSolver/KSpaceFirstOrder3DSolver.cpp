@@ -46,6 +46,11 @@
 #include <MatrixClasses/MatrixContainer.h>
 
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <fstream>
+using std::ofstream;
+
 
 using namespace std;
 
@@ -60,7 +65,10 @@ using namespace std;
 //                              Public methods                                //
 //----------------------------------------------------------------------------//
 
-
+#define DEBUG
+#ifdef DEBUG
+void PrintMatrix(TRealMatrix &data, TParameters *Parameters);
+#endif
 /**
  * Constructor of the class.
  *
@@ -2834,9 +2842,12 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     }
 
     if (Parameters->IsStore_u_raw()) {
-       ux_sensor_raw_OutputStream->AddData(Get_ux_sgx(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
-       uy_sensor_raw_OutputStream->AddData(Get_uy_sgy(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
-       uz_sensor_raw_OutputStream->AddData(Get_uz_sgz(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
+        cout << "Storing velocity values (x,y,z)\n";
+        ux_sensor_raw_OutputStream->AddData(Get_ux_sgx(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
+        uy_sensor_raw_OutputStream->AddData(Get_uy_sgy(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
+        uz_sensor_raw_OutputStream->AddData(Get_uz_sgz(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
+
+
     }
 
 
@@ -2955,6 +2966,9 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
         	refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
        		refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
         	refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            
+            PrintMatrix(Get_refractive_x(), Parameters);
+
     	}
 
     	if (Parameters->IsStore_refractive_total())
@@ -2963,6 +2977,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     		Compute_refractive_index_data_total();
 
     	    refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+        
    		}
 
     	if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
@@ -3001,8 +3016,57 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data()
     float* n_y                         = Get_refractive_y().GetRawData();
     float* n_z                         = Get_refractive_z().GetRawData();
 
+
+
+//    const size_t TotalElementCount = Parameters->GetFullDimensionSizes().GetElementCount();
+
+//#ifndef __NO_OMP__
+//#pragma omp parallel for schedule (static) if (TotalElementCount > 1e5)
+//#endif
+//    for (size_t i = 0; i <TotalElementCount; i++)
+//    {
+//        /// Calculate the background density with the addition of the pressure induced variations.
+//        /// NOTE:
+//        /// The density passed in to this function is density obtained from k-Wave.  In the description
+//        /// of how this density is calculated, described in k-wave_user_manual_1.0.1.pdf, it is not fully
+//        /// accurate due to the removal of the -u*grad(rho0) term in the mass conservation equation (Eq. 2.4).
+//        /// Three options exist:
+//        /// 1) Verify that the error is not significant and live with it.
+//        /// 2) Implement the term in k-Wave and pass it in here as an addition to rho (need each axial component).
+//        /// 3) Use a 1st order approximation from (p=c0^2*rho).
+//        ///density = rhox_data[i] + rhoy_data[i] + rhoz_data[i];       /// Density with error.
+//        ///density = p_data[i] / c2_data[i];                           /// 1st order approxmation.
+//        
+//        
+//        
+//        ///  Calculate the modulation coefficient as described by Skadazac and Wang.
+//        /// --------------------- THIS IS WRONG FOR PRESSURES I'M USING -------------------
+//        ///M = 2.0 * pezio_optical_coeff * (p_data[i] / (density * c2_data[i]));
+//        /// Update the refractive index value based the pressure induced changes.
+//        ///n_data[i] = n_background * (1 + 0.5 * M);
+//        
+//        
+//        
+//        /// XXX: Should the refractive index have an axial component?
+//        /// ---------------------------------------------------------
+//        /// Only if you plan on bending the path between scattering events (i.e. Eikonal),
+//        /// which would cause you to know the spatial refractive index gradient.
+//        
+//        
+//        /// "Optical Measurement of Ultrasonic Poynting and Velocity Vector Fields".  (Pitts, 2002)
+//        /// Below uses the elasto-optical coefficient to
+//        /// calculate each component of the refractive index
+//        elasto_optical_coeff = (n_background*n_background - 1) / (2*rho0_raw_data[i]*n_background);
+//        //rho0_val = rho0_raw_data[i];
+//        
+//        n_x[i] = n_background + elasto_optical_coeff * ((rho0_raw_data[i] + rhox_raw_data[i]) - rho0_raw_data[i]);
+//        n_y[i] = n_background + elasto_optical_coeff * ((rho0_raw_data[i] + rhoy_raw_data[i]) - rho0_raw_data[i]);
+//        n_z[i] = n_background + elasto_optical_coeff * ((rho0_raw_data[i] + rhoz_raw_data[i]) - rho0_raw_data[i]);
+//        
+//    }
+    
     const long * index        = Get_sensor_mask_ind().GetRawData();
-    const size_t sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+    const size_t sensor_size  = Get_sensor_mask_ind().GetTotalElementCount();
 
     #ifndef __NO_OMP__
         #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
@@ -3032,17 +3096,20 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data()
 
 
         /// XXX: Should the refractive index have an axial component?
+        /// ---------------------------------------------------------
+        /// Only if you plan on bending the path between scattering events (i.e. Eikonal),
+        /// which would cause you to know the spatial refractive index gradient.
 
 
         /// "Optical Measurement of Ultrasonic Poynting and Velocity Vector Fields".  (Pitts, 2002)
         /// Below uses the elasto-optical coefficient to
         /// calculate each component of the refractive index
         elasto_optical_coeff = (n_background*n_background - 1) / (2*rho0_raw_data[index[i]]*n_background);
-        rho0_val = rho0_raw_data[index[i]];
+        //rho0_val = rho0_raw_data[index[i]];
 
-        n_x[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhox_raw_data[index[i]]) - rho0_val);
-        n_y[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhoy_raw_data[index[i]]) - rho0_val);
-        n_z[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + rhoz_raw_data[index[i]]) - rho0_val);
+        n_x[index[i]] = n_background + elasto_optical_coeff * ((rho0_raw_data[index[i]] + rhox_raw_data[index[i]]) - rho0_raw_data[index[i]]);
+        n_y[index[i]] = n_background + elasto_optical_coeff * ((rho0_raw_data[index[i]] + rhoy_raw_data[index[i]]) - rho0_raw_data[index[i]]);
+        n_z[index[i]] = n_background + elasto_optical_coeff * ((rho0_raw_data[index[i]] + rhoz_raw_data[index[i]]) - rho0_raw_data[index[i]]);
 
     }
 
@@ -3068,7 +3135,7 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data_total()
     //float temp_z = 0.0f;
 
     const long * index        = Get_sensor_mask_ind().GetRawData();
-    const size_t sensor_size = Get_sensor_mask_ind().GetTotalElementCount();
+    const size_t sensor_size  = Get_sensor_mask_ind().GetTotalElementCount();
 
     #ifndef __NO_OMP__
         #pragma omp parallel for schedule (static) if (sensor_size > 1e5)
@@ -3098,20 +3165,44 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data_total()
         /// Below uses the elasto-optical coefficient to
         /// calculate each component of the refractive index
         elasto_optical_coeff = (n_background*n_background - 1) / (2*rho0_raw_data[index[i]]*n_background);
-        rho0_val = rho0_raw_data[index[i]];
+        //rho0_val = rho0_raw_data[index[i]];
 
-        total_density = sqrt(rhox_raw_data[index[i]]*rhox_raw_data[index[i]] +
-                             rhoy_raw_data[index[i]]*rhoy_raw_data[index[i]] +
-                             rhoz_raw_data[index[i]]*rhoz_raw_data[index[i]]);
+//        total_density = sqrt(rhox_raw_data[index[i]]*rhox_raw_data[index[i]] +
+//                             rhoy_raw_data[index[i]]*rhoy_raw_data[index[i]] +
+//                             rhoz_raw_data[index[i]]*rhoz_raw_data[index[i]]);
 
-        n_total[index[i]] = n_background + elasto_optical_coeff * ((rho0_val + total_density) - rho0_val);
+        total_density = rhox_raw_data[index[i]] + rhoy_raw_data[index[i]] + rhoz_raw_data[index[i]];
+        
+        n_total[index[i]] = n_background + elasto_optical_coeff *
+                            ((total_density + rho0_raw_data[index[i]]) - rho0_raw_data[index[i]]);
     }
-
+    
+#define DEBUG
+#ifdef DEBUG
+//    static float val = 0.0;
+//    TDimensionSizes Dims = Get_refractive_total().GetDimensionSizes();
+//    size_t Nx = Dims.X;
+//    size_t Ny = Dims.Y;
+//    size_t Nz = Dims.Z;
+//    for (size_t x = 30; x < 40; x++)
+//    {
+//        for (size_t y = 175; y < 185; y++)
+//        {
+//            for (size_t z = 140; z < 150; z++)
+//            {
+//                Get_refractive_total().SetElementFrom3D(x, y, z, val);
+//            }
+//        }
+//    }
+//    val = val + 1.0;
+//    PrintMatrix(Get_refractive_total(), Parameters);
+#endif
 }
 
 
 void TKSpaceFirstOrder3DSolver::Compute_displacement_data()
 {
+
 
     const float* ux_raw_data    = Get_ux_sgx().GetRawData();
     const float* uy_raw_data    = Get_uy_sgy().GetRawData();
@@ -3133,6 +3224,9 @@ void TKSpaceFirstOrder3DSolver::Compute_displacement_data()
         disp_y_raw_data[index[i]] += uy_raw_data[index[i]]*Parameters->Get_dt();
         disp_z_raw_data[index[i]] += uz_raw_data[index[i]]*Parameters->Get_dt();
     }
+    
+
+    
 }
 
 
@@ -3248,7 +3342,7 @@ void TKSpaceFirstOrder3DSolver::StoreIntensityData(){
                ux_i_1[i] = (ux[sensor_point_ind] + ux[sensor_point_ind_1x]) * 0.5f;
                uy_i_1[i] = (uy[sensor_point_ind] + uy[sensor_point_ind_1y]) * 0.5f;
                uz_i_1[i] = (uz[sensor_point_ind] + uz[sensor_point_ind_1z]) * 0.5f;
-               p_i_1[i]   = p[sensor_point_ind];
+               p_i_1[i]  = p[sensor_point_ind];
 
             }
         }// else
@@ -3290,8 +3384,6 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo(){
 
     HDF5_FileHeader.SetNumberOfCores();
 
-
-
     HDF5_FileHeader.WriteHeaderToOutputFile(Parameters->HDF5_OutputFile);
 
 
@@ -3299,7 +3391,45 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo(){
 }// end of WriteOutputDataInfo
 //------------------------------------------------------------------------------
 
+//
+//#ifdef DEBUG
+void PrintMatrix(TRealMatrix &data, TParameters *Parameters)
+{
+    TDimensionSizes Dims;
+    Dims.X = Parameters->GetFullDimensionSizes().X;
+    Dims.Y = Parameters->GetFullDimensionSizes().Y;
+    Dims.Z = Parameters->GetFullDimensionSizes().Z;
+    
+    static int time_step;
+    std::string filename = "refractive_total";
+    std::stringstream ss;
+    ss << time_step++;
+    filename = filename + "_" + ss.str() + ".txt";
+    
+    std::ofstream data_file_stream;	// Velocity and displacement stream;
+    data_file_stream.open(filename.c_str());
+	if (!data_file_stream)
+	{
+		cout << "!!! ERROR: Could not open file for writing.  Check directory structure.\n";
+		exit(1);
+	}
+    
+    
+    size_t x, y, z;
+    z = 150;
+    for (x = 0; x < Dims.X; x++)
+    {
+        for (y = 0; y < Dims.Y; y++)
+        {
+            data_file_stream << data.GetElementFrom3D(x, y, z) << ' ';
+        }
+        data_file_stream << '\n';
+    }
+    data_file_stream.flush();
+    data_file_stream.close();
+}
 
+//#endif
 //----------------------------------------------------------------------------//
 //                            Private methods                                 //
 //----------------------------------------------------------------------------//

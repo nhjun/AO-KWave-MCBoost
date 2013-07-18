@@ -351,43 +351,65 @@ void THDF5_File::WriteCompleteDataset (const char * DatasetName, const TDimensio
 void THDF5_File::ReadHyperSlab(const hid_t HDF5_Dataset_id, const TDimensionSizes & Position,
                                const TDimensionSizes & Size, float * Data)
 {
+
+    /// The data is read into a 1D array.
+    const int RANK_OUT = 1;
     
-    // Select hyperslab
-    const int MatrixRank = 3;
-    hsize_t ElementCount[MatrixRank] = {Size.Z, Size.Y, Size.X};
-    hsize_t Offset[MatrixRank] = {Position.Z,Position.Y,Position.X};
+    hsize_t dims_out[2];
     
     herr_t status;
     hid_t  HDF5_Filespace,HDF5_Memspace;
     
-    // Select hyperslab in the file.
+    /// Select hyperslab in the file.
     HDF5_Filespace = H5Dget_space(HDF5_Dataset_id);
+    int rank       = H5Sget_simple_extent_ndims(HDF5_Filespace);
+    int status_n   = H5Sget_simple_extent_dims(HDF5_Filespace, dims_out, NULL);
     
     
-    status = H5Sselect_hyperslab(HDF5_Filespace, H5S_SELECT_SET, Offset, 0, ElementCount, NULL);
+
+    hsize_t Offset[3]       = {0, Position.Y, 0};
+    hsize_t ElementCount[3] = {1, 1, Size.X};
+    
+    
+    /// Define the hyperslab in the dataset.
+    status = H5Sselect_hyperslab(HDF5_Filespace, H5S_SELECT_SET, Offset, NULL, ElementCount, NULL);
     if (status < 0) {
         char ErrorMessage[256];
-        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotWriteTo,"");
+        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotReadFrom,"");
         throw ios::failure(ErrorMessage);
     }
     
     
-    // assign memspace
-    HDF5_Memspace = H5Screate_simple(MatrixRank, ElementCount, NULL);
+    /// Define the memory dataspace
+    hsize_t dimsm[1];
+    dimsm[0] = Size.X;
+    HDF5_Memspace = H5Screate_simple(RANK_OUT, dimsm, NULL);
+    
+    
+    /// Define the memory hyperslab.
+    hsize_t count_out[1];
+    hsize_t offset_out[1];
+    offset_out[0] = 0;
+    count_out[0] = Size.X;
+    status = H5Sselect_hyperslab(HDF5_Memspace, H5S_SELECT_SET, offset_out, NULL, count_out, NULL);
+    if (status < 0) {
+        char ErrorMessage[256];
+        sprintf(ErrorMessage, HDF5_ERR_FMT_CouldNotReadFrom,"");
+        
+        throw ios::failure(ErrorMessage);
+    }
     
     
     status = H5Dread(HDF5_Dataset_id, H5T_NATIVE_FLOAT, HDF5_Memspace, HDF5_Filespace,  H5P_DEFAULT, Data);
     if (status < 0) {
         char ErrorMessage[256];
-        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotWriteTo,"");
+        sprintf(ErrorMessage,HDF5_ERR_FMT_CouldNotReadFrom,"");
         
         throw ios::failure(ErrorMessage);
     }
     
     H5Sclose(HDF5_Memspace);
     H5Sclose(HDF5_Filespace);
-    
-   
 }
 // end of ReadHyperSlab
 /// --------------------------------------------

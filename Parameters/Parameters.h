@@ -254,6 +254,7 @@ public:
     bool IsRun_kWave_sim()              const {return CommandLinesParameters.IsRun_kWave_sim();};
     
     /// Reuse commandline flags for deciding what AO mechanism to simulate.
+    bool IsSim_refractive_total()       const {return (IsStore_refractive_total());};
     bool IsSim_refractive_index()       const {return (IsStore_refractive_x() ||
                                                        IsStore_refractive_y() ||
                                                        IsStore_refractive_z());};

@@ -483,32 +483,32 @@ void TMatrixContainer::AddMatricesIntoContainer(){
     /// ------------------------------------- JWJS ---------------------------------------------------------------------------
     if (Params->IsStore_refractive_total())
     {
-       MatrixContainer[refractive_total].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, refractive_total_Name);
+       MatrixContainer[refractive_total].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, refractive_total_Name);
     }
     if (Params->IsStore_refractive_x())
     {
-       MatrixContainer[refractive_x].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, refractive_x_Name);
+       MatrixContainer[refractive_x].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, refractive_x_Name);
     }
     if (Params->IsStore_refractive_y())
     {
-        MatrixContainer[refractive_y].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, refractive_y_Name);
+        MatrixContainer[refractive_y].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, refractive_y_Name);
     }
     if (Params->IsStore_refractive_z())
     {
-        MatrixContainer[refractive_z].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, refractive_z_Name);
+        MatrixContainer[refractive_z].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, refractive_z_Name);
     }
     
     if (Params->IsStore_disp_x())
     {
-        MatrixContainer[disp_x].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, disp_x_Name);
+        MatrixContainer[disp_x].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, disp_x_Name);
     }
     if (Params->IsStore_disp_y())
     {
-        MatrixContainer[disp_y].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, disp_y_Name);
+        MatrixContainer[disp_y].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, disp_y_Name);
     }
     if (Params->IsStore_disp_z())
     {
-        MatrixContainer[disp_z].SetAllValues(NULL,TMatrixRecord::mdtReal, SensorDims, false, disp_z_Name);
+        MatrixContainer[disp_z].SetAllValues(NULL,TMatrixRecord::mdtReal, FullDim, false, disp_z_Name);
     }
     /// ------------------------------------------------
     

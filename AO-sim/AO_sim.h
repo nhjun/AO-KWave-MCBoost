@@ -191,14 +191,14 @@ public:
 	/// TEST CASES
 	/// ------------------------------------------------------------------
     void    Test_Seeded_MC_sim()
-    {
-        da_boost->Simulate_displacement(false);
-        da_boost->Simulate_refractive_gradient(false);
-        da_boost->Save_RNG_Seeds(false);
-        static int i = 0;
-        i++;
-        da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
-    }
+            {
+                da_boost->Simulate_displacement(false);
+                da_boost->Simulate_refractive_gradient(false);
+                da_boost->Save_RNG_Seeds(false);
+                static int i = 0;
+                i++;
+                da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
+            }
     
     void    Test_Read_HDF5_File(TParameters * Parameters);
     /// end TEST CASES
@@ -206,8 +206,14 @@ public:
     
     
 protected:
-    TInputHDF5Stream* refractive_index_InputStream;
-    TInputHDF5Stream* displacement_InputStream;
+    TInputHDF5Stream* refractive_total_InputStream;
+    TInputHDF5Stream* refractive_x_InputStream;
+    TInputHDF5Stream* refractive_y_InputStream;
+    TInputHDF5Stream* refractive_z_InputStream;
+    
+    TInputHDF5Stream* displacement_x_InputStream;
+    TInputHDF5Stream* displacement_y_InputStream;
+    TInputHDF5Stream* displacement_z_InputStream;
     
     
     
@@ -229,7 +235,7 @@ private:
     
     
     /// Pezio-optical coefficient.
-    float pezio_optical_coeff;
+    float       pezio_optical_coeff;
 
     
 };

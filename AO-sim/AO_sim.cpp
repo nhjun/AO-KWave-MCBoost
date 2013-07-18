@@ -8,11 +8,17 @@
 
 #include <exception>
 
-#include "AO_sim.h"
+#include <AO-sim/AO_sim.h>
 #include <MC-Boost/logger.h>
 #include <HDF5/HDF5_File.h>
 
+#include <string>
+#include <sstream>
+#include <fstream>
+using std::ofstream;
 
+
+void PrintMatrix(TRealMatrix &matrix);
 
 
 AO_Sim::AO_Sim()
@@ -31,6 +37,10 @@ AO_Sim::AO_Sim()
 	/// Set default value.
 	MC_time_step = 0.0f;
 
+    /// For use when data is loaded from a previous simulation of ultrasound.
+    refractive_total_InputStream = NULL;
+    refractive_x_InputStream = refractive_y_InputStream = refractive_z_InputStream = NULL;
+    displacement_x_InputStream = displacement_y_InputStream = displacement_z_InputStream = NULL;
 }
 
 
@@ -247,7 +257,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters,
             	                                     KSpaceSolver->GetTimeIndex());
         	}
 		} // END if (sim_refractive_grad || sim_displacement )
-
+        
+        //PrintMatrix(KSpaceSolver->FromAO_sim_Get_refractive_total());
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
 
@@ -399,33 +410,212 @@ AO_Sim::Test_Read_HDF5_File(TParameters * Parameters)
 {
     cout << "------------------- In AO_Sim::Test_Read_HDF5_File() ------------------\n";
     cout << "Opened: " << Parameters->GetOutputFileName() << '\n';
-    if (Parameters->IsSim_refractive_index()) cout << "Loading refractive index data\n";
-    if (Parameters->IsSim_displacement()) cout << "Loading displacement data\n";
+
+//    if (Parameters->IsSim_refractive_index() || Parameters->IsSim_displacement())
+//    {
+//        precomputed_InputStream = new TInputHDF5Stream();
+//        if (!precomputed_InputStream) throw bad_alloc();
+//        
+//        cout << "Loading precomputed data\n";
+//        precomputed_InputStream.SetHDF5File(Parameters->HDF5_OutputFile);
+//    }
     
-    cout << "Domain dims: [" << Parameters->GetFullDimensionSizes().X << ", "
-                             << Parameters->GetFullDimensionSizes().Y  << ", "
-                             << Parameters->GetFullDimensionSizes().Z  << "]"
-                             << '\n';
-    cout << "Simulation time steps (total): " << Parameters->Get_Nt() << '\n';
+//    if (Parameters->IsSim_refractive_index() || Parameters->IsSim_displacement())
+//    {
+//        refractive_x_InputStream = new TInputHDF5Stream();
+//        if (!refractive_x_InputStream)  throw bad_alloc();
+//        
+//        refractive_y_InputStream = new TInputHDF5Stream();
+//        if (!refractive_y_InputStream)  throw bad_alloc();
+//        
+//        refractive_z_InputStream = new TInputHDF5Stream();
+//        if (!refractive_z_InputStream)  throw bad_alloc();
+//        
+//        refractive_x_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//        refractive_y_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//        refractive_z_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//                                                
+//        
+//        cout << "Loading refractive index data\n";
+//    }
+//    if (Parameters->IsSim_displacement())
+//    {
+//        displacement_x_InputStream = new TInputHDF5Stream();
+//        if (!displacement_x_InputStream)  throw bad_alloc();
+//        
+//        displacement_y_InputStream = new TInputHDF5Stream();
+//        if (!displacement_y_InputStream)  throw bad_alloc();
+//        
+//        displacement_z_InputStream = new TInputHDF5Stream();
+//        if (!displacement_z_InputStream)  throw bad_alloc();
+//
+//        displacement_x_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//        displacement_y_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//        displacement_z_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+//        
+//        
+//        cout << "Loading displacement data\n";
+//    }
+    
+    if (Parameters->IsSim_refractive_total())
+    {
+        refractive_total_InputStream = new TInputHDF5Stream();
+        if (!refractive_total_InputStream)  throw bad_alloc();
+        
+        refractive_total_InputStream->SetHDF5File(Parameters->HDF5_OutputFile);
+    }
+    
+    
+/// --------------------------------------- BEGIN WORKING VERS ---------------------------
+//    /// The data is read into a 1D array.
+//    const int RANK_OUT = 1;
+//
+//    herr_t  status;
+//    hid_t   dataspace, memspace, dataset, file;
+//    hsize_t dims_out[2];
+//    
+//    //float Data[75][384][288];
+//    
+//    THDF5_File& HDF5_OutputFile = Parameters->HDF5_OutputFile;
+//    /// Close, so that we can open in a known state.
+//    HDF5_OutputFile.Close();
+//
+//    /// Open the hdf5 file, with flags.
+//    file = H5Fopen("FF_debug_OUTPUT_refract_total.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+//    dataset = H5Dopen(file, refractive_total_Name, H5P_DEFAULT);
+//    
+//    /// Select hyperslab in the file.
+//    dataspace       = H5Dget_space(dataset);
+//    int rank        = H5Sget_simple_extent_ndims(dataspace);
+//    int status_n    = H5Sget_simple_extent_dims(dataspace, dims_out, NULL);
+//    cout << "Rank: " << rank << "\nDimensions: " << dims_out[0] << "x" << dims_out[1] << '\n';
+//    
+//    
+//    for (int i = 0; i < 4; i++)
+//    {
+//    /// Define hyperslab in the dataset.
+//    hsize_t offset[rank];
+//    offset[0] = 0;
+//    offset[1] = i;
+//    offset[2] = 0;
+//    hsize_t count[rank];
+//    count[0] = 1;
+//    count[1] = 1;
+//    count[2] = 8294400;
+//    status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, count, NULL);
+//    if (status < 0) cout << "Error: H5Sselect_hyperslab() defining hyperslab in dataset\n";
+//    
+//    /// Define the memory dataspace.
+//    hsize_t dimsm[1];
+//    //dimsm[0] = 1;
+//    dimsm[0] = 8294400;
+//    memspace = H5Screate_simple(RANK_OUT, dimsm, NULL);
+//    
+//    /// Define the memory hyperslab.
+//    hsize_t count_out[1];
+//    hsize_t offset_out[1];
+//    offset_out[0] = 0;
+//    count_out[0] = 8294400;
+//    status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL, count_out, NULL);
+//    if (status < 0) cout << "Error: H5Sselect_hyperslab() defining memory in hyperslab\n";
+//    
+//    /// Read data from hyperslab in the file into the hyperslab in memory and display
+//    float *data_out = new float[8294400];
+//    status = H5Dread(dataset, H5T_NATIVE_FLOAT, memspace, dataspace, H5P_DEFAULT, data_out);
+//    
+//    /// Assign the data to a TRealMatrix
+//    TDimensionSizes sensor_size(75, 384, 288);
+//    TRealMatrix refract_vals(sensor_size);
+//    float *raw = refract_vals.GetRawData();
+//    for (int i = 0; i < 8294400; i++)
+//    {
+//        raw[i] = data_out[i];
+//    }
+//    delete data_out;
+//    
+//    /// Print data out to file for imagesc() in matlab to verify.
+//    PrintMatrix(refract_vals);
+//    
+//    } // end for LOOP
+//    
+/// --------------------------------------- END WORKING VERS ---------------------------
+
+    
+    
     
     
     THDF5_File& HDF5_OutputFile = Parameters->HDF5_OutputFile;
-    THDF5_File& HDF5_InputFile = Parameters->HDF5_InputFile;
+    THDF5_File& HDF5_InputFile  = Parameters->HDF5_InputFile;
     
-    TDimensionSizes ScalarSizes(1,1,1);
-    long int Nt;
 
-    //cout << HDF5_InputFile.ReadStringAttribute("Nt", "size") << '\n';
-    TDimensionSizes temp = HDF5_OutputFile.GetDatasetDimensionSizes(refractive_x_Name);
-    // long int temp2 = HDF5_OutputFile.GetDatasetElementCount(refractive_x_Name);
-    //HDF5_OutputFile.ReadCompleteDataset(Nt_Name,  ScalarSizes, &Nt);
+
+    TDimensionSizes temp = HDF5_OutputFile.GetDatasetDimensionSizes(refractive_total_Name);
+//    long int temp2 = HDF5_OutputFile.GetDatasetElementCount(refractive_x_Name);
     
-    hid_t nx = HDF5_OutputFile.OpenDataset("refractive_x");
+    long int Nx, Ny, Nz;
+    TDimensionSizes ScalarSizes(1,1,1);
+    HDF5_OutputFile.ReadCompleteDataset(Nx_Name,  ScalarSizes, &Nx);
+    HDF5_OutputFile.ReadCompleteDataset(Ny_Name,  ScalarSizes, &Ny);
+    HDF5_OutputFile.ReadCompleteDataset(Nz_Name,  ScalarSizes, &Nz);
+
+    TDimensionSizes sensor_size(Nx, Ny, Nz);
+    TRealMatrix refract_total(sensor_size);
+
+//    
+//    cout << "Domain dims: [" << Parameters->GetFullDimensionSizes().X << ", "
+//                             << Parameters->GetFullDimensionSizes().Y << ", "
+//                             << Parameters->GetFullDimensionSizes().Z << "]"
+//                             << '\n';
+//    
+//    cout << "Simulation time steps (total): " << Parameters->Get_Nt() << '\n';
+//    cout << "Recorded time steps (total): "   << temp.Y << '\n';
+//    
+    refractive_total_InputStream->ReadData(refractive_total_Name, refract_total.GetRawData());
+    PrintMatrix(refract_total);
     //HDF5_InputFile.ReadHyperSlab();
 }
 /// end Test_Read_HDF5_File()
 
 
+
+void PrintMatrix(TRealMatrix &data)
+{
+    TDimensionSizes Dims;
+    Dims.X = 75;
+    Dims.Y = 384;
+    Dims.Z = 288;
+//    Dims.X = Parameters->GetFullDimensionSizes().X;
+//    Dims.Y = Parameters->GetFullDimensionSizes().Y;
+//    Dims.Z = Parameters->GetFullDimensionSizes().Z;
+    
+    static int time_step;
+    std::string filename = "refractive_total";
+    std::stringstream ss;
+    ss << time_step++;
+    filename = filename + "_" + ss.str() + ".txt";
+    
+    std::ofstream data_file_stream;	// Velocity and displacement stream;
+    data_file_stream.open(filename.c_str());
+	if (!data_file_stream)
+	{
+		cout << "!!! ERROR: Could not open file for writing.  Check directory structure.\n";
+		exit(1);
+	}
+    
+    
+    int x, y, z;
+    z = 151;
+    for (x = 0; x < Dims.X; x++)
+    {
+        for (y = 0; y < Dims.Y; y++)
+        {
+            data_file_stream << data.GetElementFrom3D(x, y, z) << ' ';
+        }
+        data_file_stream << '\n';
+    }
+    
+    data_file_stream.close();
+}
 
 
 

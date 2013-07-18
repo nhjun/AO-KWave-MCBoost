@@ -77,6 +77,20 @@ public:
     float&  GetElementFrom3D(const size_t X, const size_t Y, const size_t Z) {
         return pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize +  X];
     };
+    
+    /// ---------------------------------- JWJS --------------------------------
+    /**
+     * @brief Set element from 3D matrix
+     * @param X - X dimension
+     * @param Y - Y dimension
+     * @param Z - Z dimension
+     * @param value - Value to assign
+     * @return  void
+     */
+    void  SetElementFrom3D(const size_t X, const size_t Y, const size_t Z, const float value)
+    {
+        pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize + X] = value;
+    };
          
             
     
