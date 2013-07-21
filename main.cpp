@@ -659,14 +659,15 @@ int main(int argc, char** argv)
     bool sim_acousto_optics_loadData = Parameters->IsRun_AO_sim_loadData();
     
 	/// What AO mechanisms will be turned on during the simulation.
-	bool sim_displacement 	 = false;
-	bool sim_refractive_grad = false;
+	bool sim_displacement 	  = false;
+	bool sim_refractive_grad  = false;
+    bool sim_refractive_total = false;
     
     
     /// ----------------------------------------------------------------------------------------------------
     /// MC-Boost
     /// ----------------------------------------------------------------------------------------------------
-    if (sim_monte_carlo || sim_acousto_optics)
+    if (sim_monte_carlo || sim_acousto_optics || sim_acousto_optics_loadData)
 	{
         
     	/// Set the number of photons to simulate and how many threads will be run.
@@ -729,7 +730,7 @@ int main(int argc, char** argv)
     	/// Display the monte-carlo simulation parameters
 		/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
 		/// Only want to run 4 hardware threads.
-		const size_t hardware_threads = 4;
+		const size_t hardware_threads = 1;
 		///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
 		AO_simulation.Set_num_MC_threads(hardware_threads);	
 		AO_simulation.Print_MC_sim_params();
@@ -788,9 +789,7 @@ int main(int argc, char** argv)
         /// This runs the acousto_optics simulation with monte-carlo turned off.
 		/// FIXME:
 		/// - Implement a call 'Run_kWave()'
-		AO_simulation.Run_acousto_optics_sim(Parameters,
-											 false,
-											 false);
+		AO_simulation.Run_acousto_optics_sim(Parameters);
 	}
     else if (sim_acousto_optics)
     {
@@ -799,9 +798,7 @@ int main(int argc, char** argv)
         cout << FMT_SmallSeparator;
     	
         /// Run the AO simulation.
-    	AO_simulation.Run_acousto_optics_sim(Parameters,
-											 sim_displacement,
-											 sim_refractive_grad);
+    	AO_simulation.Run_acousto_optics_sim(Parameters);
 	}
     else if (sim_acousto_optics_loadData)
     {
@@ -809,8 +806,10 @@ int main(int argc, char** argv)
         cout << " Simulation: Acousto-Optics (loading pre-computed data)\n";
         cout << FMT_SmallSeparator;
         
-        /// Run the AO simulation from precomputed data that is stored in hdf5 file.
-        AO_simulation.Test_Read_HDF5_File(Parameters);
+        AO_simulation.Run_acousto_optics_sim_loadData(Parameters);
+        
+        /// Test case.
+        //AO_simulation.Test_Read_HDF5_File(Parameters);
     }
 	else
 	{

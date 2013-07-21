@@ -255,7 +255,7 @@ public:
     
     /// Reuse commandline flags for deciding what AO mechanism to simulate.
     bool IsSim_refractive_total()       const {return (IsStore_refractive_total());};
-    bool IsSim_refractive_index()       const {return (IsStore_refractive_x() ||
+    bool IsSim_refractive_grad()        const {return (IsStore_refractive_x() ||
                                                        IsStore_refractive_y() ||
                                                        IsStore_refractive_z());};
     bool IsSim_displacement()           const {return (IsStore_disp_x() ||

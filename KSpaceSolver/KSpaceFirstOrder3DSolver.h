@@ -143,6 +143,7 @@ public:
     void    FromAO_sim_PostProcessing	()            {PostProcessing();};
     void    FromAO_sim_WriteOutputDataInfo()          {WriteOutputDataInfo();};
 
+    void    FromAO_sim_compute_refractive_index_total() {Compute_refractive_index_data_total();};
     void    FromAO_sim_compute_refractive_index()     {Compute_refractive_index_data();};
     void    FromAO_sim_compute_displacement()         {Compute_displacement_data();};
 

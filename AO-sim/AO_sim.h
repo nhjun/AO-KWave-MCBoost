@@ -46,9 +46,14 @@ public:
     
     
     /// Run the actual acousto-optic simulation.
-    void        Run_acousto_optics_sim(TParameters * Parameters,
-									   bool sim_displacement,
-									   bool sim_refractive_grad);
+    /// sim_displacements:     - Run the simulation with displacement of scatterers.
+    /// sim_refractive_grad:   - Run the siumlation using the gradient of the refractive index (bending of paths).
+    /// sim_refractive_total:  - Run the simulation using the total refractive index computed (no bending, straight line paths).
+    void        Run_acousto_optics_sim(TParameters * Parameters);
+    
+    
+    /// Run the acousto-optic simulation from precomputed data from kWave.
+    void        Run_acousto_optics_sim_loadData(TParameters * Parameters);
     
     
     /********************** k-Wave ****************************************************/

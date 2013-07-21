@@ -19,7 +19,7 @@ RefractiveMap::RefractiveMap()
   Y_PML_OFFSET(10),
   Z_PML_OFFSET(10)
 {
-    refractive_x = refractive_y = refractive_z = NULL;
+    refractive_total = refractive_x = refractive_y = refractive_z = NULL;
 }
 
 
@@ -27,110 +27,31 @@ RefractiveMap::~RefractiveMap()
 {
 
     /// Clean up memory.
-    if (refractive_map)
+    if (refractive_total)
     {
-        delete refractive_map;
-        refractive_map = NULL;
+        delete refractive_total;
+        refractive_total = NULL;
+    }
+    
+    if (refractive_x)
+    {
+        delete refractive_x;
+        refractive_x = NULL;
+    }
+    
+    if (refractive_y)
+    {
+        delete refractive_y;
+        refractive_y = NULL;
+    }
+    
+    if (refractive_z)
+    {
+        delete refractive_z;
+        refractive_z = NULL;
     }
 }
 
-
-//void RefractiveMap::loadRefractiveMap(void)
-//{
-//
-//	// Ensure memory has been allocated for the pressure values that
-//	// will be read in from file.  That is, initCommon() has already
-//	// been called.
-//	assert(refractive_grid != NULL);
-//	// Verify that the calculations needed for the refractive index use values
-//	// that have been set in the medium's call to this method.
-//	assert(density > 0.0 &&
-//			speed_of_sound > 0 &&
-//			pezio_optical_coeff > 0);
-//
-//	// Open the file that contains the pressure values.
-//	pressure_file_stream.open(pressure_file.c_str());
-//
-//	if (!pressure_file_stream) {
-//		cout << "!!! Error opening pressure map file !!!\n";
-//		exit(1);
-//	}
-//	else {
-//		cout << "Pressure map " << pressure_file.c_str() << "...  opened successfully\n";
-//		cout << "Loading PRESSURE values for calculating REFRACTIVE_INDEX values...\n";
-//	}
-//
-//
-//	double pressure_val = 0.0;
-//		double M = 0.0;  // Coefficient of modulation.
-//
-//		for (array_index a = 0; a < Nx && pressure_file_stream.good(); a++)
-//			for (array_index b = 0; b < Nz; b++)
-//				for (array_index c = 0; c < Ny; c++)
-//				{
-//					pressure_file_stream >> pressure_val;
-//					M = 2.0 * pezio_optical_coeff * pressure_val / (density * speed_of_sound * speed_of_sound);
-//					(*refractive_grid)[a][b][c] = n_background * (1 + 0.5 * M);
-//	#ifdef DEBUG
-//					cout << (*refractive_grid)[a][b][c] << endl;
-//	#endif
-//				}
-//
-//	pressure_file_stream.close();
-//}
-
-
-
-//void RefractiveMap::loadRefractiveMap(const std::string &filename)
-//{
-//
-//	// Ensure memory has been allocated for the pressure values that
-//	// will be read in from file.  That is, initCommon() has already
-//	// been called.
-//	assert(refractive_grid != NULL);
-//	// Verify that the calculations needed for the refractive index use values
-//	// that have been set in the medium's call to this method.
-//	assert(density > 0.0 &&
-//			speed_of_sound > 0 &&
-//			pezio_optical_coeff > 0);
-//
-//
-//	std::string file_to_open = filename;
-//	pressure_file_stream.open(file_to_open.c_str());
-//
-//	// Check for successful opening of the file.
-//	if (!pressure_file_stream)
-//	{
-//		cout << "!!! Error opening pressure map file " << file_to_open.c_str() << "!!!\n";
-//		exit(1);
-//	}
-//	else
-//	{
-//		cout << "Pressure map " << file_to_open.c_str() << " opened successfully. ";
-//		cout << "Loading pressure values...\n";
-//	}
-//
-//
-//	//#define DEBUG
-//
-//
-//	double pressure_val = 0.0;
-//	double M = 0.0;  // Coefficient of modulation.
-//
-//	for (array_index a = 0; a < Nx && pressure_file_stream.good(); a++)
-//		for (array_index b = 0; b < Nz; b++)
-//			for (array_index c = 0; c < Ny; c++)
-//			{
-//				pressure_file_stream >> pressure_val;
-//				M = 2.0 * pezio_optical_coeff * pressure_val / (density * speed_of_sound * speed_of_sound);
-//				(*refractive_grid)[a][b][c] = n_background * (1 + 0.5 * M);
-//#ifdef DEBUG
-//				cout << (*refractive_grid)[a][b][c] << endl;
-//#endif
-//			}
-//
-//	pressure_file_stream.close();
-//}
 
 
 //void RefractiveMap::loadRefractiveMap(const std::string &filename, const int timeStep)
@@ -186,30 +107,47 @@ RefractiveMap::~RefractiveMap()
 
 
 
-// Get the refractive index by converting the caartesian coords to voxel indeces.
-//double RefractiveMap::getRefractiveIndex(const double x, const double y, const double z)
-//{
-//
-//    cout << "ERROR: Stub function RefractiveMap::getRefractiveIndex(const double x, const double y, const double z)\n";
-//    
-//
-//	// Indices into the displacement grids.
-//	int _x, _y, _z;
-//
-//	boost::mutex::scoped_lock lock(m_refractive_mutex);
-//	{
-//		// Indices into the displacement grids.
-//		_x = x/dx - (x/dx)/Nx;
-//		_y = y/dy - (y/dy)/Ny;
-//		_z = z/dz - (z/dz)/Nz;
-//	}
-//
-//
-//	return getRefractiveIndexFromGrid(_x, _y, _z);
-//}
 
 
-// Returns the individual axis displacement value from their location in the grid.
+float
+RefractiveMap::getRefractiveIndexFromGradientGrid(const char axis, const int x_photon, const int y_photon, const int z_photon)
+{
+    /// Refractive index changes induced from pressure propagating along x-axis.
+    if (axis == 'x')
+    {
+        assert(refractive_x != NULL);
+        return refractive_x->GetElementFrom3D(x_photon + X_PML_OFFSET,
+                                       y_photon + Y_PML_OFFSET,
+                                       z_photon + Z_PML_OFFSET);
+    }
+
+    /// Refractive index changes induced from pressure propagating along y-axis.
+    if (axis == 'y')
+    {
+        assert(refractive_y != NULL);
+        return refractive_y->GetElementFrom3D(x_photon + X_PML_OFFSET,
+                                       y_photon + Y_PML_OFFSET,
+                                       z_photon + Z_PML_OFFSET);
+    }
+    
+    /// Refractive index changes induced from pressure propagating along z-axis.    
+    if (axis == 'z')
+    {
+        assert(refractive_z != NULL);
+        return refractive_z->GetElementFrom3D(x_photon + X_PML_OFFSET,
+                                       y_photon + Y_PML_OFFSET,
+                                       z_photon + Z_PML_OFFSET);
+    }
+    
+    /// Error
+    return -1.0;
+}
+
+
+
+// Returns the spatially located refractive index value from the supplied location in the grid.
+/// x_photon, y_photon and z_photon are the voxel coordinates obtained by translating the spetial coordinate
+/// of the current scattering event.
 float
 RefractiveMap::getRefractiveIndexFromGrid(const int x_photon, const int y_photon, const int z_photon)
 {
@@ -224,7 +162,7 @@ RefractiveMap::getRefractiveIndexFromGrid(const int x_photon, const int y_photon
 float
 RefractiveMap::Get_refractive_index_TRealMatrix(const int x_photon, const int y_photon, const int z_photon)
 {
-    assert(refractive_map != NULL);
+    assert(refractive_total != NULL);
     
     /// NOTE: 'GetElementFrom3D' is a method of class 'TRealMatrix' provided by kWave.
     ///       To have the ultrasound z-axis orthogonal to the light z-axis we need to take
@@ -239,7 +177,7 @@ RefractiveMap::Get_refractive_index_TRealMatrix(const int x_photon, const int y_
     /// ON FURTHER INSPECTION I BELIEVE THE ABOVE IS NOT TRUE.  I THINK IT IS ALREADY MADE BY LOOKING
     /// AT THE TRANSDUCER PLOT IN KWAVE.  VERIFY!
 	///                 Verified by Jiri (k-Wave developer)
-    return refractive_map->GetElementFrom3D(x_photon, y_photon, z_photon);
+    return refractive_total->GetElementFrom3D(x_photon, y_photon, z_photon);
 
 }
 

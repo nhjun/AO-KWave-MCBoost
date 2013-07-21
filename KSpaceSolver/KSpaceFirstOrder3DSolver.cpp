@@ -65,10 +65,10 @@ using namespace std;
 //                              Public methods                                //
 //----------------------------------------------------------------------------//
 
-#define DEBUG
-#ifdef DEBUG
-void PrintMatrix(TRealMatrix &data, TParameters *Parameters);
-#endif
+#undef DEBUG
+//#ifdef DEBUG
+//void PrintMatrix(TRealMatrix &data, TParameters *Parameters);
+//#endif
 /**
  * Constructor of the class.
  *
@@ -2967,8 +2967,10 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
        		refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
         	refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
             
+#ifdef DEBUG
             PrintMatrix(Get_refractive_x(), Parameters);
-
+#endif
+            
     	}
 
     	if (Parameters->IsStore_refractive_total())
@@ -3391,44 +3393,44 @@ void  TKSpaceFirstOrder3DSolver::WriteOutputDataInfo(){
 }// end of WriteOutputDataInfo
 //------------------------------------------------------------------------------
 
-//
+////
 //#ifdef DEBUG
-void PrintMatrix(TRealMatrix &data, TParameters *Parameters)
-{
-    TDimensionSizes Dims;
-    Dims.X = Parameters->GetFullDimensionSizes().X;
-    Dims.Y = Parameters->GetFullDimensionSizes().Y;
-    Dims.Z = Parameters->GetFullDimensionSizes().Z;
-    
-    static int time_step;
-    std::string filename = "refractive_total";
-    std::stringstream ss;
-    ss << time_step++;
-    filename = filename + "_" + ss.str() + ".txt";
-    
-    std::ofstream data_file_stream;	// Velocity and displacement stream;
-    data_file_stream.open(filename.c_str());
-	if (!data_file_stream)
-	{
-		cout << "!!! ERROR: Could not open file for writing.  Check directory structure.\n";
-		exit(1);
-	}
-    
-    
-    size_t x, y, z;
-    z = 150;
-    for (x = 0; x < Dims.X; x++)
-    {
-        for (y = 0; y < Dims.Y; y++)
-        {
-            data_file_stream << data.GetElementFrom3D(x, y, z) << ' ';
-        }
-        data_file_stream << '\n';
-    }
-    data_file_stream.flush();
-    data_file_stream.close();
-}
-
+//void PrintMatrix(TRealMatrix &data, TParameters *Parameters)
+//{
+//    TDimensionSizes Dims;
+//    Dims.X = Parameters->GetFullDimensionSizes().X;
+//    Dims.Y = Parameters->GetFullDimensionSizes().Y;
+//    Dims.Z = Parameters->GetFullDimensionSizes().Z;
+//    
+//    static int time_step;
+//    std::string filename = "refractive_total";
+//    std::stringstream ss;
+//    ss << time_step++;
+//    filename = filename + "_" + ss.str() + ".txt";
+//    
+//    std::ofstream data_file_stream;	// Velocity and displacement stream;
+//    data_file_stream.open(filename.c_str());
+//	if (!data_file_stream)
+//	{
+//		cout << "!!! ERROR: Could not open file for writing.  Check directory structure.\n";
+//		exit(1);
+//	}
+//    
+//    
+//    size_t x, y, z;
+//    z = 150;
+//    for (x = 0; x < Dims.X; x++)
+//    {
+//        for (y = 0; y < Dims.Y; y++)
+//        {
+//            data_file_stream << data.GetElementFrom3D(x, y, z) << ' ';
+//        }
+//        data_file_stream << '\n';
+//    }
+//    data_file_stream.flush();
+//    data_file_stream.close();
+//}
+//
 //#endif
 //----------------------------------------------------------------------------//
 //                            Private methods                                 //

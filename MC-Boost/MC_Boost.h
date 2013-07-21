@@ -67,8 +67,9 @@ public:
     
     
     /// Decide which mechanisms (if any at all) of AO to simulate.
-    void    Simulate_displacement(bool flag) {DISPLACE = flag;};
+    void    Simulate_displacement(bool flag)        {DISPLACE            = flag;};
     void    Simulate_refractive_gradient(bool flag) {REFRACTIVE_GRADIENT = flag;};
+    void    Simulate_refractive_total(bool flag)    {REFRACTIVE_TOTAL    = flag;};
     
     /// Set whether or not to save seeds for this run.
     void    Save_RNG_Seeds(bool flag) {SAVE_SEEDS = flag;};
@@ -96,9 +97,11 @@ private:
     // Booleans that dictate toggles on various mechanisms during the simulation.
     // DISPLACE             => Displace the scattering events from ultrasound pressure.
     // REFRACTIVE_GRADIENT  => Create curved trajectories based on pressure induced refractive index gradients.
+    // REFRACTIVE_TOTAL     => Accumlate phase based on spatially varying refractive index values on straight light paths.
     // SAVE_SEEDS           => Save seeds that produced paths that made through the exit aperture (i.e. the detector).
     bool    DISPLACE;
     bool    REFRACTIVE_GRADIENT;
+    bool    REFRACTIVE_TOTAL;
     bool    SAVE_SEEDS;
     
     

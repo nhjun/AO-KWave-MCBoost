@@ -111,7 +111,7 @@ void TInputHDF5Stream::ReadData(const char * DatasetName, float * TempBuffer)
     /// Note: What ends up getting passed to ReadHyperSlab is,
     ///       Position  = {1, timestep, Nx*Ny*Nz}
     ///       BlockSize = {1, 1, Nx*Ny*Nz}
-    Position.Y = 2;
+    //Position.Y = 2;
     HDF5_File->ReadHyperSlab(HDF5_Dataset_id, Position, BlockSize, TempBuffer);
     
     /// Position.Y tracks the timestep to load.

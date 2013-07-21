@@ -72,6 +72,13 @@ public:
             {
                 return (displacement_map_z->GetElementFrom3D(x_voxel_index, y_voxel_index, z_voxel_index));
             }
+    
+    
+    /// Is simulation of the refractive gradient enabled.
+    bool    IsSim_displacement(void)
+            {
+                return ((displacement_map_x != NULL) || (displacement_map_y != NULL) || (displacement_map_z != NULL));
+            }
 
 
     

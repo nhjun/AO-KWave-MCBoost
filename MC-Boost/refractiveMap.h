@@ -50,11 +50,35 @@ public:
     
 	/// Returns the refractive index from the grid based on localized pressure
 	float 	getRefractiveIndexFromGrid(const int x, const int z, const int y);
+    
+    /// Returns the refractive index from the grid based on localized pressure along a specific axis.
+    float   getRefractiveIndexFromGradientGrid(const char axis, const int x_photon, const int y_photon, const int z_photon);
 
     /// Return the refractive index from the TRealMatrix.
     float  Get_refractive_index_TRealMatrix(const int x, const int y, const int z);
     
-    /// Assign the refractive index maps obtained from KSpaceSolver
+    /// Is simulation of the refractive gradient enabled.
+    bool    IsSim_refractive_grad(void)
+    {
+        return ((refractive_x == NULL) || (refractive_y == NULL) || (refractive_z == NULL));
+    }
+    
+    /// Is simulation of the total refractive index changes enabled.
+    bool    IsSim_refractive_total(void)
+    {
+        return (refractive_total == NULL);
+    }
+    
+    /// Assign the refractive index map (total) from KSpaceSolver, or loaded in from an HDF5 file.
+    /// This assumes straight line scattering paths (i.e. no curving of trajectories).
+    void    Assign_refractive_map(TRealMatrix * refractive_index_total)
+    {
+        ///refractive_total = &(static_cast<TRealMatrix &> (*refractive_index_total));
+        refractive_total = refractive_index_total;
+    }
+    
+    /// Assign the refractive index maps obtained from KSpaceSolver, or loaded in from an HDF5 file,
+    /// when using a gradient for curved trajectories.
     void    Assign_refractive_map(TRealMatrix * refractive_index_x,
                                   TRealMatrix * refractive_index_y,
                                   TRealMatrix * refractive_index_z)
@@ -103,7 +127,7 @@ private:
     /// This holds the refractive map at a single time step.  That is the
     /// refractive map as it is obtained from 'KSpaceSolver' by converting pressure values
     /// to refractive index values, without any offline processing.
-    TRealMatrix * refractive_map;
+    TRealMatrix * refractive_total;
     
     TRealMatrix * refractive_x;
     TRealMatrix * refractive_y;

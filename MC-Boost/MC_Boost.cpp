@@ -28,7 +28,7 @@ MC_Boost::MC_Boost(void)
     MAX_NUM_PHOTONS = -1;    
     
     // Set the various mechanisms to false as default.
-    DISPLACE = REFRACTIVE_GRADIENT = SAVE_SEEDS = false;
+    DISPLACE = REFRACTIVE_GRADIENT = REFRACTIVE_TOTAL = SAVE_SEEDS = false;
     
     // The file that the seeds are written to after calling 'Generate_RNG_seeds'.
     rng_seed_file = "./Data/seeds_for_exit.dat";

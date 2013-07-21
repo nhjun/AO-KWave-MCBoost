@@ -382,8 +382,8 @@ double Medium::getAnisotropyFromDepth(double z)
 /// Create the displacement map based on what is returned from the computation
 /// that happens in KSpaceSolver.
 void Medium::Create_displacement_map(TRealMatrix * disp_x,
-                                TRealMatrix * disp_y,
-                                TRealMatrix * disp_z)
+                                     TRealMatrix * disp_y,
+                                     TRealMatrix * disp_z)
 {
     
     
@@ -409,7 +409,29 @@ void Medium::Create_displacement_map(TRealMatrix * disp_x,
 
 
 /// Create the refractive index map based on what is returned from the computation
-/// that happens in KSpaceSolver.
+/// that happens in KSpaceSolver or from what was loaded in from an HDF5 file from a previous run.
+void Medium::Create_refractive_map(TRealMatrix * refractive_total)
+{
+    /// XXX:
+    /// - This is defined here, but would change depending on temperature changes, if that
+    ///   is ever incorporated into this simulation, which in turn would affect density and SOS.
+    background_refractive_index = 1.33;
+    
+    if(kwave.nmap == NULL)
+    {
+        /// Takes pressure as an argument in the constructor and forms the refractive map data.
+        kwave.nmap = new RefractiveMap();
+        kwave.nmap->Assign_refractive_map(refractive_total);
+    }
+    else
+    {
+        /// Updates the refractive map data.
+        kwave.nmap->Assign_refractive_map(refractive_total);
+    }
+    
+}
+
+
 void Medium::Create_refractive_map(TRealMatrix * refractive_x,
                                    TRealMatrix * refractive_y,
                                    TRealMatrix * refractive_z)

@@ -138,26 +138,33 @@ public:
     
     
     /// Assigns the current pressure from k-Wave to the medium during run-time.
-    /// NOTE: There is no offline processing, pressure matrices are passed in as they are obtained from 'AO_sim'.
+    /// NOTE: There is no offline processing, pressure matrices are passed in as they are obtained from 'AO_sim' or loaded
+    ///       in from a previous run of kWave.
+    void    Create_refractive_map(TRealMatrix * refractive_total);
+    /// Used with bending of photon trajectories.
     void    Create_refractive_map(TRealMatrix * refractive_x,
                                   TRealMatrix * refractive_y,
                                   TRealMatrix * refractive_z);
     
     /// Assigns the current velocity from k-Wave to the medium during run-time.
-    /// NOTE: There is no offline processing, velocity matrices are passed in as they are obtained from 'AO_sim'.
+    /// NOTE: There is no offline processing, velocity matrices are passed in as they are obtained from 'AO_sim', or loaded
+    ///       in from a previous run of kWave.
     void    Create_displacement_map(TRealMatrix * disp_x,
                                     TRealMatrix * disp_y,
                                     TRealMatrix * disp_z);
-    
-    /// Takes the refractive maps computed from KSpaceSolver directly
-    void    Assign_refractive_map(TRealMatrix * refractive_x,
-                                  TRealMatrix * refractive_y,
-                                  TRealMatrix * refractive_z);
-    
-    /// Takes the displacement maps computed from KSpaceSolver directly
-    void    Assign_displacement_map(TRealMatrix * disp_x,
-                                    TRealMatrix * disp_y,
-                                    TRealMatrix * disp_z);
+
+//    /// Takes the refractive map (total) computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
+//    void    Assign_refractive_map(TRealMatrix * refractive_total);
+//    
+//    /// Takes the refractive maps (gradient) computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
+//    void    Assign_refractive_map(TRealMatrix * refractive_x,
+//                                  TRealMatrix * refractive_y,
+//                                  TRealMatrix * refractive_z);
+//    
+//    /// Takes the displacement maps computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
+//    void    Assign_displacement_map(TRealMatrix * disp_x,
+//                                    TRealMatrix * disp_y,
+//                                    TRealMatrix * disp_z);
     
     // Add a refractive map object that holds refractive index values generated from k-Wave pressures.
     void	addRefractiveMap(RefractiveMap *n_map);
