@@ -28,7 +28,7 @@ Photon::Photon(void)
 	currLocation->withDirection();  // Enable direction for this vector.
 
 	// The location before the photon hopped.
-	prevLocation = boost::shared_ptr<Vector3d> (new Vector3d);  // Does not require direction.
+	prevLocation = boost::shared_ptr<Vector3d> (new Vector3d);
 	prevLocation->withDirection();
 
 	this->initCommon();

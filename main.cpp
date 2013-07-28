@@ -695,9 +695,14 @@ int main(int argc, char** argv)
     	/// to the CCD camera.
     	/// NOTE: Centering the detector on the x-y plane.
     	Detector_Properties detector_props;
-    	detector_props.radius = 0.0025;
-    	detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
-    	detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
+    	//detector_props.radius = 0.0025;
+    	//detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+    	
+        // FOR DEBUGGING
+        detector_props.radius = 0.00025;
+    	detector_props.x_coord = 0.0015 / 2;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+        
+        detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
     	detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
 		detector_props.xy_plane = true;
     	AO_simulation.Add_circular_detector_MC_medium(detector_props);
@@ -786,10 +791,8 @@ int main(int argc, char** argv)
         cout << " Simulation: kWave\n";
         cout << FMT_SmallSeparator;
 		
-        /// This runs the acousto_optics simulation with monte-carlo turned off.
-		/// FIXME:
-		/// - Implement a call 'Run_kWave()'
-		AO_simulation.Run_acousto_optics_sim(Parameters);
+        /// Run the kWave simulation.
+		AO_simulation.Run_kWave_sim(Parameters);
 	}
     else if (sim_acousto_optics)
     {

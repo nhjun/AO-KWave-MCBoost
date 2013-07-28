@@ -17,6 +17,9 @@
 #include <fstream>
 using std::ofstream;
 
+#include <MC-Boost/vectorMath.h>
+using namespace VectorMath;
+
 
 void PrintMatrix(TRealMatrix &matrix, TParameters *params);
 
@@ -60,8 +63,111 @@ AO_Sim::~AO_Sim()
 }
 
 
+/// Run the kWave simulation.
+void
+AO_Sim::Run_kWave_sim(TParameters * Parameters)
+{
+    /// Load data from disk
+    cout << "Loading k-Wave data ........";
+    try {
+        KSpaceSolver->LoadInputData();
+    }catch (ios::failure e) {
+        cout << "Failed!\nK-Wave panic: Data loading was not successful!\n%s\n"
+        << e.what();
+        cerr << "K-Wave panic: Data loading was not successful! \n%s\n"
+        << e.what();
+        exit(EXIT_FAILURE);
+    }
+    cout << ".... done\n";
+    
+    //fprintf(stdout,"Elapsed time:          %8.2fs\n",KSpaceSolver.GetDataLoadTime());
+    
+    /// start computation of k-Wave simulation.
+    cout << ".......... k-Wave Computation ...........\n";
+    KSpaceSolver->PreCompute();
+    
+    
+    //    ActPercent = 0;
+    KSpaceSolver->FromAO_sim_PrintOutputHeader();
+    KSpaceSolver->IterationTimeStart();
+	size_t k_wave_Nt = Parameters->Get_Nt();
+	//k_wave_Nt = 1700;
+    for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
+        
+        cout << ".......... Running k-Wave ........... ("
+        << KSpaceSolver->GetTimeIndex() << " of "
+        << Parameters->Get_Nt() << ")\n";
+        
+        KSpaceSolver->FromAO_sim_Compute_uxyz();
+        
+        // add in the velocity u source term
+        KSpaceSolver->FromAO_sim_Add_u_source();
+        
+        // add in the transducer source term (t = t1) to ux
+        if (Parameters->Get_transducer_source_flag() > KSpaceSolver->GetTimeIndex())
+            KSpaceSolver->FromAO_sim_AddTransducerSource();
+        
+        
+        KSpaceSolver->FromAO_sim_Compute_duxyz();
+        
+        
+        if (Parameters->Get_nonlinear_flag())
+            KSpaceSolver->FromAO_sim_Compute_rhoxyz_nonlinear();
+        else
+            KSpaceSolver->FromAO_sim_Compute_rhoxyz_linear();
+        
+        
+        // add in the source pressure term
+        KSpaceSolver->FromAO_sim_Add_p_source();
+        
+        if (Parameters->Get_nonlinear_flag()){
+            KSpaceSolver->FromAO_sim_Compute_new_p_nonlinear();
+        }else {
+            KSpaceSolver->FromAO_sim_Compute_new_p_linear();
+            
+        }
+        
+        
+        //-- calculate initial pressure
+        if ((KSpaceSolver->GetTimeIndex() == 0) && (Parameters->Get_p0_source_flag() == 1))
+            KSpaceSolver->FromAO_sim_Calculate_p0_source();
+        
+        
+        
+        //-- store the initial pressure at the first time step --//
+        /// Here is where the computation for the refractive index, displacements,
+        /// and all the values kWave needs, takes place if commandline flags for saving data hvave been set.
+        KSpaceSolver->FromAO_sim_StoreSensorData();
+        
+        
+        KSpaceSolver->FromAO_sim_PrintStatistics();
+        
+    }
+    
+        KSpaceSolver->IterationTimeStop();
+        
+        cout << "-------------------------------------------------------------\n";
+        cout << "Elapsed time: " << KSpaceSolver->GetSimulationTime() << "\n";
+        cout << "-------------------------------------------------------------\n";
+        
+        cout << "Post-processing phase......."; cout.flush();
+        KSpaceSolver->PostProcessingTimeStart();
+        
+        
+        KSpaceSolver->FromAO_sim_PostProcessing();
+        KSpaceSolver->PostProcessingTimeStop();
+        cout << "Done \n";
+        cout << "Elapsed time: " << KSpaceSolver->GetPostProcessingTime() << "\n";
+        
+        
+        KSpaceSolver->FromAO_sim_WriteOutputDataInfo();
+        
+        Parameters->HDF5_OutputFile.Close();
 
-/// Run the actual acousto-optic simulation.
+}
+
+
+/// Run the acousto-optic simulation.
 void
 AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 {
@@ -475,7 +581,7 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
             /// Create a displacement map based on the values read in from the HDF5 file.
             m_medium->Create_displacement_map(disp_x, disp_y, disp_z);
             
-            PrintMatrix((*disp_x), Parameters);
+            //PrintMatrix((*disp_x), Parameters);
             
             /// Zero out the matrices for the next read in from the HDF5 file.
             disp_x->ZeroMatrix();
@@ -485,12 +591,13 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
             
         }
         
+        int time_step = i;
         /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
         /// XXX:
         /// - Needs testing!!!
-//        da_boost->Run_seeded_MC_sim_timestep(m_medium,
-//                                             m_Laser_injection_coords,
-//                                             time_step);
+        da_boost->Run_seeded_MC_sim_timestep(m_medium,
+                                             m_Laser_injection_coords,
+                                             time_step);
 
     }/// end FOR LOOP
     
@@ -619,12 +726,121 @@ AO_Sim::Print_MC_sim_params()
     assert (da_boost != NULL);
     cout << "\n--------------------------------\nMC-Boost parameters\n--------------------------------\n";
     cout << "Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
-    cout << "Medium size: [x=" << m_medium->getXbound() << ", y=" << m_medium->getYbound() << ", z=" << m_medium->getZbound() << "] (meters)\n";
+    cout << "Medium size: [x=" << m_medium->Get_X_bound() << ", y=" << m_medium->Get_Y_bound() << ", z=" << m_medium->Get_Z_bound() << "] (meters)\n";
     cout << "Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
     cout << "Time step: " << MC_time_step << '\n';
 }
 
 
+void
+AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
+{
+    assert(m_medium != NULL);
+    
+    /// Remove error from significant digits.  Just truncate value at the defined decimal place.
+    double bottom_x_axis = VectorMath::truncate_to_places(m_medium->Get_X_bound(), 6);
+    double top_x_axis = 0.0f;
+    
+    double bottom_y_axis = VectorMath::truncate_to_places(m_medium->Get_Y_bound(), 6);
+    double top_y_axis = 0.0f;
+    
+    double bottom_z_axis = VectorMath::truncate_to_places(m_medium->Get_Z_bound(), 6);
+    double top_z_axis = 0.0f;
+    
+    
+    double x_coord_plus_radius = VectorMath::truncate_to_places((props.x_coord + props.radius), 6);
+    double x_coord_minus_radius = VectorMath::truncate_to_places((props.x_coord - props.radius), 6);
+    double x_coord = VectorMath::truncate_to_places(props.x_coord, 6);
+    
+    double y_coord_plus_radius = VectorMath::truncate_to_places((props.y_coord + props.radius), 6);
+    double y_coord_minus_radius = VectorMath::truncate_to_places((props.y_coord - props.radius), 6);
+    double y_coord = VectorMath::truncate_to_places(props.y_coord, 6);
+    
+    double z_coord_plus_radius = VectorMath::truncate_to_places((props.z_coord + props.radius), 6);
+    double z_coord_minus_radius = VectorMath::truncate_to_places((props.z_coord - props.radius), 6);
+    double z_coord = VectorMath::truncate_to_places(props.z_coord, 6);
+    
+    
+    
+    /// Ensure the detector fits in the medium.
+    /// Note: Because the detector is a circular 2-D plane, we need to
+    /// check above and below the origin point for the plane (xy, xz, yz) that the detector
+    /// sits on (to take into acount its radius).  Otherwise it just needs to
+    /// fit between, since it is flat and has no depth along that dimension.
+    if (props.xy_plane)
+    {
+        if ((bottom_x_axis < x_coord_plus_radius) || (x_coord_minus_radius < top_x_axis)) // xy_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (x-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_y_axis < y_coord_plus_radius) || (y_coord_minus_radius < top_y_axis)) // xy_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (y-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_z_axis < z_coord) || (top_z_axis > z_coord))    // xz_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (z-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    if (props.yz_plane)
+    {
+        if ((bottom_y_axis < y_coord_plus_radius) || (y_coord_minus_radius < top_y_axis))  // xz_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (y-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_z_axis < z_coord_plus_radius) || (z_coord_minus_radius < top_z_axis))  // xz_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (z-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_x_axis < x_coord) || (top_x_axis > x_coord))
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (z-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+
+    }
+    
+    if (props.xz_plane)
+    {
+        if ((bottom_z_axis < z_coord_plus_radius) || (z_coord_minus_radius < top_z_axis))
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (z-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_x_axis < x_coord_plus_radius) || (x_coord_minus_radius < top_x_axis)) // xy_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (x-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+        if ((bottom_y_axis < y_coord) || (top_y_axis > y_coord))    // yz_plane
+        {
+            cerr << "!!! Error: Circular detector does not fit in medium (y-axis)\n";
+            cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+   
+    
+    
+    m_medium->addDetector(new CircularDetector(props));
+    
+}
+        
 
 
 

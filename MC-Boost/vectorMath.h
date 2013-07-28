@@ -130,6 +130,11 @@ namespace VectorMath
         A->location.y /= size;
         A->location.z /= size;
     };
+    
+    inline double truncate_to_places(double d, int n)
+    {
+        return d - fmod(d, pow(10.0, -n));
+    }
 
 }
 

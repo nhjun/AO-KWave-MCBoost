@@ -206,9 +206,9 @@ public:
     void	writeExitCoordsLengthWeight(std::vector<double> &coords_phase_weight);
 
     // Return the bounds of the medium.
-    double getXbound(void) {return x_bound;}
-    double getYbound(void) {return y_bound;}
-    double getZbound(void) {return z_bound;}
+    double Get_X_bound(void) {return x_bound;}
+    double Get_Y_bound(void) {return y_bound;}
+    double Get_Z_bound(void) {return z_bound;}
     
     
     // Set Number of voxels in the medium.

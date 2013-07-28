@@ -44,8 +44,10 @@ public:
     ~AO_Sim();
     
     
+    /// Run the kWave simulation.
+    void        Run_kWave_sim(TParameters * Parameters);
     
-    /// Run the actual acousto-optic simulation.
+    /// Run the acousto-optic simulation.
     /// sim_displacements:     - Run the simulation with displacement of scatterers.
     /// sim_refractive_grad:   - Run the siumlation using the gradient of the refractive index (bending of paths).
     /// sim_refractive_total:  - Run the simulation using the total refractive index computed (no bending, straight line paths).
@@ -124,11 +126,7 @@ public:
     
     /// Add a detector to the medium, which serves as a way to track photons that leave
     /// the medium.  It acts as an exit aperture.
-    void    Add_circular_detector_MC_medium(Detector_Properties &props)
-            {
-                assert(m_medium != NULL);
-                m_medium->addDetector(new CircularDetector(props));
-            }
+    void    Add_circular_detector_MC_medium(Detector_Properties &props);
     
     
     /// Set the location at which light will be injected into the medium.
@@ -181,9 +179,9 @@ public:
             }
     
     /// Return the z-axis depth.
-    double  Get_MC_Zaxis_depth() {return m_medium->getZbound();}
-    double  Get_MC_Yaxis_depth() {return m_medium->getYbound();}
-    double  Get_MC_Xaxis_depth() {return m_medium->getXbound();}
+    double  Get_MC_Zaxis_depth() {return m_medium->Get_Z_bound();}
+    double  Get_MC_Yaxis_depth() {return m_medium->Get_Y_bound();}
+    double  Get_MC_Xaxis_depth() {return m_medium->Get_X_bound();}
     
     
     void    Set_pezio_optical_coeff(const float val)
