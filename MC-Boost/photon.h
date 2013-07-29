@@ -23,7 +23,7 @@ using namespace std;
 
 #define ALIVE 1		// Value depicting Photon should continue propagation.
 #define DEAD  0	    // Photon has lost all energy and failed roulette.
-#define ONE_MINUS_COSZERO 1.0E-12
+#define ONE_MINUS_COSZERO 1.0e-12
 #define THRESHOLD	0.01		// Threshold for determining if we should perform roulette
 #define CHANCE      0.1  		// Used in roulette
 #define SIGN(x)           ((x)>=0 ? 1:-1)
@@ -36,6 +36,14 @@ class Vector3d;
 class Layer;
 
 
+
+typedef struct {
+    bool DISPLACE;
+    bool REFRACTIVE_TOTAL;
+    bool REFRACTIVE_GRADIENT;
+    bool MODULATION_DEPTH;
+    bool SAVE_SEEDS;
+} MC_Parameters;
 
 
 
@@ -137,13 +145,15 @@ public:
 	void	plotPath(void);
 	
 	// Inject the photon into the medium the given number of iterations.
-	void	injectPhoton(Medium * m, const int num_iterations, RNG *rng, coords &c,
-							bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
+	void	injectPhoton(Medium * m, const int num_iterations, RNG_seed_vector *rng, coords &laser,
+                         MC_Parameters &Params);
 
 
-	void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &c,
-                    bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
-    
+//	void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &c,
+//                    bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
+    void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &laser,
+                    MC_Parameters &Params);
+
     
     // Hop, Drop, Spin, Roulette and everything in between.
     // NOTE: 'iterations' are the number of photons simulated by this 'Photon' object.
@@ -328,7 +338,9 @@ private:
     double time_of_flight;
     
     // flags that define what (and what not) should take place during the simulation.
+    bool SIM_MODULATION_DEPTH;
     bool SIM_DISPLACEMENT;
+    bool SIM_REFRACTIVE_TOTAL;
     bool SIM_REFRACTIVE_GRADIENT;
     bool SAVE_RNG_SEEDS;
 

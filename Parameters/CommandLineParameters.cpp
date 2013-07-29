@@ -226,6 +226,8 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
         { "I_max", no_argument, NULL, 0 },
 
         /// ---------------- JWJS -----------------------
+        { "modulation_depth", no_argument, NULL, 0},
+       
         { "n", no_argument, NULL, 'n'},
         { "refractive_total", no_argument, NULL, 0},
         { "refractive_x", no_argument, NULL, 0},
@@ -395,6 +397,9 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                     Store_I_max = true;
                 } else
                /// -------------------- JWJS -----------------------------
+                if( strcmp( "modulation_depth", longOpts[longIndex].name ) == 0) {
+                    Store_modulation_depth = true;
+                } else
                 if( strcmp( "refractive_total", longOpts[longIndex].name ) == 0) {
                     Store_refractive_total = true;
                 } else

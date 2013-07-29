@@ -165,7 +165,7 @@ public:
             {
                 da_boost->Simulate_displacement(false);
                 da_boost->Simulate_refractive_gradient(false);
-                da_boost->Save_RNG_Seeds(true);
+                da_boost->Save_RNG_seeds(true);
                 da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
             }
     
@@ -197,7 +197,7 @@ public:
             {
                 da_boost->Simulate_displacement(false);
                 da_boost->Simulate_refractive_gradient(false);
-                da_boost->Save_RNG_Seeds(false);
+                da_boost->Save_RNG_seeds(false);
                 static int i = 0;
                 i++;
                 da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);

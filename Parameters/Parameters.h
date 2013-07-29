@@ -227,8 +227,11 @@ public:
     
     
     /// ------------------------ JWJS --------------------------------------------------------------------------------------
+    /// Is --modulation_depth specified at the command line
+    bool IsStore_modulation_depth()               const {return CommandLinesParameters.IsStore_modulation_depth();};
+    
     /// Is --n_total specified at the command line
-    bool IsStore_refractive_total()              const {return CommandLinesParameters.IsStore_refractive_total();};
+    bool IsStore_refractive_total()               const {return CommandLinesParameters.IsStore_refractive_total();};
     /// Is --nx specified at the command line
     bool IsStore_refractive_x()                   const {return CommandLinesParameters.IsStore_refractive_x();};
     /// Is --nx specified at the command line

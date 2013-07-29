@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 4;
+const int MAX_PHOTONS = 10000;
 
 // Testing routines.
 void testVectorMath(void);

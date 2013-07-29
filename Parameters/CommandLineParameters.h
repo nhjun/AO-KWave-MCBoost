@@ -223,6 +223,9 @@ public:
     
     
     /// ------------------- JWJS ------------------------------------
+    /// Is --modulation_depth set
+    bool IsStore_modulation_depth()     const {return Store_modulation_depth;};
+    
     /// Is --n_total set
     bool IsStore_refractive_total()     const {return Store_refractive_total;};
     /// Is --nx set
@@ -305,6 +308,9 @@ private:
     
     
     /// -------------------------- JWJS --------------------------------------------
+    /// Store the modulation depth (tagged vs. untagged photons)
+    bool        Store_modulation_depth;
+    
     /// Store index of refraction values (total)
     bool        Store_refractive_total;
     /// Store index of refraction values of the x-component

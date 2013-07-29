@@ -24,10 +24,10 @@ using std::cout;
 using std::endl;
 using std::string;
 
-// Forward class declarations.
-class Photon;
-class Medium;
+#include "photon.h"
 
+// Forward class declarations.
+class   Medium;
 
 
 
@@ -67,12 +67,13 @@ public:
     
     
     /// Decide which mechanisms (if any at all) of AO to simulate.
-    void    Simulate_displacement(bool flag)        {DISPLACE            = flag;};
-    void    Simulate_refractive_gradient(bool flag) {REFRACTIVE_GRADIENT = flag;};
-    void    Simulate_refractive_total(bool flag)    {REFRACTIVE_TOTAL    = flag;};
+    void    Simulate_displacement(bool flag)        {Params.DISPLACE            = flag;};
+    void    Simulate_refractive_gradient(bool flag) {Params.REFRACTIVE_GRADIENT = flag;};
+    void    Simulate_refractive_total(bool flag)    {Params.REFRACTIVE_TOTAL    = flag;};
+    void    Simulate_modulation_depth(bool flag)    {Params.MODULATION_DEPTH    = flag;};
     
     /// Set whether or not to save seeds for this run.
-    void    Save_RNG_Seeds(bool flag) {SAVE_SEEDS = flag;};
+    void    Save_RNG_seeds(bool flag)               {Params.SAVE_SEEDS = flag;};
 
 
     
@@ -103,6 +104,8 @@ private:
     bool    REFRACTIVE_GRADIENT;
     bool    REFRACTIVE_TOTAL;
     bool    SAVE_SEEDS;
+    
+    MC_Parameters Params;
     
     
    

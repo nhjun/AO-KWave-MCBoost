@@ -194,6 +194,7 @@ $(TARGET):	main.o 					\
 		MC-Boost/vector3D.o			\
 		MC-Boost/MC_Boost.o			\
 		MC-Boost/RNG.o				\
+		MC-Boost/multikey.o			\
 		
 
 	$(CXX) $(LDFLAGS) main.o 			\
@@ -228,6 +229,7 @@ $(TARGET):	main.o 					\
                 MC-Boost/vector3D.o                     \
 		MC-Boost/MC_Boost.o			\
 		MC-Boost/RNG.o				\
+		MC-Boost/multikey.o			\
 		$(LIBS)                             	\
 		-o $@
 

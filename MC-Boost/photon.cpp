@@ -104,6 +104,9 @@ void Photon::initCommon(void)
 	displaced_optical_path_length 		= 0.0f;
 	refractiveIndex_optical_path_length = 0.0f;
 	combined_OPL 		= 0.0f;
+    
+    /// Everything defaults to false.
+    SIM_MODULATION_DEPTH = SIM_DISPLACEMENT = SIM_REFRACTIVE_TOTAL = SIM_REFRACTIVE_GRADIENT = SAVE_RNG_SEEDS = false;
 
 }
 
@@ -117,10 +120,18 @@ void Photon::setIterations(const int num)
 
 void Photon::initTrajectory(void)
 {
+    
+    double beam_radius = 0.0025;  /// 5mm diameter.
+    double injection_point = beam_radius * sqrt(getRandNum());
+    
 	// Randomly set photon trajectory to yield anisotropic source.
 	cos_theta = (2.0 * getRandNum()) - 1;
 	sin_theta = sqrt(1.0 - cos_theta*cos_theta);
 	psi = 2.0 * PI * getRandNum();
+    
+    /// Set the injection points to spread across the beam diameter (randomly).
+    currLocation->location.x = illuminationCoords.x + injection_point*cos(psi);
+    currLocation->location.y = illuminationCoords.y + injection_point*sin(psi);
 
 	// Set the initial direction cosines for this photon.
 	currLocation->setDirX(sin_theta * cos(psi));
@@ -138,8 +149,8 @@ void Photon::initTrajectory(void)
 // 2) Drop - drop weight due to absorption
 // 3) Spin - update trajectory accordingly
 // 4) Roulette - test to see if photon should live or die.
-void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coords &laser,
-		bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_SEEDS)
+void Photon::injectPhoton(Medium * medium, const int num_iterations, RNG_seed_vector *rng_seeds, coords &laser,
+                          MC_Parameters &Params)
 {
 
 	// Before propagation we set the medium which will be used by the photon.
@@ -148,14 +159,16 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coord
 
 	// Set the GLOBAL values that dictate what mechanisms of AO are simulated and/or if the seeds
 	// for the RNG should be saved.
-	SIM_DISPLACEMENT 			= DISPLACE;
-	SIM_REFRACTIVE_GRADIENT 	= REFRACTIVE_GRADIENT;
-	SAVE_RNG_SEEDS				= SAVE_SEEDS;
+    SIM_MODULATION_DEPTH        = Params.MODULATION_DEPTH;
+	SIM_DISPLACEMENT 			= Params.DISPLACE;
+	SIM_REFRACTIVE_TOTAL        = Params.REFRACTIVE_TOTAL;
+    SIM_REFRACTIVE_GRADIENT     = Params.REFRACTIVE_GRADIENT;
+	SAVE_RNG_SEEDS				= Params.SAVE_SEEDS;
 
 	
     // Assign this photon object a random number generator, which is passed in from main().
-    //RNG_generator = rng;
-
+    RNG_generator = new RNG();
+    iteration_seeds = rng_seeds;
 
 
 	// Set the location of illumination source and the initial cartesian coordinates of the photon
@@ -170,26 +183,22 @@ void Photon::injectPhoton(Medium * medium, const int iterations, RNG *rng, coord
 
 	// Move the photon through the medium. 'iterations' represents the number of photons this
 	// object (which is a thread) will execute.
-	propagatePhoton(iterations);
+	propagatePhoton(num_iterations);
 
 }
 
 
-void Photon::TESTING(Medium * medium, const int iterations, RNG_seed_vector *rng_seeds, coords &laser,
-		bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_SEEDS)
+//void Photon::TESTING(Medium * medium, const int num_iterations, RNG_seed_vector *rng_seeds, coords &laser,
+//		bool DISPLACE, bool REFRACTIVE_TOTAL, bool SAVE_SEEDS)
+void Photon::TESTING(Medium * medium, const int num_iterations, RNG_seed_vector *rng_seeds, coords &laser,
+                     MC_Parameters &Params)
+
 {
 
 	// Before propagation we set the medium which will be used by the photon.
 	this->m_medium = medium;
 
 
-	// Set the GLOBAL values that dictate what mechanisms of AO are simulated and/or if the seeds
-	// for the RNG should be saved.
-	SIM_DISPLACEMENT 			= DISPLACE;
-	SIM_REFRACTIVE_GRADIENT 	= REFRACTIVE_GRADIENT;
-	SAVE_RNG_SEEDS				= SAVE_SEEDS;
-
-	
     // Assign this photon object a random number generator, which is passed in from main().
 	RNG_generator = new RNG();
 	iteration_seeds = rng_seeds;
@@ -207,7 +216,7 @@ void Photon::TESTING(Medium * medium, const int iterations, RNG_seed_vector *rng
 
 	// Move the photon through the medium. 'iterations' represents the number of photons this
 	// object (which is a thread) will execute.
-	propagatePhoton(iterations);
+	propagatePhoton(num_iterations);
 }
 
 
@@ -263,7 +272,7 @@ void Photon::propagatePhoton(const int iterations)
 //		}
 
 
-        if (SAVE_RNG_SEEDS)
+        if (SAVE_RNG_SEEDS || SIM_MODULATION_DEPTH)
         {
 			assert(RNG_generator != NULL);
             exit_seeds = RNG_generator->getState();
@@ -304,17 +313,17 @@ void Photon::propagatePhoton(const int iterations)
 				// Now displace the photon at its new location some distance depending on
 				// how the pressure has moved scattering particles and/or due to the change
 				// in the path of the photon due to refractive index gradient.
-				if (SIM_REFRACTIVE_GRADIENT && !SIM_DISPLACEMENT)
+				if (SIM_REFRACTIVE_TOTAL && !SIM_DISPLACEMENT)
 				{
 					alterOPLFromAverageRefractiveChanges();
 				}
 
-				if (SIM_DISPLACEMENT && !SIM_REFRACTIVE_GRADIENT)
+				if (SIM_DISPLACEMENT && !SIM_REFRACTIVE_TOTAL)
 				{
 					displacePhotonFromPressure();
 				}
 
-				if (SIM_DISPLACEMENT && SIM_REFRACTIVE_GRADIENT)
+				if (SIM_DISPLACEMENT && SIM_REFRACTIVE_TOTAL)
 				{
 					displacePhotonAndAlterOPLFromAverageRefractiveChanges();
 				}
@@ -1153,7 +1162,7 @@ void Photon::displacePhotonFromRefractiveGradient(const double n1, const double 
 // - The photon, if moving back up to the 'Air' layer, should be able to transmit out of the medium.
 //   Currently this does not happen (maybe because of reflection on the layer boundary?).
 // - If the photon hits the layer at the bottom of the medium, it gets stuck there until
-//   it pobabilistically is transmitted through the medium.  It should hit the layer, check
+//   it probabilistically is transmitted through the medium.  It should hit the layer, check
 //   the medium, and determine if it should transmit or reflect.  This bug only arises occasionally.
 void Photon::transmit(const char *type)
 {
@@ -1237,7 +1246,7 @@ void Photon::transmit(const char *type)
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
 			
-            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_GRADIENT)
+            if (SIM_DISPLACEMENT || SIM_REFRACTIVE_TOTAL || SIM_REFRACTIVE_GRADIENT)
          	{
 
                 double ni = currLayer->getRefractiveIndex();
@@ -1251,6 +1260,14 @@ void Photon::transmit(const char *type)
                 // Write time-of-flight data to logger.
                 //Logger::getInstance()->writeTOFData(time_of_flight);
          	}
+            
+            /// Is simulation of modulation depth enabled?
+            if (SIM_MODULATION_DEPTH)
+            {
+                if (SIM_DISPLACEMENT)       Logger::getInstance()->Store_OPL(exit_seeds, displaced_optical_path_length);
+                if (SIM_REFRACTIVE_TOTAL)   Logger::getInstance()->Store_OPL(exit_seeds, refractiveIndex_optical_path_length);
+                
+            }
             
 			// Write out the seeds that caused this photon to hop, drop and spin its way out the
 			// exit-aperture.
@@ -1502,9 +1519,9 @@ bool Photon::hitMediumBoundary(void)
 
 	//Layer *layer = m_medium->getLayerFromDepth(currLocation->location.z);
 	double mu_t = currLayer->getTotalAttenuationCoeff(currLocation);
-	double x_bound = m_medium->getXbound();
-	double y_bound = m_medium->getYbound();
-	double z_bound = m_medium->getZbound();
+	double x_bound = m_medium->Get_X_bound();
+	double y_bound = m_medium->Get_Y_bound();
+	double z_bound = m_medium->Get_Z_bound();
 
 	// Check if the photon has been given a step size past the outer edges of the medium.
 	// If so we calculate the distance to the boundary.

@@ -18,8 +18,9 @@ using namespace VectorMath;
 
 
 
+
+
 typedef struct {
-    
     double radius;
     double x_coord;
     double y_coord;
@@ -101,6 +102,8 @@ protected:
     bool xy_plane;  
     bool xz_plane;
     bool yz_plane;
+    
+    
 
 	// Mutex to serialize access to the detector.
 	boost::mutex m_detector_mutex;

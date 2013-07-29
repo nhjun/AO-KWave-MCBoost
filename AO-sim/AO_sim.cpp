@@ -385,7 +385,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
             }
             
         	/// Not saving seeds, we are running the AO_sim, so set to false.
-        	da_boost->Save_RNG_Seeds(false);
+        	da_boost->Save_RNG_seeds(false);
 
 
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
@@ -546,6 +546,12 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
         recorded_time_steps = disp_x_size.Y;
     }
     
+    /// Is storage of the modulation depth enabled?  If so inform the monte-carlo simulation
+    /// to log the optical path lengths via the logger.
+    if (Parameters->IsStore_modulation_depth())
+    {
+        da_boost->Simulate_modulation_depth(true);
+    }
     
     
     

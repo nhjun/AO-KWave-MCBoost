@@ -12,6 +12,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <vector>
+#include <map>
 #include <ctime>
 #include <fstream>
 using std::ofstream;
@@ -23,11 +25,17 @@ using std::string;
 #include <boost/thread/mutex.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include "RNG.h"
+#include "multikey.h"
 
 
 // Forward decleration of objects.
 class Photon;
 class Vector3d;
+//class MultiKey;
+
+/// Multikey map for storing the OPL's with comparison of modulation depth.
+typedef std::map<MultiKey, std::vector<double> > MultiKeyMap;
 
 
 
@@ -52,7 +60,10 @@ public:
     
 	/// Writes velocity and displacements obtained from k-Wave/MC-Boost.
 	void	Write_velocity_displacement(float ux, float uy, float uz,
-                                         float disp_x, float disp_y, float disp_z);	
+                                         float disp_x, float disp_y, float disp_z);
+    
+    /// Stores the OPL of a photon as it exits through the detector.
+    void    Store_OPL(RNGSeeds &seeds, double OPL);
 
 
     // Writes the seed that generated the random events that lead this photon to escape through
@@ -98,7 +109,6 @@ private:
     ofstream tof_stream;                    // Time-of-flight stream.
 	ofstream velocity_displacement_stream;	// Velocity and displacement stream;
 
-
     
     // Tracks how many photons were detected through the aperture.
     size_t exit_cnt;
@@ -106,6 +116,11 @@ private:
     
     boost::mutex m_mutex;
     boost::mutex m_tof_mutex;
+    
+    
+    /// Map with multiple keys that point to a vector of OPL's to
+    /// compare tagged to untagged portions of light.
+    MultiKeyMap OPL_Map;
     
     
     // Used to append time/date to saved data files and update execution time.

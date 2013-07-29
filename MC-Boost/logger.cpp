@@ -6,6 +6,7 @@
 //  Copyright 2011 BMPI. All rights reserved.
 //
 
+#include "multikey.h"
 #include "vector3D.h"
 #include "photon.h"
 #include "logger.h"
@@ -178,6 +179,33 @@ void Logger::Write_velocity_displacement(float ux, float uy, float uz,
     
 }
 
+
+/// Store the OPL based on the initial seeds of the photon.
+void Logger::Store_OPL(RNGSeeds &seeds, double OPL)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+    
+    /// Create a new key for the map based on this detected photon's initial seeds.
+    MultiKey key(seeds.s1, seeds.s2, seeds.s3, seeds.s4);
+    
+    /// Check if the key already exists.
+    if (OPL_Map.count(key) != 0)
+    {
+        /// get vector, update it, and store back
+        std::vector<double> &temp = OPL_Map[key];
+        temp.push_back(OPL);
+        //OPL_Map[key].swap(temp);
+    }
+    else
+    {
+        /// Insert into the map.
+        std::vector<double> temp;
+        temp.push_back(OPL);
+        OPL_Map[key] = temp;
+    }
+    
+    
+}
 
 
 
