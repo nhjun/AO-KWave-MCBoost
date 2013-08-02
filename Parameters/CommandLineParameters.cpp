@@ -78,10 +78,11 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf("---------------------------------- Usage ---------------------------------\n");
  /// -------------------------------------- JWJS ------------------------------------------
  printf("Simulation flags (which simulation to run):\n");
- printf(" --AO_sim                         : Run the Acousto-Optic simulation with data provided at runtime\n");
+ printf(" --AO_sim                         : Run the Acousto-Optic simulation with data computed at runtime\n");
  printf(" --AO_sim_loadData                : Run the Acousto-Optic simulation with precomputed data\n");
- printf(" --MC_sim                         : Run the Monte-Carlo simulation\n");
- printf(" --kWave_sim                      : Run the kWave simulation\n");
+ printf(" --MC_sim                         : Run the Monte-Carlo simulation (light propagation only)\n");
+ printf(" --kWave_sim                      : Run the kWave simulation (ultrasound propagation only)\n");
+ 
  /// --------------------------------------------
  printf("\n");
  printf("Mandatory parameters:\n");
@@ -123,6 +124,7 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf("  --I_max                         : Store max of intensity\n");
  printf("\n");
  /// --------------------- JWJS ---------------------------------------------------------------------
+ printf(" --modulation-depth               : Save the optical path lengths to disk for comparison\n");
  printf("  -n                              : Store index of refraction\n");
  printf("                                       (all axial components nx, ny, nz)\n");
  printf("  --refractive_total              : Store the norm of the index of refraction\n");

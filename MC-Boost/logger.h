@@ -42,6 +42,8 @@ typedef std::map<MultiKey, std::vector<double> > MultiKeyMap;
 class Logger 
 {
 public:
+    void Destroy();
+    
     static Logger * getInstance(void);
     
     void openExitFile(const std::string &filename);
@@ -49,6 +51,7 @@ public:
     void openAbsorberFile(const std::string &filename);
     void openTOFFile(const std::string &filename);
 	void Open_vel_disp_file(const std::string &filename);
+    void Open_modulation_depth_file(const std::string &filename);
     
     
 	/// STUB
@@ -64,13 +67,16 @@ public:
     
     /// Stores the OPL of a photon as it exits through the detector.
     void    Store_OPL(RNGSeeds &seeds, double OPL);
+    
+    /// Writes all the stored OPL data to disk.
+    void    Write_OPL_data(void);
 
 
     // Writes the seed that generated the random events that lead this photon to escape through
     // the aperture.
     //
     void    writeRNGSeeds(const unsigned int s1, const unsigned int s2,
-    					const unsigned int s3, const unsigned int s4);
+    					  const unsigned int s3, const unsigned int s4);
     
     
     // Returns the number of photons that were detected through the exit-aperture.
@@ -107,7 +113,8 @@ private:
     ofstream absorber_data_stream;          // Absorber stream.
     ofstream rng_seed_stream;               // Random-number-generator stream.
     ofstream tof_stream;                    // Time-of-flight stream.
-	ofstream velocity_displacement_stream;	// Velocity and displacement stream;
+	ofstream velocity_displacement_stream;	// Velocity and displacement stream.
+    ofstream modulation_depth_stream;       // OPL stream.
 
     
     // Tracks how many photons were detected through the aperture.

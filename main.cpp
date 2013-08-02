@@ -657,6 +657,7 @@ int main(int argc, char** argv)
 	bool sim_kWave		 	= Parameters->IsRun_kWave_sim();
 	bool sim_acousto_optics = Parameters->IsRun_AO_sim();
     bool sim_acousto_optics_loadData = Parameters->IsRun_AO_sim_loadData();
+    bool sim_modulation_depth        = Parameters->IsStore_modulation_depth();
     
 	/// What AO mechanisms will be turned on during the simulation.
 	bool sim_displacement 	  = false;
@@ -799,9 +800,24 @@ int main(int argc, char** argv)
         cout << FMT_SmallSeparator;
         cout << " Simulation: Acousto-Optics\n";
         cout << FMT_SmallSeparator;
+        
+        /// Has modulation depth commandline argument been set.
+        /// If so we notify the logger to save the OPL's to file.
+        if (sim_modulation_depth)
+        {
+            Logger::getInstance()->Open_modulation_depth_file("optical_path_lengths.dat");
+        }
     	
         /// Run the AO simulation.
     	AO_simulation.Run_acousto_optics_sim(Parameters);
+        
+        /// FIXME:
+        /// - Data is not being written out unless explicitly called to, thus the need
+        ///   for this if() statement.  Should happen automagically from the logger's destructor.
+        if (sim_modulation_depth)
+        {
+            Logger::getInstance()->Write_OPL_data();
+        }
 	}
     else if (sim_acousto_optics_loadData)
     {
@@ -809,7 +825,24 @@ int main(int argc, char** argv)
         cout << " Simulation: Acousto-Optics (loading pre-computed data)\n";
         cout << FMT_SmallSeparator;
         
+        /// Has modulation depth commandline argument been set.
+        /// If so we notify the logger to save the OPL's to file.
+        if (sim_modulation_depth)
+        {
+            Logger::getInstance()->Open_modulation_depth_file("optical_path_lengths.dat");
+        }
+            
+        /// Run the AO simulation.
         AO_simulation.Run_acousto_optics_sim_loadData(Parameters);
+        
+        
+        /// FIXME:
+        /// - Data is not being written out unless explicitly called to, thus the need
+        ///   for this if() statement.  Should happen automagically from the logger's destructor.
+        if (sim_modulation_depth)
+        {
+            Logger::getInstance()->Write_OPL_data();
+        }
         
         /// Test case.
         //AO_simulation.Test_Read_HDF5_File(Parameters);
@@ -821,6 +854,8 @@ int main(int argc, char** argv)
 	}
     
 #endif    
+    
+    Logger::getInstance()->Destroy();
 
     
     return  EXIT_SUCCESS;

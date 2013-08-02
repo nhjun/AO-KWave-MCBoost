@@ -51,6 +51,9 @@ AO_Sim::AO_Sim()
 AO_Sim::~AO_Sim()
 {
     cout << "\n\nAO_Sim:: destructor\n";
+    
+    
+    
     if (da_boost)
         delete da_boost;
 

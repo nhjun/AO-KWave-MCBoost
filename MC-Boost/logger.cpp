@@ -25,13 +25,28 @@ Logger::Logger()
 }
 
 
+void Logger::Destroy()
+{
+    this->~Logger();
+}
+
 Logger::~Logger()
 {
-    exit_data_stream.close();
-    absorber_data_stream.close();
-    rng_seed_stream.close();
-    tof_stream.close();
+    if (exit_data_stream.is_open())
+        exit_data_stream.close();
+    if (absorber_data_stream.is_open())
+        absorber_data_stream.close();
+    if (rng_seed_stream.is_open())
+        rng_seed_stream.close();
+    if (tof_stream.is_open())
+        tof_stream.close();
+    if (velocity_displacement_stream.is_open())
+        velocity_displacement_stream.close();
+    if (modulation_depth_stream.is_open())
+        modulation_depth_stream.close();
+    
 }
+
 
 Logger * Logger::getInstance(void)
 {
@@ -89,6 +104,19 @@ void Logger::Open_vel_disp_file(const std::string &filename)
 	}
 }
 
+
+void Logger::Open_modulation_depth_file(const std::string &filename)
+{
+    if (modulation_depth_stream.is_open())
+        modulation_depth_stream.close();
+    
+    modulation_depth_stream.open(filename.c_str());
+    if (!modulation_depth_stream)
+    {
+        cout << "!!! ERROR: Could not open '" << filename << "' for writing.  Check directory structure.\n";
+        exit(1);
+    }
+}
 
 
 
@@ -205,6 +233,33 @@ void Logger::Store_OPL(RNGSeeds &seeds, double OPL)
     }
     
     
+}
+
+
+void Logger::Write_OPL_data()
+{
+    if (!modulation_depth_stream)
+    {
+        cout << "!!! ERROR: Output stream is not open. Logger::Write_OPL_data()\n";
+        exit(1);
+    }
+    
+    
+    std::map<MultiKey, std::vector<double> >::const_iterator map_iter;
+    for (map_iter = OPL_Map.begin(); map_iter != OPL_Map.end(); map_iter++)
+    {
+        // Note:
+        // map_iter->first  = key
+        // map_iter->second = value
+        std::vector<double> temp = map_iter->second;
+        for (std::vector<double>::const_iterator vec_iter = temp.begin(); vec_iter != temp.end(); vec_iter++)
+        {
+            modulation_depth_stream << std::fixed << std::setprecision(9) <<  (*vec_iter) << ' ';
+        }
+        modulation_depth_stream << endl;
+    }
+    
+    modulation_depth_stream.flush();
 }
 
 
