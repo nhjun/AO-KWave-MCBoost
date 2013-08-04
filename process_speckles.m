@@ -5,7 +5,7 @@ MAKE_SPECKLE_IMAGES = true;
 TIME_AVG_SPECKLE = false;
 
 
-NUM_FILES = 83;
+NUM_FILES =  6;
 
 % The speckle pattern at t=0 of the simulation 
 % (i.e. the speckle pattern without any influence of ultrasound).
@@ -18,10 +18,11 @@ speckle_data   = zeros(NUM_FILES, CCD_xdim*CCD_ydim);
 
 delta_contrast = [];
 delta_contrast_steffen = [];
+avg = zeros(	CCD_xdim, CCD_ydim);
 
 t0_1Darray = reshape(t0, 1, CCD_xdim*CCD_ydim);
 for i=1:NUM_FILES
-	tn = dlmread(['speckle_t', num2str(i), '.dat']);
+	tn = dlmread(['speckle_t', num2str(i-1), '.dat']);
 	speckle_data(i,:) = reshape(tn, 1, size(tn,1)*size(tn,2));
 	tn_1Darray = speckle_data(i,:);
 	%delta_contrast = [delta_contrast; (std(tn)/mean(tn)- std(t0)/mean(t0))];
@@ -30,23 +31,25 @@ for i=1:NUM_FILES
 	
 	% Calculate delta speckle contrast
 	% ------------------------------------------------------------------------------
-	delta_contrast = [delta_contrast; mean(std(t0_1Darray)/mean(t0_1Darray) - ...
-					       std(tn_1Darray)/mean(tn_1Darray))];
+	delta_contrast = [delta_contrast; std(t0_1Darray)/mean(t0_1Darray) - ...
+					       std(tn_1Darray)/mean(tn_1Darray)];
 
 	% Calculate using Steffen's approach
 	% ------------------------------------------------------------------------------
-	%delta_contrast_steffen = [delta_contrast_steffen; mean((tn_1Darray - t0_1Darray).^2)/8];
-	if (i > 1)
-		delta_contrast_steffen = [delta_contrast_steffen; mean((tn_1Darray/mean(tn_1Darray)...
-															    - speckle_data(i-1,:)/mean(speckle_data(i-1,:))).^2)/8];	
-	end
-
+	delta_contrast_steffen = [delta_contrast_steffen; mean((tn_1Darray - t0_1Darray).^2)/8];
+	%if (i > 1)
+	%	delta_contrast_steffen = [delta_contrast_steffen; mean((tn_1Darray/mean(tn_1Darray) - speckle_data(i-1,:)/mean(speckle_data(i-1,:))).^2)/8];	
+	%end
+	
+	
+	avg = tn + avg;
 end
 
+avg = avg ./ NUM_FILES;
 
-figure; plot(delta_contrast ./ max(delta_contrast), '-r');
+%figure; plot(delta_contrast ./ max(delta_contrast), '-r');
 %figure; plot(delta_contrast_steffen ./ max(delta_contrast_steffen), '-b');
-figure; plot(delta_contrast_steffen, '-b');
+%figure; plot(delta_contrast_steffen, '-b');
 
 
 

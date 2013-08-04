@@ -29,7 +29,7 @@ Medium::Medium(const double x, const double y, const double z)
 }
 
 Medium::~Medium()
-{	
+{
 	// Free the PressureMap() object.
 	if (kwave.pmap) {
 		delete kwave.pmap;
@@ -59,7 +59,7 @@ Medium::~Medium()
 
 void Medium::initCommon(void)
 {
-	
+
     kwave.pmap = NULL;     	// Pointer to a PressureMap() object.
 	kwave.nmap = NULL;		// Pointer to a RefractiveMap() object.
 	kwave.dmap = NULL;		// Pointer to a DisplacementMap() object.
@@ -67,10 +67,10 @@ void Medium::initCommon(void)
     X_PML_OFFSET = 0;
     Y_PML_OFFSET = 0;
     Z_PML_OFFSET = 0;
-    
+
     //coords_file.open("photon-paths.txt");
 	//photon_data_file.open("photon-exit-data.txt");
-	
+
 }
 
 
@@ -91,7 +91,7 @@ void Medium::addLayer(Layer_Properties props)
 void Medium::addPressureMap(PressureMap *p_map)
 {
 	assert(p_map != NULL);
-    
+
     /// Since we are adding a new pressure map, there is a chance one is already assigned.
     /// If one already exists, we free the memory and assign the new one.
     if (kwave.pmap != NULL)
@@ -99,7 +99,7 @@ void Medium::addPressureMap(PressureMap *p_map)
         delete kwave.pmap;
         kwave.pmap = NULL;
     }
-    
+
     /// Assign new pressure map.
 	kwave.pmap = p_map;
 
@@ -109,7 +109,7 @@ void Medium::addPressureMap(PressureMap *p_map)
 void Medium::addRefractiveMap(RefractiveMap *n_map)
 {
 	assert(n_map != NULL);
-    
+
     /// Since we are adding a new refractive map, there is a chance one is already assigned.
     /// If one already exists, we free the memory and assign the new one.
     if (kwave.nmap != NULL)
@@ -117,7 +117,7 @@ void Medium::addRefractiveMap(RefractiveMap *n_map)
         delete kwave.nmap;
         kwave.nmap = NULL;
     }
-    
+
     /// Assign new refractive map.
 	kwave.nmap = n_map;
 
@@ -128,7 +128,7 @@ void Medium::addRefractiveMap(RefractiveMap *n_map)
 void Medium::addDisplacementMap(DisplacementMap *d_map)
 {
 	assert(d_map != NULL);
-    
+
     /// Since we are adding a new displacement map, there is a chance one is already assigned.
     /// If one already exists, we free the memory and assign the new one.
     if (kwave.dmap != NULL)
@@ -136,7 +136,7 @@ void Medium::addDisplacementMap(DisplacementMap *d_map)
         delete kwave.dmap;
         kwave.dmap = NULL;
     }
-    
+
     /// Assign the new displacement map.
 	kwave.dmap = d_map;
 }
@@ -147,20 +147,11 @@ void Medium::addDisplacementMap(DisplacementMap *d_map)
 
 void Medium::addDetector(Detector *detector)
 {
-	
+
 	p_detectors.push_back(detector);
 }
 
 
-void Medium::absorbEnergy(const double z, const double energy)
-{
-#ifdef DEBUG
-	cout << "Updating bin...\n";
-#endif
-
-	cout << "!!! Medium::absorbEnergy NOT IMPLEMENTED !!!\n";
-
-}
 
 // See if photon has crossed the detector plane.
 int Medium::photonHitDetectorPlane(const boost::shared_ptr<Vector3d> p0)
@@ -198,8 +189,8 @@ Layer * Medium::getLayerAboveCurrent(Layer *currentLayer)
 	// If we are at the top of the medium there is no layer above, so return NULL;
 	if (currentLayer == (*it))
 		return NULL;
-    
-    
+
+
 	///boost::mutex::scoped_lock lock(m_layer_above_mutex);
 	while(it != p_layers.end()) {
 		trailer = it;  // Assign the trailer to the current layer.
@@ -241,8 +232,8 @@ Layer * Medium::getLayerBelowCurrent(double z)
 	if (z == z_bound)
 		return NULL;
 
-    
-	
+
+
 	vector<Layer *>::iterator it;
     ///boost::mutex::scoped_lock lock(m_layer_below_mutex);
 	for (it = p_layers.begin(); it != p_layers.end(); it++) {
@@ -270,7 +261,7 @@ Layer * Medium::getLayerFromDepth(double z)
 	// it has not left the medium.
 	assert(z >= 0 && z <= z_bound);
 
-    
+
 	vector<Layer *>::iterator it;
 	for (it = p_layers.begin(); it != p_layers.end(); it++) {
 		// Find the layer we are in within the medium based on the depth (i.e. z)
@@ -292,7 +283,7 @@ double Medium::getLayerAbsorptionCoeff(double z)
 
 	double absorp_coeff = -1;
 	vector<Layer *>::iterator it;
-    
+
 	for (it = p_layers.begin(); it != p_layers.end(); it++) {
 		// Find the layer we are it in the medium based on the depth (i.e. z)
 		// that was passed in.  Break from the loop when we find the correct layer.
@@ -322,7 +313,7 @@ double Medium::getLayerScatterCoeff(double z)
 
 	double scatter_coeff = -1;
 	vector<Layer *>::iterator it;
-    
+
 
 	for (it = p_layers.begin(); it != p_layers.end(); it++) {
 		// Find the layer we are it in the medium based on the depth (i.e. z)
@@ -353,7 +344,7 @@ double Medium::getAnisotropyFromDepth(double z)
 
 	double anisotropy = -1;
 	vector<Layer *>::iterator it;
-    
+
 
 	for (it = p_layers.begin(); it != p_layers.end(); it++) {
 		// Find the layer we are it in the medium based on the depth (i.e. z)
@@ -385,12 +376,12 @@ void Medium::Create_displacement_map(TRealMatrix * disp_x,
                                      TRealMatrix * disp_y,
                                      TRealMatrix * disp_z)
 {
-    
-    
-    
+
+
+
     if (kwave.dmap == NULL)
     {
-        
+
         kwave.dmap = new DisplacementMap();
         kwave.dmap->Assign_displacement_map(disp_x,
                                             disp_y,
@@ -402,8 +393,8 @@ void Medium::Create_displacement_map(TRealMatrix * disp_x,
                                             disp_y,
                                             disp_z);
     }
-    
-    
+
+
 }
 
 
@@ -416,7 +407,7 @@ void Medium::Create_refractive_map(TRealMatrix * refractive_total)
     /// - This is defined here, but would change depending on temperature changes, if that
     ///   is ever incorporated into this simulation, which in turn would affect density and SOS.
     background_refractive_index = 1.33;
-    
+
     if(kwave.nmap == NULL)
     {
         /// Takes pressure as an argument in the constructor and forms the refractive map data.
@@ -428,7 +419,7 @@ void Medium::Create_refractive_map(TRealMatrix * refractive_total)
         /// Updates the refractive map data.
         kwave.nmap->Assign_refractive_map(refractive_total);
     }
-    
+
 }
 
 
@@ -436,13 +427,13 @@ void Medium::Create_refractive_map(TRealMatrix * refractive_x,
                                    TRealMatrix * refractive_y,
                                    TRealMatrix * refractive_z)
 {
-    
+
     /// XXX:
     /// - This is defined here, but would change depending on temperature changes, if that
     ///   is ever incorporated into this simulation, which in turn would affect density and SOS.
     background_refractive_index = 1.33;
-    
-    
+
+
     if(kwave.nmap == NULL)
     {
         /// Takes pressure as an argument in the constructor and forms the refractive map data.
@@ -458,7 +449,7 @@ void Medium::Create_refractive_map(TRealMatrix * refractive_x,
                                           refractive_y,
                                           refractive_z);
     }
-    
+
 }
 
 

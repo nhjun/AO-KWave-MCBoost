@@ -67,7 +67,7 @@ Photon::Photon(double x, double y, double z,
 
 Photon::~Photon(void)
 {
-#ifdef DEBUG	
+#ifdef DEBUG
 	cout << "Destructing Photon...\n";
 #endif
 
@@ -104,7 +104,7 @@ void Photon::initCommon(void)
 	displaced_optical_path_length 		= 0.0f;
 	refractiveIndex_optical_path_length = 0.0f;
 	combined_OPL 		= 0.0f;
-    
+
     /// Everything defaults to false.
     SIM_MODULATION_DEPTH = SIM_DISPLACEMENT = SIM_REFRACTIVE_TOTAL = SIM_REFRACTIVE_GRADIENT = SAVE_RNG_SEEDS = false;
 
@@ -120,18 +120,19 @@ void Photon::setIterations(const int num)
 
 void Photon::initTrajectory(void)
 {
-    
+
     double beam_radius = 0.0025;  /// 5mm diameter.
     double injection_point = beam_radius * sqrt(getRandNum());
-    
+
 	// Randomly set photon trajectory to yield anisotropic source.
 	cos_theta = (2.0 * getRandNum()) - 1;
 	sin_theta = sqrt(1.0 - cos_theta*cos_theta);
 	psi = 2.0 * PI * getRandNum();
-    
+
     /// Set the injection points to spread across the beam diameter (randomly).
-    currLocation->location.x = illuminationCoords.x + injection_point*cos(psi);
-    currLocation->location.y = illuminationCoords.y + injection_point*sin(psi);
+    currLocation->location.x = illuminationCoords.x;/// + injection_point*cos(psi);
+    currLocation->location.y = illuminationCoords.y;/// + injection_point*sin(psi);
+    currLocation->location.z = illuminationCoords.z;
 
 	// Set the initial direction cosines for this photon.
 	currLocation->setDirX(sin_theta * cos(psi));
@@ -165,7 +166,7 @@ void Photon::injectPhoton(Medium * medium, const int num_iterations, RNG_seed_ve
     SIM_REFRACTIVE_GRADIENT     = Params.REFRACTIVE_GRADIENT;
 	SAVE_RNG_SEEDS				= Params.SAVE_SEEDS;
 
-	
+
     // Assign this photon object a random number generator, which is passed in from main().
     RNG_generator = new RNG();
     iteration_seeds = rng_seeds;
@@ -206,9 +207,9 @@ void Photon::TESTING(Medium * medium, const int num_iterations, RNG_seed_vector 
 
 	// Set the location of illumination source and the initial cartesian coordinates of the photon
 	// when it is first incident on the medium.
-	currLocation->location.x = this->illuminationCoords.x = laser.x;
-	currLocation->location.y = this->illuminationCoords.y = laser.y;
-	currLocation->location.z = this->illuminationCoords.z = laser.z;
+	this->illuminationCoords.x = laser.x;
+	this->illuminationCoords.y = laser.y;
+	this->illuminationCoords.z = laser.z;
 
 	// Set the current layer the photon starts propagating through.  This will
 	// be updated as the photon moves through layers by checking 'hitLayerBoundary'.
@@ -225,7 +226,7 @@ void Photon::propagatePhoton(const int iterations)
 
 	// Inject 'iterations' number of photons into the medium.
 	int i;
-	for (i = 0; i < iterations; i++) 
+	for (i = 0; i < iterations; i++)
 	{
 
 		/// If we are saving seeds, then we are propagating photons until they
@@ -233,7 +234,7 @@ void Photon::propagatePhoton(const int iterations)
 		/// the exit seeds have already been generated, which means we have the seeds
 		/// and each iteration should use seeds that detected photons (i.e. photons that
 		/// exited the medium through the aperture).  So, the RNG is update each iteration
-		/// with the seed values that caused it to hop() through the medium, eventually 
+		/// with the seed values that caused it to hop() through the medium, eventually
 		/// finding its way through the exit aperture.
 		if ((iteration_seeds->size() == iterations))
 		{
@@ -263,13 +264,7 @@ void Photon::propagatePhoton(const int iterations)
 									(*iteration_seeds)[i].s3,
 									(*iteration_seeds)[i].s4);
 		}
-//		else
-//		{
-//			/// If we make it here, something has gone awry.  We are not using detected seeds
-//			/// or creating a single stream.  Notify.
-//			cout << "!!! Number of seeds input is: " << iteration_seeds->size() << " Photon::propagatePhoton\n";
-//			cout.flush();
-//		}
+
 
 
         if (SAVE_RNG_SEEDS || SIM_MODULATION_DEPTH)
@@ -277,14 +272,14 @@ void Photon::propagatePhoton(const int iterations)
 			assert(RNG_generator != NULL);
             exit_seeds = RNG_generator->getState();
         }
-        
+
         // Initialize the photon's trajectory before any scattering event has taken place.
         initTrajectory();
-        
+
 
 		// While the photon has not been terminated by absorption or leaving
 		// the medium we propagate it through he medium.
-		while (isAlive()) 
+		while (isAlive())
 		{
 
 			// Calculate and set the step size for the photon.
@@ -355,14 +350,6 @@ void Photon::propagatePhoton(const int iterations)
 
 
 
-void Photon::plotPath(void)
-
-{
-	// STUB
-}
-
-
-
 
 void Photon::reset()
 {
@@ -382,7 +369,7 @@ void Photon::reset()
 	currLocation->location.y = illuminationCoords.y;
 	currLocation->location.z = illuminationCoords.z;
 
-	
+
 	step = 0;
 	step_remainder = 0;
 
@@ -404,7 +391,7 @@ void Photon::reset()
 	// Reset the transmission angle for a photon.
 	transmission_angle = 0;
 
-	// Randomly set photon trajectory to yield isotropic or anisotropic source.
+	// Set photon trajectory to yield a uniform distribution of light over a given beam radius.
 	initTrajectory();
 
 	// Reset the current layer from the injection coordinates of the photon.
@@ -446,38 +433,6 @@ void Photon::setStepSize()
 
 
 
-void Photon::captureLocationCoords(void)
-{
-	cout << "Photon::captureLocationCoords() stub\n";
-	// Add the coordinates to the STL vector for the displaced scattering locations.
-	//	coords.push_back(x_disp);
-	//	coords.push_back(y_disp);
-	//	coords.push_back(z_disp);
-}
-
-
-void Photon::captureExitCoordsAndLength(void)
-{
-	// Add the coordinates to the STL vector for the displaced scattering locations
-	// and the displaced length.
-	//	photon_exit_data.push_back(x_disp);
-	//	photon_exit_data.push_back(y_disp);
-	//	photon_exit_data.push_back(displaced_path_length);
-	cout << "Photon::captureExitCoordsAndLength() stub\n";
-}
-
-
-void Photon::captureExitCoordsLengthWeight(void)
-{
-	// Add the coordinates to the STL vector for the displaced scattering locations
-	// and the displaced length.
-	//	photon_exit_data.push_back(x_disp);
-	//	photon_exit_data.push_back(y_disp);
-	//	photon_exit_data.push_back(displaced_path_length);
-	//	photon_exit_data.push_back(weight);
-	cout << "Photon::captureExitCoordsLengthWeight() stub\n";
-}
-
 
 // Tests if the photon will come into contact with a layer boundary
 // after setting the new step size.  If so the process of transmitting or
@@ -503,7 +458,7 @@ bool Photon::checkMediumBoundary(void)
 {
 	if (hitMediumBoundary())
 	{
-#ifdef DEBUG			
+#ifdef DEBUG
 		cout << "Hit medium boundary\n";
 #endif
 		hop();  // Move the photon to the medium boundary.
@@ -536,7 +491,7 @@ void Photon::hop()
 {
 #ifdef DEBUG
 	cout << "Hopping...\n";
-#endif	
+#endif
 
 	num_steps++;
 
@@ -569,7 +524,7 @@ void Photon::drop()
 {
 #ifdef DEBUG
 	cout << "Dropping...\n";
-#endif	
+#endif
 
 	if (this->status == DEAD) return;
 
@@ -630,12 +585,6 @@ void Photon::drop()
 }
 
 
-// Update the local absorbed energy array.
-void Photon::updateLocalWeightArray(const double absorbed)
-{
-    cout << "Photon::updateLocalWeightArray NOT IMPLEMENTED!!!\n";
-	
-}
 
 
 // Calculate the new trajectory of the photon.
@@ -643,7 +592,7 @@ void Photon::spin()
 {
 #ifdef DEBUG
 	cout << "Spinning...\n";
-#endif	
+#endif
 
 	if (this->status == DEAD) return;
 
@@ -660,7 +609,7 @@ void Photon::spin()
 
 	if (g == 0.0) {
 		cos_theta = (2.0 * rnd) - 1.0;
-	} 
+	}
 	else {
 		double temp = (1.0 - g*g)/(1.0 - g + 2*g*rnd);
 		cos_theta = (1.0 + g*g - temp*temp)/(2.0*g);
@@ -673,7 +622,7 @@ void Photon::spin()
 	double sin_psi = 0.0;
 	if (psi < PI) {
 		sin_psi = sqrt(1.0 - cos_psi*cos_psi);     /* sqrt() is faster than sin(). */
-	} 
+	}
 	else {
 		sin_psi = -sqrt(1.0 - cos_psi*cos_psi);
 	}
@@ -685,7 +634,7 @@ void Photon::spin()
 		uxx = sin_theta * cos_psi;
 		uyy = sin_theta * sin_psi;
 		uzz = cos_theta * SIGN(dirZ);   /* SIGN() is faster than division. */
-	} 
+	}
 	else {					/* usually use this option */
 
 
@@ -723,24 +672,9 @@ void Photon::performRoulette(void)
 }
 
 
-// Write the coordinates of each scattering event of the photon
-// to file for postprocessing with matlab.
-void Photon::writeCoordsToFile(void)
-{
-	cout << "Photon::writeCoordsToFile() stub\n";
-
-	//	cout << "Non-displaced path length: " << scientific << setprecision(12) <<  unmodulated_path_length << endl;
-	//	cout << "Displaced path length: " << scientific << setprecision(12) << displaced_path_length << endl;
-	//	cout << "Displaced - Original = " << scientific << setprecision(12)
-	//		 << displaced_path_length - unmodulated_path_length << endl;
-
-
-}
-
-
 
 void Photon::displacePhotonFromPressure(void)
-{    
+{
 
 	// Photon does not get displaced on boundaries of medium.
 	if (hit_x_bound || hit_y_bound || hit_z_bound) return;
@@ -757,7 +691,7 @@ void Photon::displacePhotonFromPressure(void)
 					<< currLocation->location.x << " "
 					<< currLocation->location.y << " "
 					<< currLocation->location.z));
-#endif    
+#endif
 
 
 
@@ -819,8 +753,8 @@ void Photon::displacePhotonFromPressure(void)
 	///   the background refractive index.
 	/// - How does this change with non-uniform density???
 	//double local_refractive_index = m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
-	double local_refractive_index = 1.33;	
-																			
+	double local_refractive_index = 1.33;
+
 	// Get the distance between the previous location and the current location.
 	double distance_traveled = VectorMath::Distance(prevLocation, currLocation);
 
@@ -845,7 +779,7 @@ void Photon::displacePhotonFromPressure(void)
 // Alter the optical path length of the photon through the medium as it encounters
 // refractive index changes along it's step.
 // Basic idea is that the line segment from the photon step encounters changes
-// in the mediums refractive indeces.  From Fermat's theorem we know that the 
+// in the mediums refractive indeces.  From Fermat's theorem we know that the
 // arc (S) that the line segment will make is an extremum based on the values
 // of refractive index it encounters on the physical path length (L).  The change
 // in the optical length is given by L*refractive_index.
@@ -1052,7 +986,7 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
     _x = currLocation->location.x/dx - (currLocation->location.x/dx)/Nx;
 	_y = currLocation->location.y/dy - (currLocation->location.y/dy)/Ny;
 	_z = currLocation->location.z/dz - (currLocation->location.z/dz)/Nz;
-    
+
 	// Accumulate the refractive index encountered along the segment between scattering events for this
 	// step through the medium.
 	n_cumulative += m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
@@ -1131,7 +1065,7 @@ void Photon::displacePhotonAndAlterOPLFromAverageRefractiveChanges(void)
 	displacePhotonFromPressure();
 	alterOPLFromAverageRefractiveChanges();
 
-	/// Due to the order in which the above functions are called, the OPL of 
+	/// Due to the order in which the above functions are called, the OPL of
 	/// 'refractiveIndex_optical_path_length' contains the OPL under the influence of
 	/// both AO mechanisms (displacement, pressure induced refractive index).  However,
 	/// it's possible to run the simulation with any combination (all mechanisms on, one, etc.).
@@ -1238,14 +1172,14 @@ void Photon::transmit(const char *type)
 		// data is written out to file.
 		if (checkDetector())
 		{
-			
+
             // Update the direction cosines upon leaving the medium so calculations can be mode
 			// to see if this photon makes it's way to the detector (i.e. CCD camera).
 			// NOTE:
 			// - We assume outside of the medium is nothing but air with an index of refraction 1.0
 			//   so no division for x & y direction cosines because nt = 1.0
 			// - It is also assumed that the photon is transmitted through the x-y plane.
-			
+
             if (SIM_DISPLACEMENT || SIM_REFRACTIVE_TOTAL || SIM_REFRACTIVE_GRADIENT)
          	{
 
@@ -1260,15 +1194,15 @@ void Photon::transmit(const char *type)
                 // Write time-of-flight data to logger.
                 //Logger::getInstance()->writeTOFData(time_of_flight);
          	}
-            
+
             /// Is simulation of modulation depth enabled?
             if (SIM_MODULATION_DEPTH)
             {
                 if (SIM_DISPLACEMENT)       Logger::getInstance()->Store_OPL(exit_seeds, displaced_optical_path_length);
                 if (SIM_REFRACTIVE_TOTAL)   Logger::getInstance()->Store_OPL(exit_seeds, refractiveIndex_optical_path_length);
-                
+
             }
-            
+
 			// Write out the seeds that caused this photon to hop, drop and spin its way out the
 			// exit-aperture.
 			//
@@ -1504,7 +1438,7 @@ double Photon::getLayerReflectance(void)
 //   THIS IS BAD WHEN INDEXING INTO A DISPLACEMENT ARRAY AND HAVING A NEGATIVE
 //   VALUE CAUSES THINGS TO BLOW UP AND SPEND AN ENTIRE DAY FINDING A SUBTLE BUG.
 //   THIS IS A REMINDER TO SWITCH TO PLANE INTERSECTION DETECTION....
-// Note: We take the absolute value in the case where the direction 
+// Note: We take the absolute value in the case where the direction
 //       cosine is negative, since the distance to boundary would be
 //       negative otherwise, which is untrue.  This arises due to assuming
 //       the lower axis bound in each dimension (x, y, z) begins at zero.
@@ -1714,7 +1648,7 @@ void Photon::specularReflectance(double n1, double n2)
 
 
 // Update the direction cosine when internal reflection occurs on z-axis.
-void Photon::internallyReflectZ(void) 
+void Photon::internallyReflectZ(void)
 {
 	currLocation->setDirZ(-1*currLocation->getDirZ());
 
@@ -1723,7 +1657,7 @@ void Photon::internallyReflectZ(void)
 }
 
 // Update the direction cosine when internal reflection occurs on y-axis.
-void Photon::internallyReflectY(void) 
+void Photon::internallyReflectY(void)
 {
 	currLocation->setDirY(-1*currLocation->getDirY());
 
@@ -1733,7 +1667,7 @@ void Photon::internallyReflectY(void)
 
 
 // Update the direction cosine when internal reflection occurs on z-axis.
-void Photon::internallyReflectX(void) 
+void Photon::internallyReflectX(void)
 {
 	currLocation->setDirX(-1*currLocation->getDirX());
 

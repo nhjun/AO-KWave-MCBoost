@@ -82,7 +82,7 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf(" --AO_sim_loadData                : Run the Acousto-Optic simulation with precomputed data\n");
  printf(" --MC_sim                         : Run the Monte-Carlo simulation (light propagation only)\n");
  printf(" --kWave_sim                      : Run the kWave simulation (ultrasound propagation only)\n");
- 
+
  /// --------------------------------------------
  printf("\n");
  printf("Mandatory parameters:\n");
@@ -125,6 +125,7 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf("\n");
  /// --------------------- JWJS ---------------------------------------------------------------------
  printf(" --modulation-depth               : Save the optical path lengths to disk for comparison\n");
+ printf("\n");
  printf("  -n                              : Store index of refraction\n");
  printf("                                       (all axial components nx, ny, nz)\n");
  printf("  --refractive_total              : Store the norm of the index of refraction\n");
@@ -158,6 +159,13 @@ void TCommandLineParameters::PrintSetup(){
 
     printf("List of enabled parameters:\n");
 
+    /// ----------------------------- JWJS ---------------------------------------------
+    printf("  Simulate Acousto-Optics   %d\n", Run_AO_sim);
+    printf("  Simulate Acousto-Optics (precomputed data) %d\n", Run_AO_sim_loadData);
+    printf("  Simulate Monte-Carlo      %d\n", Run_MC_sim);
+    printf("  Simulate kWave            %d\n", Run_kWave_sim);
+    /// -----------------------------------
+
     printf("  Input  file           %s\n",InputFileName.c_str());
     printf("  Output file           %s\n",OutputFileName.c_str());
     printf("\n");
@@ -181,7 +189,10 @@ void TCommandLineParameters::PrintSetup(){
     printf("  Store I_avg           %d\n", Store_I_avg);
     printf("  Store I_max           %d\n", Store_I_max);
     printf("\n");
-    printf("  Store refractive_total         %d\n", Store_refractive_total);
+    /// ---------------- JWJS ----------------------------------------------------
+    printf("  Store modulation depth          %d\n", Store_modulation_depth);
+    printf("\n");
+    printf("  Store refractive_total          %d\n", Store_refractive_total);
     printf("  Store refractive_x              %d\n", Store_refractive_x);
     printf("  Store refractive_y              %d\n", Store_refractive_y);
     printf("  Store refractive_z              %d\n", Store_refractive_z);
@@ -193,6 +204,7 @@ void TCommandLineParameters::PrintSetup(){
     printf("  Collection begins at  %d\n", StartTimeStep+1);
     printf("\n");
     printf("  Collection ends at %d\n", EndTimeStep);
+    /// -----------------------
 
 
 }// end of PrintSetup
@@ -229,7 +241,7 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
 
         /// ---------------- JWJS -----------------------
         { "modulation_depth", no_argument, NULL, 0},
-       
+
         { "n", no_argument, NULL, 'n'},
         { "refractive_total", no_argument, NULL, 0},
         { "refractive_x", no_argument, NULL, 0},
@@ -243,11 +255,11 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
 
         { "s", required_argument, NULL, 's'},
         { "e", required_argument, NULL, 'e'},
-       
+
         { "AO_sim",          no_argument, NULL, 0},
         { "AO_sim_loadData", no_argument, NULL, 0},
         { "MC_sim",          no_argument, NULL, 0},
-        { "kWave_sim",          no_argument, NULL, 0},
+        { "kWave_sim",       no_argument, NULL, 0},
         /// ----------------------
 
         { NULL, no_argument, NULL, 0 }
