@@ -683,7 +683,7 @@ int main(int argc, char** argv)
 
     	/// Add a layer to the monte-carlo medium defining the optical properties.
     	Layer_Properties layer_props;
-    	layer_props.mu_a        = 0.0f;
+    	layer_props.mu_a        = 1.0f;
     	layer_props.mu_s        = 70.0f;
     	layer_props.refractive_index = 1.33f;
     	layer_props.anisotropy  = 0.9f;
@@ -696,7 +696,7 @@ int main(int argc, char** argv)
     	/// NOTE: Centering the detector on the x-y plane.
     	Detector_Properties detector_props;
     	detector_props.radius = 0.0025;
-    	detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+    	detector_props.x_coord = 0.0145;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
 
         // FOR DEBUGGING
         //detector_props.radius = 0.00025;

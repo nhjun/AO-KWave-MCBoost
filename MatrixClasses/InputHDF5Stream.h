@@ -81,15 +81,7 @@ private:
     /// Position in the dataset
     TDimensionSizes Position;
     
-//    /// The matrices containing the refractive index values, for the current timestep, of the precomputed data.
-//    TRealMatrix * refractive_x;
-//    TRealMatrix * refractive_y;
-//    TRealMatrix * refractive_z;
-//    
-//    /// The matrices containing the refractive index values, for the current timestep, of the precomputed data.
-//    TRealMatrix * disp_x;
-//    TRealMatrix * disp_y;
-//    TRealMatrix * disp_z;
+
     
     
 };// end of TInputHDF5Stream
