@@ -14,7 +14,7 @@ using std::cout;
 
 // Threshold value for comparing doubles.  Allows some tolerance that might arise from
 // rounding errors when working with doubles.
-static const double THRESHOLD = 0.000000001;
+static const double THRESHOLD = 0.0000000001;
 
 
 

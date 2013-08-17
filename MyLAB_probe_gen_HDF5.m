@@ -22,7 +22,7 @@ Nz = 288;
 % Definitions to match the SL3323 MyLAB probe
 elevation_height = 5e-3;
 pitch            = 0.245e-3;
-SL3323_active_elements  = 64/8;
+SL3323_active_elements  = 64;
 kerf = 0;                           % Assume zero kerf.
 
 % dx = x/Nx                  % [m]
@@ -177,7 +177,7 @@ BEAD_A_centered = round([(PML_X_SIZE+5), ...                                    
                          (Ny/2 - transducer_width/2), ...                           % y-axis
                          (PML_Z_SIZE + 6e-3/dz  + transducer.element_length/2)]);   % z-axis
 % Assign the transducer position.
-transducer.position = BEAD_A_centered;
+transducer.position = EDGE_of_medium;
 
 
 % properties used to derive the beamforming delays
@@ -279,7 +279,7 @@ if (PA_GUIDED_FOCUS)
     PA_file = char(PA_file(1,end));                     % Convert last cell to char array
     filename = ['MyLAB_', PA_file(1:end-4), '_INPUT', '.h5'];     % Form new file name
 else
-    filename = ['MyLAB_Fixed_Focus_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
+    filename = ['MyLAB_FF_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
 end
 kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename, input_args{:});
 

@@ -630,11 +630,11 @@ int main(int argc, char** argv) {
 
 	/// What should be simulated - Ultrasound, Monte-Carlo, Both (Acousto-Optics)?
 	bool sim_monte_carlo 	= false;
-	bool sim_kWave		 	= true;
-	bool sim_acousto_optics = false; 
+	bool sim_kWave		 	= false;
+	bool sim_acousto_optics = true;
 
 	/// What AO mechanisms will be turned on during the simulation.
-	bool sim_displacement 	 = false;
+	bool sim_displacement 	 = true;
 	bool sim_refractive_grad = false;
     
 
@@ -681,7 +681,7 @@ int main(int argc, char** argv) {
     
     	/// Add a layer to the monte-carlo medium defining the optical properties.
     	Layer_Properties layer_props;
-    	layer_props.mu_a        = 0.0f;
+    	layer_props.mu_a        = 1.0f;
     	layer_props.mu_s        = 70.0f;
     	layer_props.refractive_index = 1.33f;
     	layer_props.anisotropy  = 0.9f;
@@ -693,10 +693,13 @@ int main(int argc, char** argv) {
     	/// to the CCD camera.
     	/// NOTE: Centering the detector on the x-y plane.
     	Detector_Properties detector_props;
-    	detector_props.radius = 0.0025;
-    	detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
-    	detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
-    	detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
+    	detector_props.radius = 0.003;
+        //detector_props.x_coord = 0.0195;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+        //detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
+    	detector_props.x_coord = 0.0145;
+        detector_props.y_coord = AO_simulation.Get_MC_Yaxis_depth()/2;
+        
+        detector_props.z_coord = AO_simulation.Get_MC_Zaxis_depth();
 		detector_props.xy_plane = true;
     	AO_simulation.Add_circular_detector_MC_medium(detector_props);
     
@@ -728,7 +731,7 @@ int main(int argc, char** argv) {
     	/// Display the monte-carlo simulation parameters
 		/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
 		/// Only want to run 4 hardware threads.
-		const size_t hardware_threads = 4;
+		const size_t hardware_threads = 1;
 		///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
 		AO_simulation.Set_num_MC_threads(hardware_threads);	
 		AO_simulation.Print_MC_sim_params();
