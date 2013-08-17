@@ -57,8 +57,7 @@ public:
 
 	// Constructors
 	Photon(void);
-	Photon(double x, double y, double z,
-		   double dirx, double diry, double dirz);
+	
 	// Destructor
 	~Photon(void);
     

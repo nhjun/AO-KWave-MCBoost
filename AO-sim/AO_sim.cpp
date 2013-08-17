@@ -170,6 +170,29 @@ AO_Sim::Run_kWave_sim(TParameters * Parameters)
 
 }
 
+/// Run the monte-carlo simulation.
+void
+AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
+{
+    /// Explicitly set that we are not running anything other than the monte-carlo simulation.
+    da_boost->Simulate_refractive_gradient(false);
+    da_boost->Simulate_refractive_total(false);
+    da_boost->Simulate_displacement(false);
+  
+    
+    /// Not saving seeds, we are running the AO_sim, so set to false.
+    da_boost->Save_RNG_seeds(true);
+    
+    size_t time = 1;
+    
+    cout << ".......... Running MC-Boost ......... ";
+    cout.flush();
+    da_boost->Run_seeded_MC_sim_timestep(m_medium,
+                                         m_Laser_injection_coords,
+                                         time);
+    
+}
+
 
 /// Run the acousto-optic simulation.
 void
@@ -205,7 +228,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
     KSpaceSolver->FromAO_sim_PrintOutputHeader();
     KSpaceSolver->IterationTimeStart();
 	size_t k_wave_Nt = Parameters->Get_Nt();
-	//k_wave_Nt = 1700;
+	k_wave_Nt = 952;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
 
         cout << ".......... Running k-Wave ........... ("
@@ -395,12 +418,15 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
 			/// Similar to the stroboscopic experiments.
         	static size_t cnt = MC_time_step/Parameters->Get_dt();
-
-        	if (((KSpaceSolver->GetTimeIndex() % cnt) == 0) &&
-                (KSpaceSolver->GetTimeIndex() > 0))
+            size_t curr_time = KSpaceSolver->GetTimeIndex();
+        	if (
+                (((curr_time % cnt) == 0) && (curr_time > 0)) ||
+                ((curr_time >= 1) && (curr_time <= 2))
+               )
         	{
             	cout << ".......... Running MC-Boost ......... ";
             	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
+                cout.flush();
             	da_boost->Run_seeded_MC_sim_timestep(m_medium,
             	                                     m_Laser_injection_coords,
             	                                     KSpaceSolver->GetTimeIndex());
@@ -675,10 +701,24 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
     size_t x_pml_offset = parameters->Get_pml_x_size()+OFFSET;
     size_t y_pml_offset = parameters->Get_pml_y_size();
     size_t z_pml_offset = parameters->Get_pml_z_size();
-
-    size_t Nx = parameters->GetFullDimensionSizes().X - 2*x_pml_offset;
-    size_t Ny = parameters->GetFullDimensionSizes().Y - 2*y_pml_offset;
-    size_t Nz = parameters->GetFullDimensionSizes().Z - 2*z_pml_offset;
+    
+    /// If only running the monte-carlo simulation, no need to reduce the size of the medium
+    /// for taking into account the perfectly-matching-layer (PML) because no acoustics are
+    /// being simulated.
+    size_t Nx, Ny, Nz;
+    if (parameters->IsRun_MC_sim())
+    {
+        Nx = parameters->GetFullDimensionSizes().X;
+        Ny = parameters->GetFullDimensionSizes().Y;
+        Nz = parameters->GetFullDimensionSizes().Z;
+    }
+    else
+    {
+        Nx = parameters->GetFullDimensionSizes().X - 2*x_pml_offset;
+        Ny = parameters->GetFullDimensionSizes().Y - 2*y_pml_offset;
+        Nz = parameters->GetFullDimensionSizes().Z - 2*z_pml_offset;
+    }
+        
 
     // Size of each voxel along its respective axis.
     double dx = parameters->Get_dx();

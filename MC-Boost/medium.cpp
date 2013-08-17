@@ -16,7 +16,7 @@
 
 Medium::Medium()
 {
-	z_bound = x_bound = y_bound = 0.010; // Default bounds of the medium [meters].
+	z_bound = x_bound = y_bound = 0.0f; // Default bounds of the medium [meters].
 	this->initCommon();
 }
 

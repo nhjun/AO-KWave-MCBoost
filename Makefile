@@ -101,7 +101,6 @@ ifeq ($(COMPILER),GNU)
   CXXFLAGS = -O3 -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
-
   # CFLAGS for debugging
   #------------------------
   #CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .

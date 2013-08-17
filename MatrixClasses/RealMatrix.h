@@ -91,6 +91,7 @@ public:
     {
         pMatrixData[Z * p2DDataSliceSize + Y * pDataRowSize + X] = value;
     };
+    /// ----------------------------------------
          
             
     

@@ -35,36 +35,6 @@ Photon::Photon(void)
 }
 
 
-
-Photon::Photon(double x, double y, double z,
-		double dirx, double diry, double dirz)
-{
-#ifdef DEBUG
-	cout << "Constructor stub...\n";
-#endif
-
-	coords location;
-	directionCos direction;
-
-	location.x = x;
-	location.y = y;
-	location.z = z;
-
-	direction.x = dirx;
-	direction.y = diry;
-	direction.z = dirz;
-
-	// Location and direction of photon.
-	currLocation = boost::shared_ptr<Vector3d> (new Vector3d(location, direction));
-
-	// The location before the photon hopped.
-	prevLocation = boost::shared_ptr<Vector3d> (new Vector3d);  // Does not require direction.
-
-	this->initCommon();
-
-}
-
-
 Photon::~Photon(void)
 {
 #ifdef DEBUG
@@ -135,8 +105,12 @@ void Photon::initTrajectory(void)
     currLocation->location.z = illuminationCoords.z;
 
 	// Set the initial direction cosines for this photon.
-	currLocation->setDirX(sin_theta * cos(psi));
-	currLocation->setDirY(sin_theta * sin(psi));
+    /// Initial direction is ballistic light as it enters the medium.  This means
+    /// the photon enters the medium fully aligned with the optical axis as no scattering has
+    /// taken place and it is assumed that the laser and plane of the medium where light is injected
+    /// are normal to each other.
+	currLocation->setDirX(0.0f);
+	currLocation->setDirY(0.0f);
 	currLocation->setDirZ(1.0f);
 
 }
@@ -172,11 +146,10 @@ void Photon::injectPhoton(Medium * medium, const int num_iterations, RNG_seed_ve
     iteration_seeds = rng_seeds;
 
 
-	// Set the location of illumination source and the initial cartesian coordinates of the photon
-	// when it is first incident on the medium.
-	currLocation->location.x = this->illuminationCoords.x = laser.x;
-	currLocation->location.y = this->illuminationCoords.y = laser.y;
-	currLocation->location.z = this->illuminationCoords.z = laser.z;
+	// Set the location of illumination source.
+    this->illuminationCoords.x = laser.x;
+	this->illuminationCoords.y = laser.y;
+	this->illuminationCoords.z = laser.z;
 
 	// Set the current layer the photon starts propagating through.  This will
 	// be updated as the photon moves through layers by checking 'hitLayerBoundary'.
@@ -233,7 +206,7 @@ void Photon::propagatePhoton(const int iterations)
 		/// exit, using the continous stream of the RNG in th process.  Otherwise
 		/// the exit seeds have already been generated, which means we have the seeds
 		/// and each iteration should use seeds that detected photons (i.e. photons that
-		/// exited the medium through the aperture).  So, the RNG is update each iteration
+		/// exited the medium through the aperture).  So, the RNG is updated each iteration
 		/// with the seed values that caused it to hop() through the medium, eventually
 		/// finding its way through the exit aperture.
 		if ((iteration_seeds->size() == iterations))

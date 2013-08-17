@@ -463,13 +463,19 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
     //-- Post checks --//
 
 
+
+   
    if (InputFileName == "") {
        fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoInputFile);
        PrintUsageAndExit();
    }
 
-
-   if (OutputFileName == "") {
+    /// ----------------------------- JWJS ---------------------------------
+    /// We don't need to open an output file when only running the
+    /// monte-carlo simulation.
+    //if (OutputFileName == "") {
+    if ((OutputFileName == "") && (!Run_MC_sim)) {
+    /// -----------------------------------
        fprintf(stderr,"%s",CommandlineParameters_ERR_FMT_NoOutputFile);
        PrintUsageAndExit();
    }

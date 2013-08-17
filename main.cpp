@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 5e6;
+const int MAX_PHOTONS = 100e3;
 
 // Testing routines.
 void testVectorMath(void);
@@ -653,9 +653,9 @@ int main(int argc, char** argv)
 
 
 	/// What should be simulated - Ultrasound, Monte-Carlo, Both (Acousto-Optics)?
-	bool sim_monte_carlo 	= Parameters->IsRun_MC_sim();
-	bool sim_kWave		 	= Parameters->IsRun_kWave_sim();
-	bool sim_acousto_optics = Parameters->IsRun_AO_sim();
+	bool sim_monte_carlo             = Parameters->IsRun_MC_sim();
+	bool sim_kWave                   = Parameters->IsRun_kWave_sim();
+	bool sim_acousto_optics          = Parameters->IsRun_AO_sim();
     bool sim_acousto_optics_loadData = Parameters->IsRun_AO_sim_loadData();
     bool sim_modulation_depth        = Parameters->IsStore_modulation_depth();
 
@@ -683,8 +683,17 @@ int main(int argc, char** argv)
 
     	/// Add a layer to the monte-carlo medium defining the optical properties.
     	Layer_Properties layer_props;
-    	layer_props.mu_a        = 1.0f;
-    	layer_props.mu_s        = 70.0f;
+        /// NOTE:
+        /// - So that the step size calculated in Photon::Hop() matches with the dimensions
+        ///   of everything else used in the simulation, we convert the commonly used mu_a
+        ///   and mu_s dimensions from cm^-1 to m^-1.  Doing it here is the better choice
+        ///   since it only happens once, otherwise it must be done every scattering
+        ///   event in the monte-carlo simulation, which is typically ~1000 x number_of_photons.
+    	layer_props.mu_a        = 1.0f;             // cm^-1
+    	layer_props.mu_s        = 70.0f;            // cm^-1
+        layer_props.mu_a = layer_props.mu_a * 100;  // m^-1
+        layer_props.mu_s = layer_props.mu_s * 100;  // m^-1
+        
     	layer_props.refractive_index = 1.33f;
     	layer_props.anisotropy  = 0.9f;
     	layer_props.start_depth = 0.0f;
@@ -774,18 +783,16 @@ int main(int argc, char** argv)
 
 
 	/// Run what was specified.
-	if (sim_monte_carlo && (!sim_kWave))
+	if (sim_monte_carlo)
 	{
         cout << FMT_SmallSeparator;
         cout << " Simulation: Monte-Carlo\n";
         cout << FMT_SmallSeparator;
 
 		/// This will run the monte-carlo simulation once.
-		/// FIXME:
-		/// - Implement a call 'Run_monte_carlo()'
-		AO_simulation.Generate_exit_seeds();
+		AO_simulation.Run_monte_carlo_sim(Parameters);
 	}
-	else if (sim_kWave && (!sim_monte_carlo))
+	else if (sim_kWave)
 	{
         cout << FMT_SmallSeparator;
         cout << " Simulation: kWave\n";

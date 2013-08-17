@@ -44,6 +44,10 @@ public:
     ~AO_Sim();
     
     
+    /********************** Available simulations ****************************************************/
+    /// Run the monte-carlo simulation.
+    void        Run_monte_carlo_sim(TParameters * Parameters);
+    
     /// Run the kWave simulation.
     void        Run_kWave_sim(TParameters * Parameters);
     
@@ -58,8 +62,9 @@ public:
     void        Run_acousto_optics_sim_loadData(TParameters * Parameters);
     
     
-    /********************** k-Wave ****************************************************/
     
+    
+    /********************** k-Wave ****************************************************/
     /// Print k-Wave code and license.
     void        Print_kWave_code_and_license()
                 {

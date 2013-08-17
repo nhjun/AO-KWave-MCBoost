@@ -35,6 +35,7 @@ MC_Boost::MC_Boost(void)
     Params.REFRACTIVE_TOTAL     = false;
     Params.REFRACTIVE_GRADIENT  = false;
     Params.MODULATION_DEPTH     = false;
+    Params.SAVE_SEEDS           = false;
 
     // The file that the seeds are written to after calling 'Generate_RNG_seeds'.
     rng_seed_file = "./Data/seeds_for_exit.dat";
@@ -175,98 +176,23 @@ void
 MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int time)
 {
 
-    /// Ensure we have something to simulate.
-    ///
-    assert (MAX_NUM_PHOTONS > 0);
-    assert (NUM_THREADS > 0);
-    ///assert (exit_seeds.size() > 0);
-    /// and a medium in which to run the simulation.
-    ///
-    assert (medium != NULL);
-
-
     /// The logger is a singleton.  To bypass any problems with using singletons in a multi-threaded application
 	/// initialization occurs in main before any threads are spawned.
 	///
-    std::string exit_data_per_timestep = exit_data_file +
-                                         "_" +
-                                         boost::lexical_cast<std::string>(time) +
-                                         ".dat";
-    Logger::getInstance()->openExitFile(exit_data_per_timestep);
+    /// Save RNG seeds and/or exit data if set.
+    if (Params.SAVE_SEEDS)
+    {
+        Logger::getInstance()->createRNGSeedFile(rng_seed_file);
+    }
+    if (Params.DISPLACE || Params.REFRACTIVE_TOTAL || Params.REFRACTIVE_GRADIENT || Params.MODULATION_DEPTH)
+    {
+        std::string exit_data_per_timestep = exit_data_file +
+                                            "_" +
+                                            boost::lexical_cast<std::string>(time) +
+                                            ".dat";
+        Logger::getInstance()->openExitFile(exit_data_per_timestep);
+    }
 
-
-//    /// Run the simulation for each set of seeds that produced an exit photon.
-//    /// Seeds are handed off to threads until they are exhausted.  We don't want
-//    /// to generate an large amount of threads at one time though, otherwise throughput
-//    /// suffers.  So, we launch a thread group based on the number of processors on the
-//    /// machine, and consume the seeds until all photons have been launched.
-//    size_t i = 0;
-//    size_t k = 0;
-//    RNG_seed_vector::iterator iter = exit_seeds.begin();
-//
-//
-//    /// Only launch a group of threads at a time, based upon the number of cores on the machine.
-//    NUM_THREADS = 1;
-//    RNG_seed_vector *seeds[NUM_THREADS];
-//    RNGSeeds temp;
-//    boost::thread *threads[NUM_THREADS];
-//    Photon *photons[NUM_THREADS];
-//
-//    for (i = 0; i < NUM_THREADS; ++i)
-//    {
-////        seeds[i] = new RNG_seed_vector;
-////
-////        for (k = 0; k < (exit_seeds.size()/NUM_THREADS); k++, iter++)
-////        {
-////            temp.s1 = iter->s1;
-////            temp.s2 = iter->s2;
-////            temp.s3 = iter->s3;
-////            temp.s4 = iter->s4;
-////
-////            (seeds[i])->push_back(temp);
-////        }
-////        photons[i] = new Photon();
-////        threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
-////                                       exit_seeds.size()/NUM_THREADS, seeds[i],
-////                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
-//
-//        temp.s1 = rand() + 128*(i+1);
-//		temp.s2 = rand() + 128*(i+1);
-//		temp.s3 = rand() + 128*(i+1);
-//		temp.s4 = rand() + 128*(i+1);
-//		(seeds[i])->push_back(temp);
-//
-//		cout << temp.s1 << " " << temp.s2 << " " << temp.s3 << " " << temp.s4 << '\n';
-//        photons[i] = new Photon();
-//        threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
-//                                       exit_seeds.size()/NUM_THREADS, seeds[i],
-//                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
-//
-//
-//
-//    }
-//
-//
-//	// Join all created threads once they have done their work.
-//	//
-//	for (i = 0; i < NUM_THREADS; i++)
-//	{
-//        if ((threads[i])->joinable())
-//            (threads[i])->join();
-//	}
-//
-//    // Clean up memory.
-//    //
-//    for (size_t j = 0; j < NUM_THREADS; j++)
-//    {
-//        delete photons[j];
-//        delete threads[j];
-//        //delete seeds[j];
-//
-//        photons[j] = NULL;
-//        threads[j] = NULL;
-//        //seeds[j]   = NULL;
-//    }
 
     // Initialize the C++ RNG.
     srand(13);
@@ -288,9 +214,17 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
     {
         cout << "Displacement enabled\n";
     }
+    if (Params.REFRACTIVE_TOTAL)
+    {
+        cout << "Refractive total enabled\n";
+    }
     if (Params.MODULATION_DEPTH)
     {
         cout << "Modulation depth enabled\n";
+    }
+    if (Params.SAVE_SEEDS)
+    {
+        cout << "Saving seeds enabled\n";
     }
 
     for (size_t i = 0; i < THREAD_CNT; ++i)
@@ -309,10 +243,6 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
         threads[i] = new boost::thread(&Photon::injectPhoton, photons[i], medium,
                                        MAX_NUM_PHOTONS/THREAD_CNT, seeds[i],
                                        LaserInjectionCoords, Params);
-
-//		threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
-//                                       MAX_NUM_PHOTONS/THREAD_CNT, seeds[i],
-//                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_TOTAL, SAVE_SEEDS);
 
 //        threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
 //                                        exit_seeds.size()/NUM_THREADS, seeds[i],
@@ -343,7 +273,90 @@ MC_Boost::Run_seeded_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords
 
 
     cout << "... done\n";
-    cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";
+    if (Params.DISPLACE || Params.REFRACTIVE_TOTAL || Params.REFRACTIVE_GRADIENT || Params.MODULATION_DEPTH)
+    {
+        cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";
+    }
+    if (Params.SAVE_SEEDS)
+    {
+        cout << "Saved: " << Logger::getInstance()->Get_num_detected_seed_photons() << " seeds\n";
+    }
+    
+    
+    //    /// Run the simulation for each set of seeds that produced an exit photon.
+    //    /// Seeds are handed off to threads until they are exhausted.  We don't want
+    //    /// to generate an large amount of threads at one time though, otherwise throughput
+    //    /// suffers.  So, we launch a thread group based on the number of processors on the
+    //    /// machine, and consume the seeds until all photons have been launched.
+    //    size_t i = 0;
+    //    size_t k = 0;
+    //    RNG_seed_vector::iterator iter = exit_seeds.begin();
+    //
+    //
+    //    /// Only launch a group of threads at a time, based upon the number of cores on the machine.
+    //    NUM_THREADS = 1;
+    //    RNG_seed_vector *seeds[NUM_THREADS];
+    //    RNGSeeds temp;
+    //    boost::thread *threads[NUM_THREADS];
+    //    Photon *photons[NUM_THREADS];
+    //
+    //    for (i = 0; i < NUM_THREADS; ++i)
+    //    {
+    ////        seeds[i] = new RNG_seed_vector;
+    ////
+    ////        for (k = 0; k < (exit_seeds.size()/NUM_THREADS); k++, iter++)
+    ////        {
+    ////            temp.s1 = iter->s1;
+    ////            temp.s2 = iter->s2;
+    ////            temp.s3 = iter->s3;
+    ////            temp.s4 = iter->s4;
+    ////
+    ////            (seeds[i])->push_back(temp);
+    ////        }
+    ////        photons[i] = new Photon();
+    ////        threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
+    ////                                       exit_seeds.size()/NUM_THREADS, seeds[i],
+    ////                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
+    //
+    //        temp.s1 = rand() + 128*(i+1);
+    //		temp.s2 = rand() + 128*(i+1);
+    //		temp.s3 = rand() + 128*(i+1);
+    //		temp.s4 = rand() + 128*(i+1);
+    //		(seeds[i])->push_back(temp);
+    //
+    //		cout << temp.s1 << " " << temp.s2 << " " << temp.s3 << " " << temp.s4 << '\n';
+    //        photons[i] = new Photon();
+    //        threads[i] = new boost::thread(&Photon::TESTING, photons[i], medium,
+    //                                       exit_seeds.size()/NUM_THREADS, seeds[i],
+    //                                       LaserInjectionCoords, DISPLACE, REFRACTIVE_GRADIENT, SAVE_SEEDS);
+    //
+    //
+    //
+    //    }
+    //
+    //
+    //	// Join all created threads once they have done their work.
+    //	//
+    //	for (i = 0; i < NUM_THREADS; i++)
+    //	{
+    //        if ((threads[i])->joinable())
+    //            (threads[i])->join();
+    //	}
+    //
+    //    // Clean up memory.
+    //    //
+    //    for (size_t j = 0; j < NUM_THREADS; j++)
+    //    {
+    //        delete photons[j];
+    //        delete threads[j];
+    //        //delete seeds[j];
+    //
+    //        photons[j] = NULL;
+    //        threads[j] = NULL;
+    //        //seeds[j]   = NULL;
+    //    }
+    
+    
 }
 
 
