@@ -2824,18 +2824,7 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
  */
 void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 
-    /// ---------------------- JWJS -----------------------------------------------------
-    /// Only store data to disk over the time period given or for the first time step.
-    if (
-        (t_index != 1) &&
-        ((t_index < Parameters->GetStartTimeIndex()) || ((t_index > Parameters->GetEndTimeIndex()) && (Parameters->GetEndTimeIndex() != -1)))
-       )
-    {
-            return;
-    }
-    /// ----------------------------
-
-
+    if (t_index < Parameters->GetStartTimeIndex()) return;
 
     if (Parameters->IsStore_p_raw()) {
        p_sensor_raw_OutputStream->AddData(Get_p(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
@@ -2958,38 +2947,61 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 
         /// ----------------------- JWJS ------------------------------------------------------------
     	/// If we want the data to be stored, based upon the specified flags, we save it here.
+        /// NOTE:
+        /// - Because the acousto-optic simulation requires that displacement and refractive index values are updated
+        ///   each time step of the acoustic simulation, if they are enabled by the commandline flags, they are computed.
+        ///   It's only over a range of time steps that we want to save the data, so we make the check within each
+        ///   modulation mechanism whether or not the current time step fits within the window to store data.
+        ///
+    
     	if (Parameters->IsStore_refractive_x() || Parameters->IsStore_refractive_y() || Parameters->IsStore_refractive_z())
     	{
-            cout << "Storing refractive index values (x,y,z)\n";
     		Compute_refractive_index_data();
 
-        	refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-       		refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        	refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-            
+            /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
+            /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
+            if (((t_index >= Parameters->GetStartTimeIndex()) && (t_index <= Parameters->GetEndTimeIndex()) && (Parameters->GetEndTimeIndex() != -1))
+                || (t_index == 1))
+            {
+                cout << "Storing refractive index values (x,y,z)\n";
+                refractive_x_OutputStream->AddData(Get_refractive_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+                refractive_y_OutputStream->AddData(Get_refractive_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+                refractive_z_OutputStream->AddData(Get_refractive_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            }
 #ifdef DEBUG
             PrintMatrix(Get_refractive_x(), Parameters);
 #endif
-            
     	}
 
     	if (Parameters->IsStore_refractive_total())
     	{
-            cout << "Storing refractive index total\n";
     		Compute_refractive_index_data_total();
 
-    	    refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
+            /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
+            if (((t_index >= Parameters->GetStartTimeIndex()) && (t_index <= Parameters->GetEndTimeIndex()) && (Parameters->GetEndTimeIndex() != -1))
+                || (t_index == 1))
+            {
+                cout << "Storing refractive index total\n";
+                refractive_total_OutputStream->AddData(Get_refractive_total(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            }
         
    		}
 
     	if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
     	{
-            cout << "Storing displacement values (x,y,z)\n";
 	    	Compute_displacement_data();
 
-        	disp_x_OutputStream->AddData(Get_disp_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        	disp_y_OutputStream->AddData(Get_disp_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
-        	disp_z_OutputStream->AddData(Get_disp_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
+            /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
+            if (((t_index >= Parameters->GetStartTimeIndex()) && (t_index <= Parameters->GetEndTimeIndex()) && (Parameters->GetEndTimeIndex() != -1))
+                || (t_index == 1))
+            {
+                cout << "Storing displacement values (x,y,z)\n";
+                disp_x_OutputStream->AddData(Get_disp_x(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+                disp_y_OutputStream->AddData(Get_disp_y(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+                disp_z_OutputStream->AddData(Get_disp_z(), Get_sensor_mask_ind(), Get_Temp_1_RS3D().GetRawData());
+            }
         }
     /// --------------------------------
 
@@ -3002,6 +3014,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 /// ------------------------ JWJS ----------------------------------------------------------------
 void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data()
 {
+    cout << "Computing refractive index values (x,y,z)\n";
 
     float elasto_optical_coeff         = 0.0f;
     float rho0_val                     = 0.0f;
@@ -3120,6 +3133,8 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data()
 
 void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data_total()
 {
+    cout << "Computing refractive total values\n";
+    
     float total_density                = 0.0f;
     float elasto_optical_coeff         = 0.0f;
     float rho0_val                     = 0.0f;
@@ -3204,7 +3219,7 @@ void TKSpaceFirstOrder3DSolver::Compute_refractive_index_data_total()
 
 void TKSpaceFirstOrder3DSolver::Compute_displacement_data()
 {
-
+    cout << "Computing displacement data (x, y, z)\n";
 
     const float* ux_raw_data    = Get_ux_sgx().GetRawData();
     const float* uy_raw_data    = Get_uy_sgy().GetRawData();

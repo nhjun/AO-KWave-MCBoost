@@ -228,7 +228,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
     KSpaceSolver->FromAO_sim_PrintOutputHeader();
     KSpaceSolver->IterationTimeStart();
 	size_t k_wave_Nt = Parameters->Get_Nt();
-	k_wave_Nt = 952;
+	//k_wave_Nt = 952;
     for (KSpaceSolver->SetTimeIndex(0); KSpaceSolver->GetTimeIndex() < k_wave_Nt; KSpaceSolver->IncrementTimeIndex()){
 
         cout << ".......... Running k-Wave ........... ("
@@ -301,20 +301,20 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
             if (sim_refractive_grad)
             {
-                /// Check if we are saving the refracive index data in KSpaceSolver, which is based on a commandline flag.
-                /// If we are, we don't want to run the computation from here, as it will already
-                /// be done in KSpaceSolver if we are saving the data.  This eliminates the possiblity
-                /// of computing something twice, which could happen when monte-carlo needs the data
-                /// and the flag has been set to save data in KSpaceSolver.
-                if (!(Parameters->IsStore_refractive_x() ||
-                      Parameters->IsStore_refractive_y() ||
-                      Parameters->IsStore_refractive_z()))
-                {
-                    /// This is executed when the AO simulation needs refractive index changes, but
-                    /// the commandline flags were not made to save the refractive index data, as
-                    /// discussed above.
-                    KSpaceSolver->FromAO_sim_compute_refractive_index();
-                }
+//                /// Check if we are saving the refracive index data in KSpaceSolver, which is based on a commandline flag.
+//                /// If we are, we don't want to run the computation from here, as it will already
+//                /// be done in KSpaceSolver if we are saving the data.  This eliminates the possiblity
+//                /// of computing something twice, which could happen when monte-carlo needs the data
+//                /// and the flag has been set to save data in KSpaceSolver.
+//                if (!(Parameters->IsStore_refractive_x() ||
+//                      Parameters->IsStore_refractive_y() ||
+//                      Parameters->IsStore_refractive_z()))
+//                {
+//                    /// This is executed when the AO simulation needs refractive index changes, but
+//                    /// the commandline flags were not made to save the refractive index data, as
+//                    /// discussed above.
+//                    KSpaceSolver->FromAO_sim_compute_refractive_index();
+//                }
 
                 refractive_x = &(KSpaceSolver->FromAO_sim_Get_refractive_x());
                 refractive_y = &(KSpaceSolver->FromAO_sim_Get_refractive_y());
@@ -323,23 +323,24 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
             if (sim_refractive_total)
             {
-                /// Same reasoning as above.
-                if (!(Parameters->IsStore_refractive_total()))
-                {
-                    KSpaceSolver->FromAO_sim_compute_refractive_index_total();
-                }
+//                /// Same reasoning as above.
+//                if (!(Parameters->IsStore_refractive_total()))
+//                {
+//                    KSpaceSolver->FromAO_sim_compute_refractive_index_total();
+//                }
+                
                 refractive_total = &(KSpaceSolver->FromAO_sim_Get_refractive_total());
             }
 
             if (sim_displacement)
             {
-                /// Same reasoning as above.
-                if (!(Parameters->IsStore_disp_x() ||
-                      Parameters->IsStore_disp_y() ||
-                      Parameters->IsStore_disp_z()))
-                {
-                    KSpaceSolver->FromAO_sim_compute_displacement();
-                }
+//                /// Same reasoning as above.
+//                if (!(Parameters->IsStore_disp_x() ||
+//                      Parameters->IsStore_disp_y() ||
+//                      Parameters->IsStore_disp_z()))
+//                {
+//                    KSpaceSolver->FromAO_sim_compute_displacement();
+//                }
 
                 disp_x = &(KSpaceSolver->FromAO_sim_Get_disp_x());
                 disp_y = &(KSpaceSolver->FromAO_sim_Get_disp_y());
@@ -420,8 +421,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         	static size_t cnt = MC_time_step/Parameters->Get_dt();
             size_t curr_time = KSpaceSolver->GetTimeIndex();
         	if (
-                (((curr_time % cnt) == 0) && (curr_time > 0)) ||
-                ((curr_time >= 1) && (curr_time <= 2))
+                (((curr_time % cnt) == 0) && (curr_time > 0))
+                   //|| ((curr_time >= 940) && (curr_time <= 950))
                )
         	{
             	cout << ".......... Running MC-Boost ......... ";
@@ -483,9 +484,9 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
     size_t recorded_time_steps = -1;
 
     TRealMatrix *refractive_total = NULL;
-    TRealMatrix *refractive_x = NULL;
-    TRealMatrix *refractive_y = NULL;
-    TRealMatrix *refractive_z = NULL;
+    //TRealMatrix *refractive_x = NULL;
+    //TRealMatrix *refractive_y = NULL;
+    //TRealMatrix *refractive_z = NULL;
 
     TRealMatrix *disp_x = NULL;
     TRealMatrix *disp_y = NULL;
