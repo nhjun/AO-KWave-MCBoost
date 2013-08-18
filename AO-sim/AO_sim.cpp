@@ -271,13 +271,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
 
 
-        //-- store the initial pressure at the first time step --//
-        /// Here is where the computation for the refractive index, displacements,
-        /// and all the values kWave needs, takes place if commandline flags for saving data hvave been set.
-        KSpaceSolver->FromAO_sim_StoreSensorData();
-
-
-        KSpaceSolver->FromAO_sim_PrintStatistics();
+        
 
 
 
@@ -313,7 +307,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 //                    /// This is executed when the AO simulation needs refractive index changes, but
 //                    /// the commandline flags were not made to save the refractive index data, as
 //                    /// discussed above.
-//                    KSpaceSolver->FromAO_sim_compute_refractive_index();
+
+                KSpaceSolver->FromAO_sim_compute_refractive_index();
 //                }
 
                 refractive_x = &(KSpaceSolver->FromAO_sim_Get_refractive_x());
@@ -326,7 +321,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 //                /// Same reasoning as above.
 //                if (!(Parameters->IsStore_refractive_total()))
 //                {
-//                    KSpaceSolver->FromAO_sim_compute_refractive_index_total();
+
+                KSpaceSolver->FromAO_sim_compute_refractive_index_total();
 //                }
                 
                 refractive_total = &(KSpaceSolver->FromAO_sim_Get_refractive_total());
@@ -339,7 +335,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 //                      Parameters->IsStore_disp_y() ||
 //                      Parameters->IsStore_disp_z()))
 //                {
-//                    KSpaceSolver->FromAO_sim_compute_displacement();
+
+                KSpaceSolver->FromAO_sim_compute_displacement();
 //                }
 
                 disp_x = &(KSpaceSolver->FromAO_sim_Get_disp_x());
@@ -438,6 +435,15 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         ///
         /// --------------------------- End Monte-Carlo Simulation ------------------------------------------------------
 
+        
+        //-- store the initial pressure at the first time step --//
+        /// Here is where the computation for the refractive index, displacements,
+        /// and all the values kWave needs, takes place if commandline flags for saving data hvave been set.
+        KSpaceSolver->FromAO_sim_StoreSensorData();
+        
+        
+        KSpaceSolver->FromAO_sim_PrintStatistics();
+        
     }
 
 

@@ -2824,7 +2824,11 @@ void TKSpaceFirstOrder3DSolver::PostProcessing(){
  */
 void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 
-    if (t_index < Parameters->GetStartTimeIndex()) return;
+    /// -------------------------------- JWJS ---------------------------------
+    /// If it's the first time coming here (i.e. t_index == 1), we want to store
+    /// data for the non-modulated speckle pattern formation.
+    if ((t_index < Parameters->GetStartTimeIndex()) && (t_index != 1)) return;
+    /// --------------------------------------
 
     if (Parameters->IsStore_p_raw()) {
        p_sensor_raw_OutputStream->AddData(Get_p(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
@@ -2956,7 +2960,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     
     	if (Parameters->IsStore_refractive_x() || Parameters->IsStore_refractive_y() || Parameters->IsStore_refractive_z())
     	{
-    		Compute_refractive_index_data();
+    		///Compute_refractive_index_data();
 
             /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
             /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
@@ -2975,7 +2979,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 
     	if (Parameters->IsStore_refractive_total())
     	{
-    		Compute_refractive_index_data_total();
+    		///Compute_refractive_index_data_total();
 
             /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
             /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
@@ -2990,7 +2994,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
 
     	if (Parameters->IsStore_disp_x() || Parameters->IsStore_disp_y() || Parameters->IsStore_disp_z())
     	{
-	    	Compute_displacement_data();
+	    	///Compute_displacement_data();
 
             /// Check if the current time step falls within the window of time which data is supposed to be saved (set via commandline), or if this is
             /// the first time step (need non-modulated speckle pattern when ultrasound has not made its way into the medium yet).
