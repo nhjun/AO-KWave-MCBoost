@@ -170,8 +170,10 @@ public:
             {
                 da_boost->Simulate_displacement(false);
                 da_boost->Simulate_refractive_gradient(false);
+                da_boost->Simulate_refractive_total(false);
                 da_boost->Save_RNG_seeds(true);
-                da_boost->Generate_RNG_seeds(m_medium, m_Laser_injection_coords);
+                da_boost->Use_RNG_seeds(false);
+                da_boost->Generate_MC_RNG_seeds(m_medium, m_Laser_injection_coords);
             }
     
     
@@ -202,10 +204,11 @@ public:
             {
                 da_boost->Simulate_displacement(false);
                 da_boost->Simulate_refractive_gradient(false);
+                da_boost->Simulate_refractive_total(false);
                 da_boost->Save_RNG_seeds(false);
+                da_boost->Use_RNG_seeds(true);
                 static int i = 0;
-                i++;
-                da_boost->Run_seeded_MC_sim_timestep(m_medium, m_Laser_injection_coords, i);
+                da_boost->Run_MC_sim_timestep(m_medium, m_Laser_injection_coords, ++i);
             }
     
     void    Test_Read_HDF5_File(TParameters * Parameters);

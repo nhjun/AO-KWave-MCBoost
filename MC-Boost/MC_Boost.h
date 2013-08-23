@@ -55,7 +55,7 @@ public:
 
     
     // Generates RNG seeds for photon paths that were detected.
-    void    Generate_RNG_seeds(Medium *m, coords LaserInjectionCoords);
+    void    Generate_MC_RNG_seeds(Medium *m, coords LaserInjectionCoords);
     
     
     // Load all the seeds that produced paths that left the medium through the exit aperture.
@@ -63,10 +63,10 @@ public:
     
     
     /// Run the monte-carlo simulation using the produced seeds.
-    void    Run_seeded_MC_sim_timestep(Medium *m, coords LaserInjectionCoords, int timestep);
+    void    Run_MC_sim_timestep(Medium *m, coords LaserInjectionCoords, int timestep);
     
     
-    /// Decide which mechanisms (if any at all) of AO to simulate.
+    /// Set which mechanisms (if any at all) of acousto-optics to simulate.
     void    Simulate_displacement(bool flag)        {Params.DISPLACE            = flag;};
     void    Simulate_refractive_gradient(bool flag) {Params.REFRACTIVE_GRADIENT = flag;};
     void    Simulate_refractive_total(bool flag)    {Params.REFRACTIVE_TOTAL    = flag;};
@@ -74,6 +74,9 @@ public:
     
     /// Set whether or not to save seeds for this run.
     void    Save_RNG_seeds(bool flag)               {Params.SAVE_SEEDS = flag;};
+    
+    /// Set whether or not to use seeds that were previously generated.
+    void    Use_RNG_seeds(bool flag)                {Params.USE_SEEDS = flag;};
 
 
     

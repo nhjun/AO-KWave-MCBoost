@@ -43,6 +43,7 @@ typedef struct {
     bool REFRACTIVE_GRADIENT;
     bool MODULATION_DEPTH;
     bool SAVE_SEEDS;
+    bool USE_SEEDS;
 } MC_Parameters;
 
 
@@ -143,13 +144,14 @@ public:
 	// Plot the photon's path.
 	void	plotPath(void);
 	
-	// Inject the photon into the medium the given number of iterations.
-	void	injectPhoton(Medium * m, const int num_iterations, RNG_seed_vector *rng, coords &laser,
-                         MC_Parameters &Params);
+	/// Simulate photons in the medium.  This object is responsible for running 'num_iterations' of
+    /// photons.
+    /// NOTE:
+    /// - This is the function call given to the boost thread object.
+	void	Inject_photon(Medium * m, const int num_iterations, RNG_seed_vector *rng, coords &laser,
+                          MC_Parameters &Params);
 
 
-//	void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &c,
-//                    bool DISPLACE, bool REFRACTIVE_GRADIENT, bool SAVE_RNG_SEEDS);
     void	TESTING(Medium * m, const int iter, RNG_seed_vector *rng_seeds, coords &laser,
                     MC_Parameters &Params);
 

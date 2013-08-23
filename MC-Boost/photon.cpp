@@ -124,8 +124,8 @@ void Photon::initTrajectory(void)
 // 2) Drop - drop weight due to absorption
 // 3) Spin - update trajectory accordingly
 // 4) Roulette - test to see if photon should live or die.
-void Photon::injectPhoton(Medium * medium, const int num_iterations, RNG_seed_vector *rng_seeds, coords &laser,
-                          MC_Parameters &Params)
+void Photon::Inject_photon(Medium * medium, const int num_iterations, RNG_seed_vector *rng_seeds, coords &laser,
+                           MC_Parameters &Params)
 {
 
 	// Before propagation we set the medium which will be used by the photon.
@@ -211,9 +211,6 @@ void Photon::propagatePhoton(const int iterations)
 		/// finding its way through the exit aperture.
 		if ((iteration_seeds->size() == iterations))
 		{
-
-			///RNGSeeds blah = (*iteration_seeds)[1];
-			///unsigned int blah2 = (*iteration_seeds)[i].s1;
 			/// Case where we want each iteration to contain a RNG from new seeds.
 			/// That is, each iteration will contain, from the start of photon propagation,
 			/// seeds that had caused this photon to hop() until it exited the detection aperture.
@@ -242,7 +239,6 @@ void Photon::propagatePhoton(const int iterations)
 
         if (SAVE_RNG_SEEDS || SIM_MODULATION_DEPTH)
         {
-			assert(RNG_generator != NULL);
             exit_seeds = RNG_generator->getState();
         }
 

@@ -180,16 +180,19 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
     da_boost->Simulate_displacement(false);
   
     
-    /// Not saving seeds, we are running the AO_sim, so set to false.
-    da_boost->Save_RNG_seeds(true);
+    /// Should not be here.
+    da_boost->Save_RNG_seeds(false);
+    da_boost->Use_RNG_seeds(true);
     
     size_t time = 1;
     
     cout << ".......... Running MC-Boost ......... ";
     cout.flush();
-    da_boost->Run_seeded_MC_sim_timestep(m_medium,
-                                         m_Laser_injection_coords,
-                                         time);
+    
+    
+    da_boost->Run_MC_sim_timestep(m_medium,
+                                  m_Laser_injection_coords,
+                                  time);
     
 }
 
@@ -425,7 +428,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
             	cout << ".......... Running MC-Boost ......... ";
             	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
                 cout.flush();
-            	da_boost->Run_seeded_MC_sim_timestep(m_medium,
+            	da_boost->Run_MC_sim_timestep(m_medium,
             	                                     m_Laser_injection_coords,
             	                                     KSpaceSolver->GetTimeIndex());
         	}
@@ -639,7 +642,7 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
         /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
         /// XXX:
         /// - Needs testing!!!
-        da_boost->Run_seeded_MC_sim_timestep(m_medium,
+        da_boost->Run_MC_sim_timestep(m_medium,
                                              m_Laser_injection_coords,
                                              time_step);
 
