@@ -181,8 +181,8 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
   
     
     /// Should not be here.
-    da_boost->Save_RNG_seeds(false);
-    da_boost->Use_RNG_seeds(true);
+    da_boost->Save_RNG_seeds(true);
+    da_boost->Use_RNG_seeds(false);
     
     size_t time = 1;
     
@@ -414,6 +414,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
         	/// Not saving seeds, we are running the AO_sim, so set to false.
         	da_boost->Save_RNG_seeds(false);
+            da_boost->Use_RNG_seeds(true);
 
 
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
@@ -429,8 +430,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
             	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
                 cout.flush();
             	da_boost->Run_MC_sim_timestep(m_medium,
-            	                                     m_Laser_injection_coords,
-            	                                     KSpaceSolver->GetTimeIndex());
+                                              m_Laser_injection_coords,
+                                              KSpaceSolver->GetTimeIndex());
         	}
 		} // END if (sim_refractive_grad || sim_displacement )
 

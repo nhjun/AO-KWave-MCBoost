@@ -230,6 +230,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     ///
     if (Params.USE_SEEDS)
     {
+        cout << "\nUsing seeds enabled\n";
         /// This is the choice of loading in precomputed seeds, which can then be used in a highly
         /// threaded scenario.
         
