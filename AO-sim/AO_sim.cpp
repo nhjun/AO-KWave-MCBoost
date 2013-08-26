@@ -799,6 +799,7 @@ AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
 {
     assert(m_medium != NULL);
 
+    /*
     /// Remove error from significant digits.  Just truncate value at the defined decimal place.
     double bottom_x_axis = VectorMath::truncate_to_places(m_medium->Get_X_bound(), 6);
     double top_x_axis = 0.0f;
@@ -897,7 +898,7 @@ AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
     }
 
 
-
+    */
 
     m_medium->addDetector(new CircularDetector(props));
 
