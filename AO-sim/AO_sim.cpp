@@ -793,6 +793,9 @@ AO_Sim::Print_MC_sim_params()
 void
 AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
 {
+
+
+    /*
     assert(m_medium != NULL);
 
     /// Remove error from significant digits.  Just truncate value at the defined decimal place.
@@ -818,7 +821,7 @@ AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
     double z_coord_minus_radius = VectorMath::truncate_to_places((props.z_coord - props.radius), 6);
     double z_coord = VectorMath::truncate_to_places(props.z_coord, 6);
 
-
+	
 
     /// Ensure the detector fits in the medium.
     /// Note: Because the detector is a circular 2-D plane, we need to
@@ -839,7 +842,7 @@ AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
             cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
             exit(EXIT_FAILURE);
         }
-        if ((bottom_z_axis < z_coord) || (top_z_axis > z_coord))    // xz_plane
+        if ((bottom_z_axis < z_coord) || (top_z_axis-threshold > z_coord))    // xz_plane
         {
             cerr << "!!! Error: Circular detector does not fit in medium (z-axis)\n";
             cerr << "AO_Sim::Add_circular_detector_MC_medium()\n";
@@ -892,8 +895,7 @@ AO_Sim::Add_circular_detector_MC_medium(Detector_Properties &props)
         }
     }
 
-
-
+    */
 
     m_medium->addDetector(new CircularDetector(props));
 

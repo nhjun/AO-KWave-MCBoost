@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 100e3;
+const int MAX_PHOTONS = 5e6;
 
 // Testing routines.
 void testVectorMath(void);
@@ -689,7 +689,7 @@ int main(int argc, char** argv)
         ///   and mu_s dimensions from cm^-1 to m^-1.  Doing it here is the better choice
         ///   since it only happens once, otherwise it must be done every scattering
         ///   event in the monte-carlo simulation, which is typically ~1000 x number_of_photons.
-    	layer_props.mu_a        = 1.0f;             // cm^-1
+    	layer_props.mu_a        = 0.0010f;             // cm^-1
     	layer_props.mu_s        = 70.0f;            // cm^-1
         layer_props.mu_a = layer_props.mu_a * 100;  // m^-1
         layer_props.mu_s = layer_props.mu_s * 100;  // m^-1
@@ -705,7 +705,7 @@ int main(int argc, char** argv)
     	/// NOTE: Centering the detector on the x-y plane.
     	Detector_Properties detector_props;
     	detector_props.radius = 0.0025;
-    	detector_props.x_coord = 0.0145;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
+    	detector_props.x_coord = 0.0225;    //  Upon inspection, the US focus is located here.  //AO_simulation.Get_MC_Xaxis_depth()/2;
 
         // FOR DEBUGGING
         //detector_props.radius = 0.00025;

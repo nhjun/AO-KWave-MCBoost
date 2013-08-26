@@ -11,9 +11,9 @@ PML_Y_SIZE = 10;            % [grid points]
 PML_Z_SIZE = 10;            % [grid points]
 
 % set total number of grid points not including the PML
-Nx = 729;
-Ny = 384;
-Nz = 288;
+Nx = 1024;
+Ny = 768;
+Nz = 512;
 
 
 % calculate the spacing between the grid points.
@@ -22,11 +22,11 @@ Nz = 288;
 % Definitions to match the SL3323 MyLAB probe
 elevation_height = 5e-3;
 pitch            = 0.245e-3;
-SL3323_active_elements  = 64/8;
+SL3323_active_elements  = 64;
 kerf = 0;                           % Assume zero kerf.
 
 % dx = x/Nx                  % [m]
-dx = pitch/4;                % [m]
+dx = pitch/8;                % [m]
 dy = dx;                     % [m]
 dz = dx;                     % [m]
 
@@ -100,10 +100,11 @@ dt = cfl*dx/c0;
 % can be done.  That is if the CFL safe dt is larger than 10 ns, we can
 % reduce it without worrying about accuracy (in fact it becomes more
 % accurate).
-if (dt > 10e-9)
-    dt = 10e-9;
+if (dt > 5e-9)
+    display('Setting dt = ');
+    dt = 5e-9
 else
-    display('Cannot set dt=10 ns');
+    display('Cannot set dt=5 ns');
     display('Using default: ')
     dt
 end
@@ -177,7 +178,7 @@ BEAD_A_centered = round([(PML_X_SIZE+5), ...                                    
                          (Ny/2 - transducer_width/2), ...                           % y-axis
                          (PML_Z_SIZE + 6e-3/dz  + transducer.element_length/2)]);   % z-axis
 % Assign the transducer position.
-transducer.position = BEAD_A_centered;
+transducer.position = MIDDLE_of_medium;
 
 
 % properties used to derive the beamforming delays
@@ -279,7 +280,7 @@ if (PA_GUIDED_FOCUS)
     PA_file = char(PA_file(1,end));                     % Convert last cell to char array
     filename = ['MyLAB_', PA_file(1:end-4), '_INPUT', '.h5'];     % Form new file name
 else
-    filename = ['MyLAB_Fixed_Focus_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
+    filename = ['MyLAB_FF_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
 end
 kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename, input_args{:});
 
