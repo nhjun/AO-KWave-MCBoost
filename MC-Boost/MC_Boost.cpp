@@ -234,8 +234,15 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         /// This is the choice of loading in precomputed seeds, which can then be used in a highly
         /// threaded scenario.
         
-        /// Load in the precomputed seeds.
-        Load_exit_RNG_seeds();
+        /// Check to see if the seeds have already been loaded.  This function gets called many times
+        /// during an acousto-optic simulation and we don't want to load duplicate seeds, essentially
+        /// simulating the same photon bundle path.  So we check if 'exit_seeds' are empty (if so load)
+        /// or have already been loaded in from disk (i.e. non-zero size).
+        if (exit_seeds.size() != 0)
+        {
+            /// Load in the precomputed seeds.
+            Load_exit_RNG_seeds();
+        }
         
         /// To overcome the problem of continously spawning and killing threads (large overhead), we simply divide
         /// all of the seeds evenly between processor cores.  As an example, we saved 10K seeds (i.e. 10K photon bundles)
