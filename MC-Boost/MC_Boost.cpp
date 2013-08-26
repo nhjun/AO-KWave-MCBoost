@@ -238,7 +238,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         /// during an acousto-optic simulation and we don't want to load duplicate seeds, essentially
         /// simulating the same photon bundle path.  So we check if 'exit_seeds' are empty (if so load)
         /// or have already been loaded in from disk (i.e. non-zero size).
-        if (exit_seeds.size() != 0)
+        if (exit_seeds.size() == 0)
         {
             /// Load in the precomputed seeds.
             Load_exit_RNG_seeds();
