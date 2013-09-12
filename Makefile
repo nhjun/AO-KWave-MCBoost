@@ -71,11 +71,12 @@ else
 LINKING = DYNAMIC
 endif
 
+LINKING = DYNAMIC
+
 #set up paths: FFT_DIR for FFTW or MKL for MKL
 FFT_DIR=/usr/local
-MKL_DIR=/opt/intel/composer_xe_2011_sp1/mkl
 ifeq ($(OS), Linux)
-HDF5_DIR=/usr/local/hdf5
+HDF5_DIR=/usr/local
 else
 HDF5_DIR=/Users/betty/Desktop/Software/hdf5-1.8.10/hdf5
 endif
@@ -86,7 +87,7 @@ endif
 
 ############################## GNU g++ + FFTW ###################################
 ifeq ($(COMPILER),GNU)
-  CXX	   = /usr/local/bin/g++
+  CXX	   = /usr/bin/g++
 
   CPU_FLAGS = -msse4.2 -m64 -mtune=native
 
@@ -98,12 +99,12 @@ ifeq ($(COMPILER),GNU)
 
   # CFLAGS for running 
   #------------------------
-  #CXXFLAGS = -O3 -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
+  CXXFLAGS = -O3 -mtune=native -fopenmp $(CPU_FLAGS) -ffast-math -fassociative-math -Wall \
 		     -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
   
   # CFLAGS for debugging
   #------------------------
-  CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
+  #CXXFLAGS = -O0 -fopenmp $(CPU_FLAGS) -Wall -g -I$(HDF5_DIR)/include -I$(FFT_DIR)/include -I .
 
   ifeq ($(LINKING),STATIC)
 
@@ -115,6 +116,7 @@ ifeq ($(COMPILER),GNU)
 		   $(HDF5_DIR)/lib/libhdf5.a 		\
 		   /usr/local/lib/libboost_thread.a	\
 		   /usr/local/lib/libboost_system.a	\
+		   -ldl					\
 	   	   -lz
     else	
 	LDFLAGS  = -fopenmp $(CPU_FLAGS) -L$(HDF5_DIR)/lib -L$(FFT_DIR)/lib

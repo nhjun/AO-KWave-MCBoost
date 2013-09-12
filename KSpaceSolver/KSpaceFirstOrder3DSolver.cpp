@@ -2831,6 +2831,7 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
     /// --------------------------------------
 
     if (Parameters->IsStore_p_raw()) {
+        cout << "Storing raw pressure values (x,y,z)\n";
        p_sensor_raw_OutputStream->AddData(Get_p(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
     }
 
@@ -2839,13 +2840,11 @@ void TKSpaceFirstOrder3DSolver::StoreSensorData(){
         ux_sensor_raw_OutputStream->AddData(Get_ux_sgx(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
         uy_sensor_raw_OutputStream->AddData(Get_uy_sgy(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
         uz_sensor_raw_OutputStream->AddData(Get_uz_sgz(),Get_sensor_mask_ind(),Get_Temp_1_RS3D().GetRawData());
-
-
     }
 
 
 
-    if (Parameters->IsStore_p_max()){
+    if (Parameters->IsStore_p_max()) {
 
          const float * p           = Get_p().GetRawData();
                float * p_max       = Get_p_sensor_max().GetRawData();

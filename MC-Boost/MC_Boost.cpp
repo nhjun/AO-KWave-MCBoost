@@ -300,7 +300,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     }
     else
     {
-        /// Do not load any sees, simply run and produce them as normal.
+        /// Do not load any seeds, simply run and produce them as normal.
         /// NOTE:
         /// - Not guaranteed to produce uncorrelated streams of "random" numbers from the RNG.
         
