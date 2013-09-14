@@ -227,6 +227,12 @@ public:
     
     
     /// ------------------------ JWJS --------------------------------------------------------------------------------------
+    /// Is --save_seeds specified at the command line
+    bool IsStore_seeds()                          const {return CommandLinesParameters.IsStore_seeds();};
+
+    /// Is --load_seeds specified at the command line
+    bool IsLoad_seeds()                           const {return CommandLinesParameters.IsLoad_seeds();};
+
     /// Is --modulation_depth specified at the command line
     bool IsStore_modulation_depth()               const {return CommandLinesParameters.IsStore_modulation_depth();};
     

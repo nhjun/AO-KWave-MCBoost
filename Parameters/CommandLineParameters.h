@@ -172,6 +172,11 @@ public:
     std::string GetInputFileName()      const {return InputFileName;};    
     /// Get output file name
     std::string GetOutputFileName()     const {return OutputFileName;};
+
+    /// ------------------------------- JWJS --------------------------------------------------
+    /// Get input file name for RNG seeds. Used for loading seeds in monte-carlo simulation.
+    std::string GetRNGSeedsFileName()   const {return InputRNGSeedsFileName;};
+    /// ------------------------------------
     
     /// Is --benchmark flag set?
     bool IsBenchmarkFlag()              const {return BenchmarkFlag;};
@@ -223,6 +228,12 @@ public:
     
     
     /// ------------------- JWJS ------------------------------------
+    /// Is --save_seeds set
+    bool IsStore_seeds()           const {return Store_seeds;};
+
+    /// Is --load_seeds set
+    bool IsLoad_seeds()                 const {return Load_seeds;};
+
     /// Is --modulation_depth set
     bool IsStore_modulation_depth()     const {return Store_modulation_depth;};
     
@@ -308,6 +319,14 @@ private:
     
     
     /// -------------------------- JWJS --------------------------------------------
+    /// Store the RNG seeds used in monte-carlo simulation.
+    bool        Store_seeds;
+
+    /// Use RNG seeds from a previous run of the monte-carlo simulation.
+    bool        Load_seeds;
+    /// Input file name for RNG seeds
+    std::string InputRNGSeedsFileName;
+
     /// Store the modulation depth (tagged vs. untagged photons)
     bool        Store_modulation_depth;
     
@@ -320,11 +339,11 @@ private:
     /// Store index of refraction values of the z-component
     bool        Store_refractive_z;
     
-    /// Store displacement along x-axis;
+    /// Store displacement along x-axis
     bool        Store_disp_x;
-    /// Store displacement along y-axis;
+    /// Store displacement along y-axis
     bool        Store_disp_y;
-    /// Store displacement along z-axis;
+    /// Store displacement along z-axis
     bool        Store_disp_z;
     
                         /// Options to decide what is run, via the commandline ///

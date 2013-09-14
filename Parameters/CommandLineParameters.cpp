@@ -60,6 +60,8 @@ TCommandLineParameters::TCommandLineParameters() :
         Store_u_raw(false), Store_u_rms(false), Store_u_max(false), Store_u_final(false),
         Store_I_avg(false), Store_I_max(false),
         /// ------------------- JWJS ----------------------
+        Store_seeds(false), Load_seeds(false),
+        Store_modulation_depth(false),
         Store_refractive_total(false), Store_refractive_x(false), Store_refractive_y(false), Store_refractive_z(false),
         Store_disp_x(false), Store_disp_y(false), Store_disp_z(false),
         /// -------------------------
@@ -124,16 +126,19 @@ void TCommandLineParameters::PrintUsageAndExit(){
  printf("  --I_max                         : Store max of intensity\n");
  printf("\n");
  /// --------------------- JWJS ---------------------------------------------------------------------
- printf(" --modulation-depth               : Save the optical path lengths to disk for comparison\n");
+ printf(" --save_seeds                     : Save the RNG seeds that created photon paths that were detected\n");
+ printf(" --load_seeds <input_file_name>   : Load RNG seeds to use for photon propagation\n");
  printf("\n");
- printf("  -n                              : Store index of refraction\n");
+ printf(" --modulation_depth               : Save the optical path lengths to disk for comparison\n");
+ printf("\n");
+ printf("  --n                              : Store index of refraction\n");
  printf("                                       (all axial components nx, ny, nz)\n");
  printf("  --refractive_total              : Store the norm of the index of refraction\n");
  printf("  --refractive_x                  : Store the x-component of the index of refraction\n");
  printf("  --refractive_y                  : Store the y-component of the index of refraction\n");
  printf("  --refractive_z                  : Store the z-component of the index of refraction\n");
  printf("\n");
- printf("  -d                              : Store displacements\n");
+ printf("  --d                              : Store displacements\n");
  printf("                                       (all axial components disp_x, disp_y, disp_z\n");
  printf("  --disp_x                        : Store displacement along x-axis\n");
  printf("  --disp_y                        : Store displacement along y-axis\n");
@@ -190,6 +195,9 @@ void TCommandLineParameters::PrintSetup(){
     printf("  Store I_max           %d\n", Store_I_max);
     printf("\n");
     /// ---------------- JWJS ----------------------------------------------------
+    printf("  Save seeds                      %d\n", Store_seeds);
+    printf("  Load seeds                      %d\n", Load_seeds);
+    printf("\n");
     printf("  Store modulation depth          %d\n", Store_modulation_depth);
     printf("\n");
     printf("  Store refractive_total          %d\n", Store_refractive_total);
@@ -240,6 +248,9 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
         { "I_max", no_argument, NULL, 0 },
 
         /// ---------------- JWJS -----------------------
+        { "save_seeds", no_argument, NULL, 0},
+        { "load_seeds", required_argument, NULL, 0},
+
         { "modulation_depth", no_argument, NULL, 0},
 
         { "n", no_argument, NULL, 'n'},
@@ -411,6 +422,13 @@ void TCommandLineParameters::ParseCommandLine(int argc, char** argv){
                     Store_I_max = true;
                 } else
                /// -------------------- JWJS -----------------------------
+                if( strcmp( "save_seeds", longOpts[longIndex].name ) == 0) {
+                    Store_seeds = true;
+                } else
+                if( strcmp( "load_seeds", longOpts[longIndex].name ) == 0) {
+                    Load_seeds = true;
+                    InputRNGSeedsFileName = optarg;
+                } else
                 if( strcmp( "modulation_depth", longOpts[longIndex].name ) == 0) {
                     Store_modulation_depth = true;
                 } else

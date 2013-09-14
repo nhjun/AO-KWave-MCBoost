@@ -680,13 +680,11 @@ int main(int argc, char** argv)
         /// NOTE:
         /// - So that the step size calculated in Photon::Hop() matches with the dimensions
         ///   of everything else used in the simulation, we convert the commonly used mu_a
-        ///   and mu_s dimensions from cm^-1 to m^-1.  Doing it here is the better choice
-        ///   since it only happens once, otherwise it must be done every scattering
-        ///   event in the monte-carlo simulation, which is typically ~1000 x number_of_photons.
-    	layer_props.mu_a        = 0.0010f;             // cm^-1
-    	layer_props.mu_s        = 70.0f;            // cm^-1
-        layer_props.mu_a = layer_props.mu_a * 100;  // m^-1
-        layer_props.mu_s = layer_props.mu_s * 100;  // m^-1
+        ///   and mu_s dimensions from cm^-1 to m^-1.
+        layer_props.mu_a        = 0.0010f;              // cm^-1
+        layer_props.mu_s        = 70.0f;                // cm^-1
+        layer_props.mu_a = layer_props.mu_a * 100;      // m^-1
+        layer_props.mu_s = layer_props.mu_s * 100;      // m^-1
         
     	layer_props.refractive_index = 1.33f;
     	layer_props.anisotropy  = 0.9f;
@@ -723,19 +721,8 @@ int main(int argc, char** argv)
 		AO_simulation.Set_MC_time_step(mc_step);
 
 
-
-    	/// Run the monte-carlo simulation once, to save seeds, that produced paths,
-    	/// that made it through the exit aperture.
-    	/// FIXME:
-    	/// - Using seeds is producing an enormous slow down.  Need to debug why this is happening.
-    	///   Turned off for now.
-    	///AO_simulation.Generate_exit_seeds();
-    	///AO_simulation.Load_generated_seeds();
-
     	/// Display the monte-carlo simulation parameters
-		/// Due to hyper-threading, boost see's 8 possible threads (i7 architecture).
-		/// Only want to run 4 hardware threads.
-		const size_t hardware_threads = 1;
+        const size_t hardware_threads = 16;
 		///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
 		AO_simulation.Set_num_MC_threads(hardware_threads);
 		AO_simulation.Print_MC_sim_params();

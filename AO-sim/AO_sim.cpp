@@ -180,16 +180,15 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
     da_boost->Simulate_displacement(false);
   
     
-    /// Should not be here.
-    da_boost->Save_RNG_seeds(true);
-    da_boost->Use_RNG_seeds(false);
+    /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
+    Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+    Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
+
     
-    size_t time = 1;
-    
-    cout << ".......... Running MC-Boost ......... ";
+    cout << "............... Running MC-Boost .............. \n";
     cout.flush();
     
-    
+    size_t time = 1;
     da_boost->Run_MC_sim_timestep(m_medium,
                                   m_Laser_injection_coords,
                                   time);
@@ -412,9 +411,9 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                                                                     da_boost->Simulate_displacement(false);
             }
 
-        	/// Not saving seeds, we are running the AO_sim, so set to false.
-        	da_boost->Save_RNG_seeds(false);
-            da_boost->Use_RNG_seeds(true);
+            /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
+            Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+            Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
 
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
@@ -426,7 +425,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                    //|| ((curr_time >= 940) && (curr_time <= 950))
                )
         	{
-            	cout << ".......... Running MC-Boost ......... ";
+                cout << "............. Running MC-Boost ........... ";
             	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
                 cout.flush();
             	da_boost->Run_MC_sim_timestep(m_medium,
@@ -504,7 +503,7 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
 
 
     THDF5_File& HDF5_OutputFile = Parameters->HDF5_OutputFile;
-    THDF5_File& HDF5_InputFile  = Parameters->HDF5_InputFile;
+    //THDF5_File& HDF5_InputFile  = Parameters->HDF5_InputFile;
 
 
     long int Nx, Ny, Nz;
@@ -632,20 +631,27 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
             ///PrintMatrix(m_medium, Parameters);
 
             /// Zero out the matrices for the next read in from the HDF5 file.
-            disp_x->ZeroMatrix();
-            disp_y->ZeroMatrix();
-            disp_z->ZeroMatrix();
+            //disp_x->ZeroMatrix();
+            //disp_y->ZeroMatrix();
+            //disp_z->ZeroMatrix();
 
 
         }
+
+        /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
+        Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+        Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
         int time_step = i;
         /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
         /// XXX:
         /// - Needs testing!!!
+        cout << "............. Running MC-Boost ........... ";
+        cout << "(time step: " << time_step << ")\n";
+        cout.flush();
         da_boost->Run_MC_sim_timestep(m_medium,
-                                             m_Laser_injection_coords,
-                                             time_step);
+                                      m_Laser_injection_coords,
+                                      time_step);
 
     }/// end FOR LOOP
 

@@ -41,7 +41,7 @@ MC_Boost::MC_Boost(void)
     // The file that the seeds are written to after calling 'Generate_RNG_seeds'.
     rng_seed_file = "./Data/seeds_for_exit.dat";
 
-    /// Holds data collected when a photon exits through the aperture.
+    /// Holds data collected when a photon exits through the detection aperture.
     exit_data_file = "./Data/photon-exit-data";
 }
 
@@ -230,7 +230,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     ///
     if (Params.USE_SEEDS)
     {
-        cout << "\nUsing seeds enabled\n";
+        cout << "Using seeds enabled\n";
         /// This is the choice of loading in precomputed seeds, which can then be used in a highly
         /// threaded scenario.
         
@@ -359,7 +359,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     
     
     /// Notify the user of what was detected if any of the acousto-optics mechanisms were turned on.
-    cout << "... done\n";
+    cout << "... MC-Boost done\n";
     if (Params.DISPLACE || Params.REFRACTIVE_TOTAL || Params.REFRACTIVE_GRADIENT || Params.MODULATION_DEPTH)
     {
         cout << "Detected: " << Logger::getInstance()->Get_num_exited_photons() << " photons\n";
@@ -461,6 +461,7 @@ MC_Boost::Load_exit_RNG_seeds()
 
 
     cout << "\n........... Reading Monte-Carlo Exit Seeds ...........";
+    cout << "\n Found RNG seed file: " << rng_seed_file << '\n';
 
 
     // Read in data from the stream.
