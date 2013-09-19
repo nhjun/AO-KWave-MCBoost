@@ -251,7 +251,10 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         int k;
         RNG_seed_vector::iterator iter = exit_seeds.begin();
         
-        
+
+        cout << "............. Running MC-Boost ........... ";
+        cout << "(time step: " << time << ")\n";
+        cout.flush();
         /// For each thread (i.e. CPU core we are using) we load in a portion of the seeds for the RNG
         /// that runs in each 'Photon' object.
         for (i = 0; i < NUM_THREADS; ++i)
@@ -310,6 +313,10 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         srand(13);
         
         
+        cout << "............. Running MC-Boost ........... ";
+        cout << "(time step: " << time << ")\n";
+        cout.flush();
+
         for (size_t i = 0; i < NUM_THREADS; ++i)
         {
             seeds[i] = new RNG_seed_vector;
@@ -480,13 +487,11 @@ MC_Boost::Load_exit_RNG_seeds()
 	// the way the while loop above terminates.
 	exit_seeds.erase(exit_seeds.end()-1);
 
-
+    /// Close the stream
     rng_seed_stream.close();
 
-    cout << ".... done\n";
-    cout << "Number seeds read: " << exit_seeds.size() << "\n";
 
-
+    cout << ".... Loading seeds done (" << exit_seeds.size() << " loaded)\n";
 }
 
 

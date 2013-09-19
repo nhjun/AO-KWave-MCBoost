@@ -11,7 +11,7 @@ PML_Y_SIZE = 10;            % [grid points]
 PML_Z_SIZE = 10;            % [grid points]
 
 % set total number of grid points not including the PML
-Nx = 1024;
+Nx = 1296;
 Ny = 768;
 Nz = 512;
 
@@ -131,7 +131,7 @@ kgrid.t_array = 0:dt:(Nt-1)*dt;
 % =========================================================================
 
 % define properties of the input signal
-source_strength = 2.5e6;    	% [Pa]
+source_strength = 1.0e6;    	% [Pa]
 tone_burst_freq = 5.0e6;        % [Hz]
 source_freq = tone_burst_freq;
 tone_burst_cycles = 5;
@@ -278,9 +278,13 @@ sensor.mask = ones(Nx, Ny, Nz);
 if (PA_GUIDED_FOCUS)
     PA_file = strsplit(info.filename, '/');             % Split up string
     PA_file = char(PA_file(1,end));                     % Convert last cell to char array
-    filename = ['MyLAB_', PA_file(1:end-4), '_INPUT', '.h5'];     % Form new file name
+    filename = ['MyLAB_', PA_file(1:end-4),
+                num2str(source_strength), 'Pa', '_',...
+                num2str(tone_burst_freq), 'Hz','_INPUT.h5'];     % Form new file name
 else
-    filename = ['MyLAB_FF_', num2str(transducer.focus_distance), '_INPUT_debug.h5'];
+    filename = ['MyLAB_FF', num2str(transducer.focus_distance), '_',...
+                num2str(source_strength), 'Pa', '_',...
+                num2str(tone_burst_freq), 'Hz', '_INPUT.h5'];
 end
 kspaceFirstOrder3D(kgrid, medium, transducer, sensor, 'SaveToDisk', filename, input_args{:});
 

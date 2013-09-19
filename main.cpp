@@ -596,7 +596,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 10e3;
+const int MAX_PHOTONS = 10e6;
 
 
 
@@ -660,11 +660,24 @@ int main(int argc, char** argv)
 
 
     /// ----------------------------------------------------------------------------------------------------
-    /// MC-Boost
+    /// MC-Boost attributes
     /// ----------------------------------------------------------------------------------------------------
     if (sim_monte_carlo || sim_acousto_optics || sim_acousto_optics_loadData)
 	{
 
+        /// If use of RNG seeds was specified at the command line, we pass along the
+        /// filename to load and the monte-carlo simulation is notified.
+        if (Parameters->IsLoad_seeds())
+        {
+            AO_simulation.Load_generated_RNG_seeds(Parameters->GetRNGSeedFileName());
+        }
+
+        /// If saving seeds has been specified via the command line, we notify
+        /// the monte-carlo simulation.
+        if (Parameters->IsStore_RNG_seeds())
+        {
+            AO_simulation.Save_RNG_seeds(true);
+        }
 
     	///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
     	AO_simulation.Set_num_photons(MAX_PHOTONS);

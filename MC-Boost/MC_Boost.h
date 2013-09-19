@@ -60,6 +60,12 @@ public:
     
     // Load all the seeds that produced paths that left the medium through the exit aperture.
     void    Load_exit_RNG_seeds();
+
+    /// Set the filename to load RNG seeds from.
+    void    Set_RNG_seed_file(const std::string rng_file)
+    {
+        rng_seed_file = rng_file;
+    }
     
     
     /// Run the monte-carlo simulation using the produced seeds.

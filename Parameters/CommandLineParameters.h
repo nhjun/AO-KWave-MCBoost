@@ -229,7 +229,7 @@ public:
     
     /// ------------------- JWJS ------------------------------------
     /// Is --save_seeds set
-    bool IsStore_seeds()           const {return Store_seeds;};
+    bool IsStore_RNG_seeds()           const {return Store_seeds;};
 
     /// Is --load_seeds set
     bool IsLoad_seeds()                 const {return Load_seeds;};

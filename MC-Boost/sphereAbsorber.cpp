@@ -54,56 +54,7 @@ bool SphereAbsorber::hitAbsorberBoundary(const boost::shared_ptr<Vector3d> photo
     
     return false;
     
-    /*
-    // Check if the photon has been given a step size past the outer edges of the medium.
-	// If so we calculate the distance to the boundary.
-    if (step*direction.x + location.x >= x_bound || step*direction.x + location.x <= 0)
-	{
-		hit_x_bound = true;
-		if (direction.x > 0) // Moving towards positive x_bound
-			distance_to_boundary = (x_bound - location.x) / direction.x;
-		else
-			distance_to_boundary = abs(location.x / direction.x);
-	}
-	else if	(step*direction.y + location.y >= y_bound || step*direction.y + location.y <= 0)
-	{
-		hit_y_bound = true;
-		if (direction.y > 0) // Moving towards positive y_bound
-			distance_to_boundary = (y_bound - location.y) / direction.y;
-		else
-			distance_to_boundary = abs(location.y / direction.y);
-	}
-	else if (step*direction.z + location.z >= z_bound || step*direction.z + location.z <= 0)
-	{
-		hit_z_bound = true;
-		if (direction.z > 0) // Moving towards positive z_bound
-			distance_to_boundary = (z_bound - location.z) / direction.z;
-		else
-			distance_to_boundary = abs(location.z / direction.z);
-	}
-	// No boundaries have been crossed, so return false.
-	else
-	{
-		return false;
-	}
-    
-    
-	// If the step size of the photon is larger than the distance
-	// to the boundary and we are moving in some direction along
-	// the axis we calculate the left over step size and then step
-	// the photon to the boundary with the next call to 'hop()'.
-	//if (step > distance_to_boundary && distance_to_boundary != 0)
-	if (step > distance_to_boundary)
-    {
-		step_remainder = (step - distance_to_boundary)*mu_t;
-		step = distance_to_boundary;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-*/    
+
 
 }
 
@@ -112,7 +63,7 @@ bool SphereAbsorber::hitAbsorberBoundary(const boost::shared_ptr<Vector3d> photo
 // between a line extending from point A to point B and a central point C (i.e. the center
 // of the absorber).  By taking the cross-product of A-B and A-C we have the area
 // of the parallelogram between the vectors pointing from A to B and A to C.
-// We know the area a triangle is base*height/2.  By calculating the area of 
+// We know the area of a triangle is base*height/2.  By calculating the area of
 // the parallelogram by taking the cross-product, as mentioned above, we have
 // area = base*height*2 since the cross-product gives us twice the area of a triangle.
 // Using this, we can calculate (A-B)X(A-C)/Length(AB) which

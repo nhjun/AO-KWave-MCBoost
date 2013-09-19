@@ -179,11 +179,19 @@ public:
     
     /// Load the seeds that were saved to file.  These seeds produced paths of photons
     /// that eventually found their way out of the exit aperture.
-    void    Load_generated_seeds()
+    void    Load_generated_RNG_seeds(const std::string rng_seed_file)
             {
-                /// Load the seeds for the monte-carlo simulation.
-                da_boost->Load_exit_RNG_seeds();
+
+                da_boost->Set_RNG_seed_file(rng_seed_file);
+
+                /// Notify the monte-carlo simulation that it should use the RNG seeds
+                /// during the simulation.
+                da_boost->Use_RNG_seeds(true);
             }
+
+    /// Set the monte-carlo simulation to save the RNG seeds that produced photon paths
+    /// that exited through the exit aperture.
+    void    Save_RNG_seeds(const bool flag) {da_boost->Save_RNG_seeds(flag);};
     
     /// Return the z-axis depth.
     double  Get_MC_Zaxis_depth() {return m_medium->Get_Z_bound();}
@@ -194,12 +202,15 @@ public:
     void    Set_pezio_optical_coeff(const float val)
             {
                 pezio_optical_coeff = val;
-            }
+            }    
+
+
+
 
 
 
 	/// TEST CASES
-	/// ------------------------------------------------------------------
+    /// -----------------------------------------------------------------------------------------
     void    Test_Seeded_MC_sim()
             {
                 da_boost->Simulate_displacement(false);
@@ -212,9 +223,16 @@ public:
             }
     
     void    Test_Read_HDF5_File(TParameters * Parameters);
-    /// end TEST CASES
+    /// end TEST CASES --------------------------------------------------------------------------
     
     
+
+
+
+
+
+
+
     
 protected:
     TInputHDF5Stream* refractive_total_InputStream;

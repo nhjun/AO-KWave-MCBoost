@@ -181,8 +181,8 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
   
     
     /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
-    Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
-    Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
+    //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+    //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
     
     cout << "............... Running MC-Boost .............. \n";
@@ -412,8 +412,8 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
             }
 
             /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
-            Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
-            Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
+            //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+            //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
 
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
@@ -425,9 +425,9 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                    //|| ((curr_time >= 940) && (curr_time <= 950))
                )
         	{
-                cout << "............. Running MC-Boost ........... ";
-            	cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
-                cout.flush();
+                ///cout << "............. Running MC-Boost ........... ";
+                ///cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
+                ///cout.flush();
             	da_boost->Run_MC_sim_timestep(m_medium,
                                               m_Laser_injection_coords,
                                               KSpaceSolver->GetTimeIndex());
@@ -561,7 +561,8 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
         if ((!displacement_x_InputStream) || (!displacement_y_InputStream) || (!displacement_z_InputStream))
             throw bad_alloc();
 
-        /// Set the HDF5 file to read from, which was the output file from the previous run.
+        /// Set the HDF5 file to read from, which was the output file from the previous kWave/AO_sim run,
+        /// which is when the data was stored.
         displacement_x_InputStream->SetHDF5File(HDF5_OutputFile);
         displacement_y_InputStream->SetHDF5File(HDF5_OutputFile);
         displacement_z_InputStream->SetHDF5File(HDF5_OutputFile);
@@ -639,16 +640,16 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
         }
 
         /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
-        Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
-        Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
+        //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+        //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
         int time_step = i;
         /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
         /// XXX:
         /// - Needs testing!!!
-        cout << "............. Running MC-Boost ........... ";
-        cout << "(time step: " << time_step << ")\n";
-        cout.flush();
+        ///cout << "............. Running MC-Boost ........... ";
+        ///cout << "(time step: " << time_step << ")\n";
+        ///cout.flush();
         da_boost->Run_MC_sim_timestep(m_medium,
                                       m_Laser_injection_coords,
                                       time_step);
