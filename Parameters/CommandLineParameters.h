@@ -234,6 +234,9 @@ public:
     /// Is --load_seeds set
     bool IsLoad_seeds()                 const {return Load_seeds;};
 
+    /// Is --phase_inversion set
+    bool IsPhase_inversion()            const {return Phase_inversion;};
+
     /// Is --modulation_depth set
     bool IsStore_modulation_depth()     const {return Store_modulation_depth;};
     
@@ -326,6 +329,14 @@ private:
     bool        Load_seeds;
     /// Input file name for RNG seeds
     std::string InputRNGSeedsFileName;
+
+    /// Perform a phase inversion acousto-optic simulation, which
+    /// simply runs the acousto-optic simulation on displacement
+    /// and/or refractive index data, at a recorded time step,
+    /// and inverts the data such that it was as if the ultrasound
+    /// had made it to the same location and time, but with a 180
+    /// phase shift.
+    bool        Phase_inversion;
 
     /// Store the modulation depth (tagged vs. untagged photons)
     bool        Store_modulation_depth;

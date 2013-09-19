@@ -587,6 +587,10 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
         recorded_time_steps = disp_x_size.Y;
     }
 
+    /// Print the number of time steps that were recorded and stored out of the total
+    /// number of time steps simulated.
+    cout << "Simulation time steps (recorded): " << recorded_time_steps << '\n';
+
     /// Is storage of the modulation depth enabled?  If so inform the monte-carlo simulation
     /// to log the optical path lengths via the logger.
     if (Parameters->IsStore_modulation_depth())
@@ -595,67 +599,142 @@ AO_Sim::Run_acousto_optics_sim_loadData(TParameters * Parameters)
     }
 
 
-
-    /// Load data from the HDF5 for each time step of the kWave simulation, and run the monte-carlo simulation
-    /// to use the refractive index and displacement data loaded in, which is the acousto-optic simulation at that point.
-    for (size_t i = 0; i < recorded_time_steps; i++)
+    /// Typically when we want to look at the modulation depth (taggged ratio to untagged) we only want
+    /// to look at the resulting acousto-optic signal at the ultrasound focus and with the ultrasound
+    /// at with a 180 degree phase shift at the same location (i.e. a given propagation time 't'). To achieve
+    /// this we simply need to load in the data that was specified (i.e. displacement and/or refractive index vals)
+    /// and run the monte-carlo simulation twice, with the recorded data at time 't' and the 180 degree phase
+    /// shifted data, also at time 't'. To create the "phase inversion" we simply multiply the recorded data
+    /// by -1, which is done with the calls below.
+    if (Parameters->IsPhase_inversion())
     {
+        /// Typically when data is saved to the HDF5 file, the first recorded time step is the displacement
+        /// values at t=1, when no ultrasound is present. Therefore we read past it and use the next
+        /// chunk of data, which if the data has been saved correctly, should be at time t=focus.
+        /// FIXME:
+        /// - Should be able to choose which set of data to invert in cases of when many time steps
+        ///   of data were saved. For the time being this will need to be altered here.
+        const size_t INVERT_RECORDED_TIME_STEP = 2;
+        for (size_t i = 1; i <= INVERT_RECORDED_TIME_STEP; i++)
+        {
+            if (Parameters->IsSim_refractive_total())
+            {
+                /// Read refractive total data in from the HDF5 file that holds the precomputed values for
+                /// a previously run kWave simulation.
+                refractive_total_InputStream->ReadData(refractive_total_Name, refractive_total->GetRawData());
+            }
+
+            if (Parameters->IsSim_displacement())
+            {
+                /// Read displacment data in from the HDF5 file that holds the precomputed values for
+                /// a previously run kWave simulation.
+                displacement_x_InputStream->ReadData(disp_x_Name, disp_x->GetRawData());
+                displacement_y_InputStream->ReadData(disp_y_Name, disp_y->GetRawData());
+                displacement_z_InputStream->ReadData(disp_z_Name, disp_y->GetRawData());
+            }
+        }
+
+        /// Now that we have read past the time t=1 and have the appropriate time step read from the
+        /// HDF5 file (i.e. time t=focus), we run the monte-carlo simulation twice - once with the
+        /// data in the original recorded phase, and again with a 180 degree phase shift.
+        ///
+        /// First simulation with original phase.
         if (Parameters->IsSim_refractive_total())
         {
-            /// Read refractive total data in from the HDF5 file that holds the precomputed values for
-            /// a previously run kWave simulation.
-            refractive_total_InputStream->ReadData(refractive_total_Name, refractive_total->GetRawData());
-
-
             /// Create a refractive map (total) based on the values read in from the HDF5 file.
             m_medium->Create_refractive_map(refractive_total);
-
-            ///PrintMatrix((*refractive_total), Parameters);
-
-            /// Zero out the matrix for the next read in from the HDF5 file.
-            refractive_total->ZeroMatrix();
         }
-
         if (Parameters->IsSim_displacement())
         {
-            /// Read displacment data in from the HDF5 file that holds the precomputed values for
-            /// a previously run kWave simulation.
-            displacement_x_InputStream->ReadData(disp_x_Name, disp_x->GetRawData());
-            displacement_y_InputStream->ReadData(disp_y_Name, disp_y->GetRawData());
-            displacement_z_InputStream->ReadData(disp_z_Name, disp_y->GetRawData());
-
-
             /// Create a displacement map based on the values read in from the HDF5 file.
             m_medium->Create_displacement_map(disp_x, disp_y, disp_z);
-
-            ///PrintMatrix((*disp_x), Parameters);
-            ///PrintMatrix(m_medium, Parameters);
-
-            /// Zero out the matrices for the next read in from the HDF5 file.
-            //disp_x->ZeroMatrix();
-            //disp_y->ZeroMatrix();
-            //disp_z->ZeroMatrix();
-
-
         }
-
-        /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
-        //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
-        //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
-
-        int time_step = i;
-        /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
-        /// XXX:
-        /// - Needs testing!!!
-        ///cout << "............. Running MC-Boost ........... ";
-        ///cout << "(time step: " << time_step << ")\n";
-        ///cout.flush();
+        cout << "-------------------- Running Phase Inversion (original phase) --------------------\n";
         da_boost->Run_MC_sim_timestep(m_medium,
                                       m_Laser_injection_coords,
-                                      time_step);
+                                      INVERT_RECORDED_TIME_STEP);
 
-    }/// end FOR LOOP
+        /// Now perform the inversion and run the simulation as if the ultrasound focus had reached the
+        /// same location and same time, but with a phase that had been shifted 180 degrees.
+        if (Parameters->IsSim_refractive_total())
+        {
+            /// Notify the medium to invert the data for creating the phase shift.
+            m_medium->Invert_refractive_map_phase();
+        }
+        if (Parameters->IsSim_displacement())
+        {
+            /// Notify the medium to invert the data for creating the phase shift.
+            m_medium->Invert_displacement_map_phase();
+        }
+        cout << "-------------------- Running Phase Inversion (180 deg shifted) ------------------\n";
+        da_boost->Run_MC_sim_timestep(m_medium,
+                                      m_Laser_injection_coords,
+                                      INVERT_RECORDED_TIME_STEP);
 
+    }
+    else {
+        /// Load data from the HDF5 for each time step of the kWave simulation, and run the monte-carlo simulation
+        /// to use the refractive index and displacement data loaded in, which is the acousto-optic simulation at
+        /// that point in time.
+        for (size_t i = 0; i < recorded_time_steps; i++)
+        {
+            if (Parameters->IsSim_refractive_total())
+            {
+                /// Read refractive total data in from the HDF5 file that holds the precomputed values for
+                /// a previously run kWave simulation.
+                refractive_total_InputStream->ReadData(refractive_total_Name, refractive_total->GetRawData());
+
+
+                /// Create a refractive map (total) based on the values read in from the HDF5 file.
+                m_medium->Create_refractive_map(refractive_total);
+
+                ///PrintMatrix((*refractive_total), Parameters);
+
+                /// Zero out the matrix for the next read in from the HDF5 file.
+                ///refractive_total->ZeroMatrix();
+            }
+
+            if (Parameters->IsSim_displacement())
+            {
+                /// Read displacment data in from the HDF5 file that holds the precomputed values for
+                /// a previously run kWave simulation.
+                displacement_x_InputStream->ReadData(disp_x_Name, disp_x->GetRawData());
+                displacement_y_InputStream->ReadData(disp_y_Name, disp_y->GetRawData());
+                displacement_z_InputStream->ReadData(disp_z_Name, disp_y->GetRawData());
+
+
+                /// Create a displacement map based on the values read in from the HDF5 file.
+                m_medium->Create_displacement_map(disp_x, disp_y, disp_z);
+
+                ///PrintMatrix((*disp_x), Parameters);
+                ///PrintMatrix(m_medium, Parameters);
+
+                /// Zero out the matrices for the next read in from the HDF5 file.
+                //disp_x->ZeroMatrix();
+                //disp_y->ZeroMatrix();
+                //disp_z->ZeroMatrix();
+
+
+            }
+
+            /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
+            //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
+            //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
+
+            int time_step = i;
+            /// Run the monte-carlo simulation with the loaded in data (displacements, refractive index vals).
+            /// XXX:
+            /// - Needs testing!!!
+            ///cout << "............. Running MC-Boost ........... ";
+            ///cout << "(time step: " << time_step << ")\n";
+            ///cout.flush();
+            da_boost->Run_MC_sim_timestep(m_medium,
+                                          m_Laser_injection_coords,
+                                          time_step);
+
+        }/// end FOR LOOP
+
+    } /// end IF (PHASE_INVERSION)
 
 
     /// Clean up memory.

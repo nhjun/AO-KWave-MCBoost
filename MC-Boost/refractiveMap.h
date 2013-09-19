@@ -88,6 +88,11 @@ public:
         refractive_z = refractive_index_z;
     }
 
+    /// Invert the phase of the refractive index data by multiplying all the values by -1.
+    /// Essentually a 180 degree phase shift.
+    void    Invert_phase(void);
+
+
 	void	setBackgroundRefractiveIndex(const double n_bg) {this->n_background = n_bg;}
 	void	setPezioOpticalCoeff(const double pzo) {this->pezio_optical_coeff = pzo;}
 

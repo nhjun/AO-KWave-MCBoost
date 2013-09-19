@@ -66,7 +66,7 @@ public:
     {
         rng_seed_file = rng_file;
     }
-    
+
     
     /// Run the monte-carlo simulation using the produced seeds.
     void    Run_MC_sim_timestep(Medium *m, coords LaserInjectionCoords, int timestep);

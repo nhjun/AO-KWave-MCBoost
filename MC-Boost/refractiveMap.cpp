@@ -182,6 +182,20 @@ RefractiveMap::Get_refractive_index_TRealMatrix(const int x_photon, const int y_
 }
 
 
+/// Invert the phase of the refractive index data 180 degrees by multiplying through the matrix by -1.
+void
+RefractiveMap::Invert_phase(void)
+{
+    float * raw_data        = refractive_total->GetRawData();
+    const size_t sensor_size  = refractive_total->GetTotalElementCount();
+
+    for (size_t i = 0; i < sensor_size; i++)
+    {
+        /// Perform the inversion.
+        raw_data[i] *= -1.0f;
+    }
+}
+
 
 
 

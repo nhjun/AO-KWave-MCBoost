@@ -105,6 +105,8 @@ public:
     ///       in from a previous run of kWave.
     void    Create_refractive_map(TRealMatrix * refractive_total);
     /// Used with bending of photon trajectories.
+    /// FIXME:
+    /// - Needs implementation
     void    Create_refractive_map(TRealMatrix * refractive_x,
                                   TRealMatrix * refractive_y,
                                   TRealMatrix * refractive_z);
@@ -116,18 +118,11 @@ public:
                                     TRealMatrix * disp_y,
                                     TRealMatrix * disp_z);
 
-//    /// Takes the refractive map (total) computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
-//    void    Assign_refractive_map(TRealMatrix * refractive_total);
-//
-//    /// Takes the refractive maps (gradient) computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
-//    void    Assign_refractive_map(TRealMatrix * refractive_x,
-//                                  TRealMatrix * refractive_y,
-//                                  TRealMatrix * refractive_z);
-//
-//    /// Takes the displacement maps computed from KSpaceSolver directly, or loaded in from a previous run of kWave.
-//    void    Assign_displacement_map(TRealMatrix * disp_x,
-//                                    TRealMatrix * disp_y,
-//                                    TRealMatrix * disp_z);
+    /// Invert the phase of the refractive index data by multiplying everything by -1 (180 degree phase shift).
+    void    Invert_refractive_map_phase()       {kwave.nmap->Invert_phase();};
+
+    /// Invert the phase of the displacement data by multiplying everything by -1 (180 degree phase shift).
+    void    Invert_displacement_map_phase()     {kwave.dmap->Invert_phase();};
 
     // Add a refractive map object that holds refractive index values generated from k-Wave pressures.
     void	addRefractiveMap(RefractiveMap *n_map);

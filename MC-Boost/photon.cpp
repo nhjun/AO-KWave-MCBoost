@@ -91,7 +91,7 @@ void Photon::setIterations(const int num)
 void Photon::initTrajectory(void)
 {
 
-    double beam_radius = 0.0025;  /// 5mm diameter.
+    double beam_radius = 0.0015;  /// 3mm diameter.
     double injection_point = beam_radius * sqrt(getRandNum());
 
 	// Randomly set photon trajectory to yield anisotropic source.
@@ -100,8 +100,8 @@ void Photon::initTrajectory(void)
 	psi = 2.0 * PI * getRandNum();
 
     /// Set the injection points to spread across the beam diameter (randomly).
-    currLocation->location.x = illuminationCoords.x;/// + injection_point*cos(psi);
-    currLocation->location.y = illuminationCoords.y;/// + injection_point*sin(psi);
+    currLocation->location.x = illuminationCoords.x + injection_point*cos(psi);
+    currLocation->location.y = illuminationCoords.y + injection_point*sin(psi);
     currLocation->location.z = illuminationCoords.z;
 
 	// Set the initial direction cosines for this photon.
@@ -717,12 +717,12 @@ void Photon::displacePhotonFromPressure(void)
     /// - This needs to be taken care of in the computation of the displacement values, so that
     ///   this check never need take place.
     const float DISPLACEMENT_THRESHOLD = 0.0f; /// (meters)
-    if (abs(x_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.x += x_displacement;
-    if (abs(y_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.y += y_displacement;
-    if (abs(z_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.z += z_displacement;
-    ///currLocation->location.x += m_medium->kwave.dmap->getDisplacementFromGridX(_x, _y, _z);
-    ///currLocation->location.y += m_medium->kwave.dmap->getDisplacementFromGridY(_x, _y, _z);
-    ///currLocation->location.z += m_medium->kwave.dmap->getDisplacementFromGridZ(_x, _y, _z);
+    ///if (abs(x_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.x += x_displacement;
+    ///if (abs(y_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.y += y_displacement;
+    ///if (abs(z_displacement) >= DISPLACEMENT_THRESHOLD) currLocation->location.z += z_displacement;
+    currLocation->location.x += x_displacement;
+    currLocation->location.y += y_displacement;
+    currLocation->location.z += z_displacement;
 
 
 	// Get the local refractive index based on the coordinates of the displaced photon.

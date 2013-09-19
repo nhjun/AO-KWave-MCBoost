@@ -80,6 +80,9 @@ public:
                 return ((displacement_map_x != NULL) || (displacement_map_y != NULL) || (displacement_map_z != NULL));
             }
 
+    /// Invert the phase of the displacement data by multiplying all the values by -1.
+    /// Essentually a 180 degree phase shift.
+    void    Invert_phase(void);
 
     
     // Returns the individual axis displacements.
