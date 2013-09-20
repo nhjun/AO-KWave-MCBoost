@@ -585,9 +585,7 @@ Name                            Size           Data type        Domain Type     
 #include <fstream>
 using std::ifstream;
 #include <iostream>
-using std::cout;
-using std::endl;
-
+using namespace std;
 
 
 
@@ -596,7 +594,7 @@ using std::endl;
  * ------------------------------------------------------- Various functions for Monte-Carlo -----------------
  */
 // Number of photons to simulate.
-const int MAX_PHOTONS = 10e6;
+const int MAX_PHOTONS = 100e6;
 
 
 
@@ -694,7 +692,7 @@ int main(int argc, char** argv)
         /// - So that the step size calculated in Photon::Hop() matches with the dimensions
         ///   of everything else used in the simulation, we convert the commonly used mu_a
         ///   and mu_s dimensions from cm^-1 to m^-1.
-        layer_props.mu_a        = 0.0010f;              // cm^-1
+        layer_props.mu_a        = 0.0f;              // cm^-1
         layer_props.mu_s        = 70.0f;                // cm^-1
         layer_props.mu_a = layer_props.mu_a * 100;      // m^-1
         layer_props.mu_s = layer_props.mu_s * 100;      // m^-1
@@ -735,10 +733,10 @@ int main(int argc, char** argv)
 
 
     	/// Display the monte-carlo simulation parameters
-        const size_t hardware_threads = 16;
+        const size_t hardware_threads = Parameters->GetNumberOfThreads();
 		///AO_simulation.Set_num_MC_threads(boost::thread::hardware_concurrency());
 		AO_simulation.Set_num_MC_threads(hardware_threads);
-		AO_simulation.Print_MC_sim_params();
+        AO_simulation.Print_MC_sim_params(Parameters);
 	}
 
 
@@ -773,20 +771,21 @@ int main(int argc, char** argv)
 #else
 
 
+    cout << "\n\n";
 	/// Run what was specified.
 	if (sim_monte_carlo)
 	{
         cout << FMT_SmallSeparator;
-        cout << " Simulation: Monte-Carlo\n";
+        cout << "Simulation: Monte-Carlo\n";
         cout << FMT_SmallSeparator;
 
-		/// This will run the monte-carlo simulation once.
+        /// This will run the monte-carlo simulation once.
 		AO_simulation.Run_monte_carlo_sim(Parameters);
 	}
 	else if (sim_kWave)
 	{
         cout << FMT_SmallSeparator;
-        cout << " Simulation: kWave\n";
+        cout << "Simulation: kWave\n";
         cout << FMT_SmallSeparator;
 
         /// Run the kWave simulation.
@@ -795,7 +794,7 @@ int main(int argc, char** argv)
     else if (sim_acousto_optics)
     {
         cout << FMT_SmallSeparator;
-        cout << " Simulation: Acousto-Optics\n";
+        cout << "Simulation: Acousto-Optics\n";
         cout << FMT_SmallSeparator;
 
         /// Has modulation depth commandline argument been set.
@@ -819,7 +818,7 @@ int main(int argc, char** argv)
     else if (sim_acousto_optics_loadData)
     {
         cout << FMT_SmallSeparator;
-        cout << " Simulation: Acousto-Optics (loading pre-computed data)\n";
+        cout << "Simulation: Acousto-Optics (loading pre-computed data)\n";
         cout << FMT_SmallSeparator;
 
         /// Has modulation depth commandline argument been set.

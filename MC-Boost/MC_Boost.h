@@ -57,7 +57,9 @@ public:
     // Generates RNG seeds for photon paths that were detected.
     void    Generate_MC_RNG_seeds(Medium *m, coords LaserInjectionCoords);
     
-    
+    /// Return the total number of photons to simulate.
+    size_t  Get_num_photons_to_sim(void) {return MAX_NUM_PHOTONS;};
+
     // Load all the seeds that produced paths that left the medium through the exit aperture.
     void    Load_exit_RNG_seeds();
 

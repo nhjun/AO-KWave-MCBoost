@@ -80,9 +80,7 @@ MC_Boost::Set_num_threads(size_t num_threads_to_run)
 void
 MC_Boost::Generate_MC_RNG_seeds(Medium * medium, coords LaserInjectionCoords)
 {
-    
-
-    cout << "\n........... Generating Monte-Carlo Exit Seeds .........\n";
+    cout << "........... Generating Monte-Carlo Exit Seeds\n";
     cout.flush();
 
 
@@ -173,7 +171,10 @@ void
 MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int time)
 {
     
+
+
     /// Update the user on what is going to simulated and set/create instances of needed objects.
+    cout << "\n\n............. Running MC-Boost .............. \n";
     if (Params.DISPLACE)
     {
         cout << "Displacement enabled\n";
@@ -187,9 +188,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         cout << "Modulation depth enabled\n";
     }
     if (Params.SAVE_SEEDS)
-    {
-        cout << "\nSaving seeds enabled\n";
-        
+    {   
         /// Generate the seeds by running monte-carlo simulations with one thread.  This removes any possible
         /// errors of the RNG producing duplicate numbers, thus removing any potential correlation.
         Generate_MC_RNG_seeds(medium, LaserInjectionCoords);
@@ -198,6 +197,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         /// take care of that in main().
         return;
     }
+    cout << "(time step: " << time << ")\n";
     cout.flush();
 
     /// The logger is a singleton.  To bypass any problems with using singletons in a multi-threaded application
@@ -222,6 +222,11 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     Photon *photons[NUM_PHOTON_OBJS];
     boost::thread *threads[NUM_THREADS];
     
+    /// Initialize the C++ RNG.
+    /// NOTE:
+    /// - This is only used to randomly seed my RNG.
+    srand(13);
+
     
     /// A decision is to be made at this point, and that is whether or not this simulation wants to use
     /// pre-generated seeds for the RNG, or just run normally (generate seeds and then use them, which
@@ -251,10 +256,6 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         int k;
         RNG_seed_vector::iterator iter = exit_seeds.begin();
         
-
-        cout << "............. Running MC-Boost ........... ";
-        cout << "(time step: " << time << ")\n";
-        cout.flush();
         /// For each thread (i.e. CPU core we are using) we load in a portion of the seeds for the RNG
         /// that runs in each 'Photon' object.
         for (i = 0; i < NUM_THREADS; ++i)
@@ -307,15 +308,7 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
         /// NOTE:
         /// - Not guaranteed to produce uncorrelated streams of "random" numbers from the RNG.
         
-        /// Initialize the C++ RNG.
-        /// NOTE:
-        /// - This is only used to randomly seed my RNG.
-        srand(13);
-        
-        
-        cout << "............. Running MC-Boost ........... ";
-        cout << "(time step: " << time << ")\n";
-        cout.flush();
+
 
         for (size_t i = 0; i < NUM_THREADS; ++i)
         {

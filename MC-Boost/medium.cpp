@@ -77,10 +77,29 @@ void Medium::initCommon(void)
 // Add the layer to the medium by pushing it onto the vector container.
 void Medium::addLayer(Layer *layer)
 {
+    /// Display the properties of the added layer in the medium.
+    cout << "-----------------------------------------------------\n"
+         << "Adding a layer to the medium /\n"
+         << "-----------------------------\n"
+         << " absorption = " << layer->getAbsorpCoeff()/100 << " [cm^-1]\n"
+         << " scattering = " << layer->getScatterCoeff()/100 << " [cm^-1]\n"
+         << " anisotropy = " << layer->getAnisotropy() << '\n'
+         << " refractive index = " << layer->getRefractiveIndex() << '\n'
+         << " number of absorbers = " << layer->Get_num_absorbers() << '\n';
+
 	p_layers.push_back(layer);
 }
 void Medium::addLayer(Layer_Properties props)
 {
+    /// Display the properties of the added layer in the medium.
+    cout << "-----------------------------------------------------\n"
+         << "Adding a layer to the medium /\n"
+         << "-----------------------------\n"
+         << " absorption = " << props.mu_a/100 << " [cm^-1]\n"
+         << " scattering = " << props.mu_s/100 << " [cm^-1]\n"
+         << " anisotropy = " << props.anisotropy << '\n'
+         << " refractive index = " << props.refractive_index << '\n';
+
     p_layers.push_back(new Layer(props));
 }
 

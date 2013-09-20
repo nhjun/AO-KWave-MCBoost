@@ -36,6 +36,7 @@ public:
     double getAbsorberAbsorptionCoeff(void) {return this->mu_a;}
     double getAbsorberScatteringCoeff(void) {return this->mu_s;}
     double getAnisotropy(void)              {return this->anisotropy;}
+    double getRefractiveIndex(void)         {return this->refractive_index;}
     
 
     void setAbsorberAbsorptionCoeff(const double mu_a) {this->mu_a = mu_a;}

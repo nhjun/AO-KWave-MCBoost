@@ -66,7 +66,10 @@ public:
 
 	void	setAbsorpCoeff(const double mu_a);
 	void	setScatterCoeff(const double mu_s);
-	void	updateAlbedo();
+
+    /// Any time the optical properties of the medium are set or changed, this needs to be called.
+    /// to propagate those changes to all params (ie. albedo, total attenuation, etc.
+    void	Update_optical_params();
     
     void    addAbsorber(Absorber * a);
     
@@ -77,6 +80,9 @@ public:
     
     // Return the absorber at this location 'currLocation' in the medium.
     Absorber * getAbsorber(const boost::shared_ptr<Vector3d> currLocation);
+
+    /// Return the number of absorbers in a layer.
+    size_t  Get_num_absorbers(void) {return p_absorbers.size();};
     
 
 	

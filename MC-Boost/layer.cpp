@@ -46,26 +46,19 @@ Layer::~Layer(void)
 void Layer::setAbsorpCoeff(double mu_a)
 {
 	this->mu_a = mu_a;
-	
-	// If we ever update the absorption coefficient we need to update the
-	// transmission coefficient and albedo similarly.
-	this->mu_t = mu_a + mu_s;
-	updateAlbedo();
+    Update_optical_params();
 }
 
 void Layer::setScatterCoeff(double mu_s)
 {
 	this->mu_s = mu_s;
-
-	// If we ever update the scattering coefficient we need to update the
-	// transmission coefficient albedo similarly.
-	this->mu_t = mu_a + mu_s;
-	updateAlbedo();
+    Update_optical_params();
 }
 
 
-void Layer::updateAlbedo()
+void Layer::Update_optical_params()
 {
+    mu_t = mu_a + mu_s;
 	albedo = mu_s/(mu_s + mu_a);
 }
 
@@ -74,6 +67,13 @@ void Layer::addAbsorber(Absorber * absorber)
 {
     // FIXME: Ensure the absorber fits within the bounds of the layer.
     //       
+    /// Display the properties of the added layer in the medium.
+      cout << " - Adding an absorber to the layer -\n"
+           << "   + absorption = " << absorber->getAbsorberAbsorptionCoeff() << '\n'
+           << "   + scattering = " << absorber->getAbsorberScatteringCoeff() << '\n'
+           << "   + anisotropy = " << absorber->getAnisotropy() << '\n'
+           << "   + refractive index = " << absorber->getRefractiveIndex() << '\n';
+
     p_absorbers.push_back(absorber);
 }
 

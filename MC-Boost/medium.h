@@ -16,17 +16,8 @@ using std::endl;
 #include <MC-Boost/layer.h>
 #include <MC-Boost/voxel_struct.h>
 
-
-
 #include <MatrixClasses/RealMatrix.h>
 #include <MatrixClasses/LongMatrix.h>
-
-
-
-
-
-// Maximum number of bins that hold absorption values.
-const int MAX_BINS = 101;
 
 
 // Forward declaration of PressureMap and DisplacementMap objects.
@@ -38,16 +29,11 @@ class Vector3d;
 class Photon;
 
 
-
-
-
-
 // Medium is a container object that holds one or many layer objects that the
 // photon is propagated through.  This allows easy simulation of heterogeneous
 // media with Monte Carlo simulations.
 class Medium
 {
-
 public:
 
 	friend class Photon;
@@ -151,17 +137,6 @@ public:
     // Return the max depth of the medium.
     double 	getDepth() {return depth;}
 
-    // Return the refractive index of the medium.
-    //double  getRefractiveIndex(void) {return refractive_index;}
-
-    // Write photon coordinates to file.
-    void 	writePhotonCoords(std::vector<double> &coords);
-
-    // Write photon exit locations and phases to file.
-    void	writeExitCoordsAndLength(std::vector<double> &coords_phase);
-
-    // Write the photon exit locations, phase and weight to file.
-    void	writeExitCoordsLengthWeight(std::vector<double> &coords_phase_weight);
 
     // Return the bounds of the medium.
     double Get_X_bound(void) {return x_bound;}

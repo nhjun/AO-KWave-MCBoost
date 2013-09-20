@@ -112,7 +112,7 @@ public:
 
 
 	/// Print the MC simulation attributes.
-	void	Print_MC_sim_params();
+    void	Print_MC_sim_params(TParameters * parameters);
     
     
     /// Add a layer to the medium, which defines the optical properties of that layer
@@ -141,12 +141,12 @@ public:
                 m_Laser_injection_coords.y = laser_coords.y;
                 m_Laser_injection_coords.z = laser_coords.z;
 
-				cout << "----------------------------------------\n"
-					 << "Laser injection coordinates set\n"
-					 << "----------------------------------------\n"
-				     << "Location: [x=" << m_Laser_injection_coords.x 
-					 << ", y=" << m_Laser_injection_coords.y
-					 << ", z=" << m_Laser_injection_coords.z << "] (meters)\n";
+                cout << "-----------------------------------------------------\n"
+                     << "Laser injection coordinates set /\n"
+                     << "--------------------------------\n"
+                     << " Location: [x=" << m_Laser_injection_coords.x
+                     << ", y=" << m_Laser_injection_coords.y
+                     << ", z=" << m_Laser_injection_coords.z << "] (meters)\n";
             }
     
     

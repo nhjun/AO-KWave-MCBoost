@@ -185,9 +185,6 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
     //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
     
-    cout << "............... Running MC-Boost .............. \n";
-    cout.flush();
-    
     size_t time = 1;
     da_boost->Run_MC_sim_timestep(m_medium,
                                   m_Laser_injection_coords,
@@ -868,15 +865,19 @@ AO_Sim::Create_MC_grid(TParameters * parameters)
 
 
 void
-AO_Sim::Print_MC_sim_params()
+AO_Sim::Print_MC_sim_params(TParameters * parameters)
 {
     assert (m_medium != NULL);
     assert (da_boost != NULL);
-    cout << "\n--------------------------------\nMC-Boost parameters\n--------------------------------\n";
-    cout << "Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
-    cout << "Medium size: [x=" << m_medium->Get_X_bound() << ", y=" << m_medium->Get_Y_bound() << ", z=" << m_medium->Get_Z_bound() << "] (meters)\n";
-    cout << "Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
-    cout << "Time step: " << MC_time_step << '\n';
+    cout << "-----------------------------------------------------\n"
+         << "MC-Boost parameters /\n"
+         << "--------------------\n";
+    cout << " Number of CPU threads: " << da_boost->Get_CPU_threads() << '\n';
+    cout << " Medium size: [x=" << m_medium->Get_X_bound() << ", y=" << m_medium->Get_Y_bound() << ", z=" << m_medium->Get_Z_bound() << "] (meters)\n";
+    cout << " Medium dims: [Nx=" << m_medium->Get_Nx() << ", Ny=" << m_medium->Get_Ny() << ", z=" << m_medium->Get_Nz() << "] (voxels)\n";
+    cout << " Time step: " << MC_time_step << '\n';
+    /// If we are NOT loading seeds, display how many photon energy packets are going to be simulated.
+    if (!parameters->IsLoad_seeds()) cout << " Photons: " << da_boost->Get_num_photons_to_sim() << '\n';
 }
 
 

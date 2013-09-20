@@ -29,10 +29,10 @@ Detector::Detector(const Detector_Properties &props)
     center.location.z = props.z_coord;
 
 	/// Notify where the detector is added to the medium.
-	cout << "----------------------------------------\n"
-	     << "Adding detector to MC-Boost medium\n"
-	     << "----------------------------------------\n"
-	     << "Location: [x=" << center.location.x << ", y="
+    cout << "-----------------------------------------------------\n"
+         << "Adding a detector to the medium /\n"
+         << "--------------------------------\n"
+         << " Location: [x=" << center.location.x << ", y="
 							<< center.location.y << ", z="
 						    << center.location.z << "] (meters)\n";
 
@@ -46,17 +46,17 @@ Detector::Detector(const Detector_Properties &props)
 	if (props.xy_plane)
 	{
 		setDetectorPlaneXY();
-		cout << "plane: x-y\n";
+        cout << " plane: x-y\n";
 	}
 	else if (props.xz_plane)
 	{	
 		setDetectorPlaneXZ();
-		cout << "plane: x-z\n";
+        cout << " plane: x-z\n";
 	}
 	else if (props.yz_plane)
 	{
 		setDetectorPlaneYZ();
-		cout << "plane: y-z\n";
+        cout << " plane: y-z\n";
 	}
 	else
 	{

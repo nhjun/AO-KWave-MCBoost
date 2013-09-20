@@ -14,14 +14,14 @@ using std::cout;
 
 // Threshold value for comparing doubles.  Allows some tolerance that might arise from
 // rounding errors when working with doubles.
-static const double THRESHOLD = 0.000000001;
+static const double THRESHOLD = 1e-10;
 
 
 
 CircularDetector::CircularDetector(const Detector_Properties &props)
 :Detector(props)
 {
-	cout << "radius: " << props.radius << " (meters)\n";
+    cout << " radius: " << props.radius << " (meters)\n";
     this->radius = props.radius;   
 }
 
@@ -29,7 +29,7 @@ CircularDetector::CircularDetector(const Detector_Properties &props)
 CircularDetector::CircularDetector(const double radius, const Vector3d &centerPoint)
 :Detector(centerPoint)
 {
-	cout << "radius: " << radius << " (meters)\n";
+    cout << " radius: " << radius << " (meters)\n";
     this->radius = radius;
 }
 
@@ -38,7 +38,7 @@ CircularDetector::CircularDetector(const double radius, const Vector3d &centerPo
 CircularDetector::CircularDetector(const double radius, const boost::shared_ptr<Vector3d> centerPoint)
 :Detector(centerPoint)
 {
-	cout << "radius: " << radius << " (meters)\n";
+    cout << " radius: " << radius << " (meters)\n";
     this->radius = radius;
 }
 
