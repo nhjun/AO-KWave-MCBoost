@@ -273,7 +273,8 @@ Logger::getCurrTime(void)
 	epoch = time(NULL);
 	ptr_ts = localtime(&epoch);
 
-	return (boost::lexical_cast<std::string>(ptr_ts->tm_hour) + "_" +
+    return (boost::lexical_cast<std::string>(ptr_ts->tm_yday) + "_" +
+            boost::lexical_cast<std::string>(ptr_ts->tm_hour) + "_" +
 			boost::lexical_cast<std::string>(ptr_ts->tm_min) + "_" +
 			boost::lexical_cast<std::string>(ptr_ts->tm_sec));
 }

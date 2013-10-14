@@ -70,7 +70,7 @@ bool SphereAbsorber::hitAbsorberBoundary(const boost::shared_ptr<Vector3d> photo
 // leaves us the height, which we can compare to the radius of the absorber since
 // this is the shortest distance to the line that MIGHT have passed through the absorber.
 bool SphereAbsorber::crossedAbsorber(const boost::shared_ptr<Vector3d> A,
-                             const boost::shared_ptr<Vector3d> B)
+                                     const boost::shared_ptr<Vector3d> B)
 {
     // Subtract the previous location (B) of the photon from the current location (A)
     // to form a new vector.

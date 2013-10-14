@@ -692,7 +692,7 @@ int main(int argc, char** argv)
         /// - So that the step size calculated in Photon::Hop() matches with the dimensions
         ///   of everything else used in the simulation, we convert the commonly used mu_a
         ///   and mu_s dimensions from cm^-1 to m^-1.
-        layer_props.mu_a        = 0.0f;              // cm^-1
+        layer_props.mu_a        = 0.01f;              // cm^-1
         layer_props.mu_s        = 70.0f;                // cm^-1
         layer_props.mu_a = layer_props.mu_a * 100;      // m^-1
         layer_props.mu_s = layer_props.mu_s * 100;      // m^-1

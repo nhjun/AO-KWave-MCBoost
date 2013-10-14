@@ -39,10 +39,10 @@ MC_Boost::MC_Boost(void)
     Params.USE_SEEDS            = false;
 
     // The file that the seeds are written to after calling 'Generate_RNG_seeds'.
-    rng_seed_file = "./Data/seeds_for_exit.dat";
+    //rng_seed_file = "Data/seeds_for_exit_" + Logger::getInstance()->getCurrTime() + ".dat";
 
     /// Holds data collected when a photon exits through the detection aperture.
-    exit_data_file = "./Data/photon-exit-data";
+    exit_data_file = "Data/photon-exit-data";
 }
 
 
@@ -189,13 +189,16 @@ MC_Boost::Run_MC_sim_timestep(Medium *medium, coords LaserInjectionCoords, int t
     }
     if (Params.SAVE_SEEDS)
     {   
+        // The file that the seeds are written to after calling 'Generate_RNG_seeds'.
+        rng_seed_file = "Data/seeds_for_exit_" + Logger::getInstance()->getCurrTime() + ".dat";
+
         /// Generate the seeds by running monte-carlo simulations with one thread.  This removes any possible
         /// errors of the RNG producing duplicate numbers, thus removing any potential correlation.
         Generate_MC_RNG_seeds(medium, LaserInjectionCoords);
         
         /// After seeds are generated, we return.  If the seeds are to be used during this run, let the caller
         /// take care of that in main().
-        return;
+        //return;
     }
     cout << "(time step: " << time << ")\n";
     cout.flush();

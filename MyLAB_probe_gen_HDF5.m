@@ -131,7 +131,7 @@ kgrid.t_array = 0:dt:(Nt-1)*dt;
 % =========================================================================
 
 % define properties of the input signal
-source_strength = 1.0e6;    	% [Pa]
+source_strength = 0.9e6;    	% [Pa]
 tone_burst_freq = 5.0e6;        % [Hz]
 source_freq = tone_burst_freq;
 tone_burst_cycles = 5;
