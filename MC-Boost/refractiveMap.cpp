@@ -146,7 +146,7 @@ RefractiveMap::getRefractiveIndexFromGradientGrid(const char axis, const int x_p
 
 
 // Returns the spatially located refractive index value from the supplied location in the grid.
-/// x_photon, y_photon and z_photon are the voxel coordinates obtained by translating the spetial coordinate
+/// x_photon, y_photon and z_photon are the voxel coordinates obtained by translating the spatial coordinate
 /// of the current scattering event.
 float
 RefractiveMap::getRefractiveIndexFromGrid(const int x_photon, const int y_photon, const int z_photon)
@@ -176,7 +176,8 @@ RefractiveMap::Get_refractive_index_TRealMatrix(const int x_photon, const int y_
     
     /// ON FURTHER INSPECTION I BELIEVE THE ABOVE IS NOT TRUE.  I THINK IT IS ALREADY MADE BY LOOKING
     /// AT THE TRANSDUCER PLOT IN KWAVE.  VERIFY!
-	///                 Verified by Jiri (k-Wave developer)
+    ///
+	///              !!!!   Verified by Jiri (k-Wave developer) !!!!
     return refractive_total->GetElementFrom3D(x_photon, y_photon, z_photon);
 
 }

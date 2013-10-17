@@ -958,7 +958,7 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 
 	// Accumulate the refractive index encountered along the segment between scattering events for this
 	// step through the medium.
-	n_cumulative += m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
+	n_cumulative = m_medium->kwave.nmap->getRefractiveIndexFromGrid(_x, _y, _z);
 
 	// Transform the location of the photon in the medium to discrete locations in the grid based
     // on the photon's current location in the medium after 'hopping'.
@@ -976,8 +976,8 @@ void Photon::alterOPLFromAverageRefractiveChanges(void)
 
 	// Get the distance between the previous location and the current location.
 	double distance_traveled = VectorMath::Distance(prevLocation, currLocation);
-	cout << "distance = " << distance_traveled << "\n";
-	cout << "n_avg = " << n_avg << "\n";
+	//cout << "distance = " << distance_traveled << "\n";
+	//cout << "n_avg = " << n_avg << "\n";
 
 	// Make the final calculation of the OPL.
 	refractiveIndex_optical_path_length += distance_traveled * n_avg;
