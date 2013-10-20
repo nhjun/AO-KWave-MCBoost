@@ -197,10 +197,29 @@ AO_Sim::Run_monte_carlo_sim(TParameters * Parameters)
 void
 AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 {
-
+    /// ------------------ Begin MC-Boost Configuration ------------------------------------------
+    /// Configure the monte-carlo simulation to run what was specified via the commandline.
+    ///
     bool sim_refractive_total = Parameters->IsSim_refractive_total();
     bool sim_refractive_grad  = Parameters->IsSim_refractive_grad();
     bool sim_displacement     = Parameters->IsSim_displacement();
+
+    /// Decide what to simulate (refractive gradient, refractive_total, displacement).
+    if (sim_refractive_grad)
+    {
+       da_boost->Simulate_refractive_gradient(true);
+       cout << "Refractive gradient: ON\n";
+    }
+    if (sim_refractive_total)
+    {
+       da_boost->Simulate_refractive_total(true);
+       cout << "Refraction: ON\n";
+    }
+    if (sim_displacement)
+    {
+       da_boost->Simulate_displacement(true);
+       cout << "Displacement: ON\n";
+    }
 
 
     /// Load data from disk
@@ -216,7 +235,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
     }
     cout << ".... done\n";
 
-    //fprintf(stdout,"Elapsed time:          %8.2fs\n",KSpaceSolver.GetDataLoadTime());
+
 
     /// start computation of k-Wave simulation.
     cout << ".......... k-Wave Computation ...........\n";
@@ -294,22 +313,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
             if (sim_refractive_grad)
             {
-//                /// Check if we are saving the refracive index data in KSpaceSolver, which is based on a commandline flag.
-//                /// If we are, we don't want to run the computation from here, as it will already
-//                /// be done in KSpaceSolver if we are saving the data.  This eliminates the possiblity
-//                /// of computing something twice, which could happen when monte-carlo needs the data
-//                /// and the flag has been set to save data in KSpaceSolver.
-//                if (!(Parameters->IsStore_refractive_x() ||
-//                      Parameters->IsStore_refractive_y() ||
-//                      Parameters->IsStore_refractive_z()))
-//                {
-//                    /// This is executed when the AO simulation needs refractive index changes, but
-//                    /// the commandline flags were not made to save the refractive index data, as
-//                    /// discussed above.
-
                 KSpaceSolver->FromAO_sim_compute_refractive_index();
-//                }
-
                 refractive_x = &(KSpaceSolver->FromAO_sim_Get_refractive_x());
                 refractive_y = &(KSpaceSolver->FromAO_sim_Get_refractive_y());
                 refractive_z = &(KSpaceSolver->FromAO_sim_Get_refractive_z());
@@ -317,27 +321,13 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
 
             if (sim_refractive_total)
             {
-//                /// Same reasoning as above.
-//                if (!(Parameters->IsStore_refractive_total()))
-//                {
-
                 KSpaceSolver->FromAO_sim_compute_refractive_index_total();
-//                }
-                
                 refractive_total = &(KSpaceSolver->FromAO_sim_Get_refractive_total());
             }
 
             if (sim_displacement)
             {
-//                /// Same reasoning as above.
-//                if (!(Parameters->IsStore_disp_x() ||
-//                      Parameters->IsStore_disp_y() ||
-//                      Parameters->IsStore_disp_z()))
-//                {
-
                 KSpaceSolver->FromAO_sim_compute_displacement();
-//                }
-
                 disp_x = &(KSpaceSolver->FromAO_sim_Get_disp_x());
                 disp_y = &(KSpaceSolver->FromAO_sim_Get_disp_y());
                 disp_z = &(KSpaceSolver->FromAO_sim_Get_disp_z());
@@ -380,7 +370,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                                                 refractive_y,
                                                 refractive_z);
 			}
-			/// Similar to above (i.e. sim_refractive_grad)
 			else if (sim_displacement)
 			{
                 /// Create a displacment map based upon the pressure at this time step.
@@ -391,26 +380,6 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
         	}
 
 
-			/// Decide what to simulate (refractive gradient, refractive_total, displacement) based on whether those objects exist.
-            if (sim_refractive_grad)
-            {
-                m_medium->kwave.nmap->IsSim_refractive_grad()   ?   da_boost->Simulate_refractive_gradient(true) :
-                                                                        da_boost->Simulate_refractive_gradient(false);
-            }
-            if (sim_refractive_total)
-            {
-                m_medium->kwave.nmap->IsSim_refractive_total()  ?   da_boost->Simulate_refractive_total(true) :
-                                                                        da_boost->Simulate_refractive_total(false);
-            }
-            if (sim_displacement)
-            {
-                m_medium->kwave.dmap->IsSim_displacement()  ?   da_boost->Simulate_displacement(true) :
-                                                                    da_boost->Simulate_displacement(false);
-            }
-
-            /// Set the monte-carlo simulation to use, or save, RNG seeds based on command line args.
-            //Parameters->IsStore_seeds()   ?   da_boost->Save_RNG_seeds(true) : da_boost->Save_RNG_seeds(false);
-            //Parameters->IsLoad_seeds()    ?   da_boost->Use_RNG_seeds(true)  : da_boost->Use_RNG_seeds(false);
 
 
         	/// Only run the MC-sim after ultrasound has propagated a certain distance (or time).
@@ -422,9 +391,7 @@ AO_Sim::Run_acousto_optics_sim(TParameters * Parameters)
                    //|| ((curr_time >= 940) && (curr_time <= 950))
                )
         	{
-                ///cout << "............. Running MC-Boost ........... ";
-                ///cout << "(time: " << KSpaceSolver->GetTimeIndex()*Parameters->Get_dt() << ")\n";
-                ///cout.flush();
+
             	da_boost->Run_MC_sim_timestep(m_medium,
                                               m_Laser_injection_coords,
                                               KSpaceSolver->GetTimeIndex());

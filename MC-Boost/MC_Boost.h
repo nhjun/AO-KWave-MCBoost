@@ -119,9 +119,6 @@ private:
     MC_Parameters Params;
     
     
-   
-
-    
 };
 
 #endif /* defined(__K_Wave_C__MC_Boost__) */

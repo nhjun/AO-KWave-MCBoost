@@ -240,13 +240,13 @@ public:
     /// Is --modulation_depth set
     bool IsStore_modulation_depth()     const {return Store_modulation_depth;};
     
-    /// Is --n_total set
+    /// Is --refractive_total set
     bool IsStore_refractive_total()     const {return Store_refractive_total;};
-    /// Is --nx set
+    /// Is --refractive_x set
     bool IsStore_refractive_x()         const {return Store_refractive_x;};
-    /// Is --ny set
+    /// Is --refractive_y set
     bool IsStore_refractive_y()         const {return Store_refractive_y;};
-    /// Is --nz set
+    /// Is --refractive_z set
     bool IsStore_refractive_z()         const {return Store_refractive_z;};
     
     /// Is --disp_x set

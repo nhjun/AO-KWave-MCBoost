@@ -651,11 +651,6 @@ int main(int argc, char** argv)
     bool sim_acousto_optics_loadData = Parameters->IsRun_AO_sim_loadData();
     bool sim_modulation_depth        = Parameters->IsStore_modulation_depth();
 
-	/// What AO mechanisms will be turned on during the simulation.
-	bool sim_displacement 	  = false;
-	bool sim_refractive_grad  = false;
-    bool sim_refractive_total = false;
-
 
     /// ----------------------------------------------------------------------------------------------------
     /// MC-Boost attributes
@@ -801,7 +796,9 @@ int main(int argc, char** argv)
         /// If so we notify the logger to save the OPL's to file.
         if (sim_modulation_depth)
         {
-            Logger::getInstance()->Open_modulation_depth_file("optical_path_lengths.dat");
+
+            Logger::getInstance()->Open_modulation_depth_file("Data/optical_path_lengths_" + Logger::getInstance()->getCurrTime() + ".dat");
+
         }
 
         /// Run the AO simulation.
@@ -825,7 +822,7 @@ int main(int argc, char** argv)
         /// If so we notify the logger to save the OPL's to file.
         if (sim_modulation_depth)
         {
-            Logger::getInstance()->Open_modulation_depth_file("optical_path_lengths.dat");
+            Logger::getInstance()->Open_modulation_depth_file("Data/optical_path_lengths_" + Logger::getInstance()->getCurrTime() + ".dat");
         }
 
         /// Run the AO simulation.
